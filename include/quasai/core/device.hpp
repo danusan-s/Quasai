@@ -11,8 +11,12 @@ struct Device {
           // ignored.
 
   // Factory method for creating a CPU device
-  Device cpu() {
+  static Device cpu() {
     return Device{CPU, 0};
+  }
+
+  static Device gpu(int gpu_id) {
+    return Device{GPU_CUDA, gpu_id};
   }
 };
 
