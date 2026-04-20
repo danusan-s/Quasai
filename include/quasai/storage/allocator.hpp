@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstddef>
 #include <cstdlib>
 
@@ -10,7 +12,7 @@ public:
 
   Allocator(const Allocator &) = delete;
   Allocator &operator=(const Allocator &) = delete;
-  ~Allocator() = default;
+  virtual ~Allocator() = default;
 
 protected:
   Allocator() = default;
@@ -18,25 +20,13 @@ protected:
 
 class CpuAllocator : public Allocator {
 public:
-  void *allocate(std::size_t size) override {
-    if (size == 0) {
-      size = 1; // malloc(0) behavior is implementation-defined, so we allocate
-                // at least 1 byte
-    }
-    return std::malloc(size);
-  }
-  void deallocate(void *ptr) override {
-    std::free(ptr);
-  }
+  void *allocate(std::size_t size) override;
+  void deallocate(void *ptr) override;
 
-  static CpuAllocator &instance() {
-    static CpuAllocator allocator;
-    return allocator;
-  }
+  static CpuAllocator &instance();
 };
 
 class GpuAllocator : public Allocator {
-  // TODO: Implement GPU memory allocation and deallocation
 };
 
 } // namespace quasai
