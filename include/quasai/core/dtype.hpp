@@ -1,0 +1,93 @@
+#include <cstddef>
+#include <cstdint>
+#include <stdexcept>
+
+namespace quasai {
+
+typedef enum {
+  FLOAT32,
+  FLOAT64,
+  INT32,
+  INT64,
+  BOOL,
+} DType;
+
+template <typename T> struct DTypeTraits;
+
+template <> struct DTypeTraits<float> {
+  static constexpr DType dtype = DType::FLOAT32;
+  static constexpr std::size_t size = sizeof(float);
+  static constexpr bool is_float = true;
+  static constexpr bool is_integer = false;
+  static constexpr bool is_signed = false;
+  static constexpr const char *name = "float32";
+};
+
+template <> struct DTypeTraits<double> {
+  static constexpr DType dtype = DType::FLOAT64;
+  static constexpr std::size_t size = sizeof(double);
+  static constexpr bool is_float = true;
+  static constexpr bool is_integer = false;
+  static constexpr bool is_signed = false;
+  static constexpr const char *name = "float64";
+};
+
+template <> struct DTypeTraits<int32_t> {
+  static constexpr DType dtype = DType::INT32;
+  static constexpr std::size_t size = sizeof(int32_t);
+  static constexpr bool is_float = false;
+  static constexpr bool is_integer = true;
+  static constexpr bool is_signed = true;
+  static constexpr const char *name = "int32";
+};
+
+template <> struct DTypeTraits<int64_t> {
+  static constexpr DType dtype = DType::INT64;
+  static constexpr std::size_t size = sizeof(int64_t);
+  static constexpr bool is_float = false;
+  static constexpr bool is_integer = true;
+  static constexpr bool is_signed = true;
+  static constexpr const char *name = "int64";
+};
+
+template <> struct DTypeTraits<bool> {
+  static constexpr DType dtype = DType::BOOL;
+  static constexpr std::size_t size = sizeof(bool);
+  static constexpr bool is_float = false;
+  static constexpr bool is_integer = false;
+  static constexpr bool is_signed = false;
+  static constexpr const char *name = "bool";
+};
+
+inline std::size_t dtype_size(DType dtype) {
+  switch (dtype) {
+    case DType::FLOAT32:
+      return DTypeTraits<float>::size;
+    case DType::FLOAT64:
+      return DTypeTraits<double>::size;
+    case DType::INT32:
+      return DTypeTraits<int32_t>::size;
+    case DType::INT64:
+      return DTypeTraits<int64_t>::size;
+    case DType::BOOL:
+      return DTypeTraits<bool>::size;
+    default:
+      throw std::runtime_error("Unsupported data type");
+  }
+}
+
+inline bool is_floating(DType dtype) {
+  switch (dtype) {
+    case DType::FLOAT32:
+    case DType::FLOAT64:
+      return true;
+    case DType::INT32:
+    case DType::INT64:
+    case DType::BOOL:
+      return false;
+    default:
+      throw std::runtime_error("Unsupported data type");
+  }
+}
+
+} // namespace quasai
