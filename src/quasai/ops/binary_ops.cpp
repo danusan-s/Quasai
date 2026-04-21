@@ -23,7 +23,7 @@ Tensor add(const Tensor &a, const Tensor &b) {
     data_result[i] = data_a[i] + data_b[i];
   }
 
-  return a;
+  return result;
 }
 
 Tensor sub(const Tensor &a, const Tensor &b) {
@@ -47,7 +47,7 @@ Tensor sub(const Tensor &a, const Tensor &b) {
     data_result[i] = data_a[i] - data_b[i];
   }
 
-  return a;
+  return result;
 }
 
 Tensor mul(const Tensor &a, const Tensor &b) {
@@ -71,7 +71,7 @@ Tensor mul(const Tensor &a, const Tensor &b) {
     data_result[i] = data_a[i] * data_b[i];
   }
 
-  return a;
+  return result;
 }
 
 Tensor div(const Tensor &a, const Tensor &b) {
@@ -98,7 +98,7 @@ Tensor div(const Tensor &a, const Tensor &b) {
     data_result[i] = data_a[i] / data_b[i];
   }
 
-  return a;
+  return result;
 }
 
 } // namespace quasai

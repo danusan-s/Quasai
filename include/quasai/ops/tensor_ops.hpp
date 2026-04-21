@@ -2,6 +2,7 @@
 
 #include "quasai/core/tensor.hpp"
 namespace quasai {
+
 Tensor add(const Tensor &a, const Tensor &b);
 Tensor sub(const Tensor &a, const Tensor &b);
 Tensor mul(const Tensor &a, const Tensor &b);
