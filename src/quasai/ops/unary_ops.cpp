@@ -8,9 +8,9 @@ Tensor neg(const Tensor &a) {
   Tensor result = Tensor::empty(impl_a.shape, impl_a.dtype, impl_a.device);
 
   const size_t num_elements = total_size(impl_a.shape);
-  float *data_a = static_cast<float *>(impl_a.buffer->raw_data());
+  const float *data_a = a.data<float>();
   const TensorImpl impl_result = result.get_impl();
-  float *data_result = static_cast<float *>(impl_result.buffer->raw_data());
+  float *data_result = result.data<float>();
 
   for (size_t i = 0; i < num_elements; ++i) {
     data_result[i] = -data_a[i];
@@ -24,9 +24,9 @@ Tensor relu(const Tensor &a) {
   Tensor result = Tensor::empty(impl_a.shape, impl_a.dtype, impl_a.device);
 
   const size_t num_elements = total_size(impl_a.shape);
-  float *data_a = static_cast<float *>(impl_a.buffer->raw_data());
+  const float *data_a = a.data<float>();
   const TensorImpl impl_result = result.get_impl();
-  float *data_result = static_cast<float *>(impl_result.buffer->raw_data());
+  float *data_result = result.data<float>();
 
   for (size_t i = 0; i < num_elements; ++i) {
     data_result[i] = std::max(0.0f, data_a[i]);
@@ -40,9 +40,9 @@ Tensor sigmoid(const Tensor &a) {
   Tensor result = Tensor::empty(impl_a.shape, impl_a.dtype, impl_a.device);
 
   const size_t num_elements = total_size(impl_a.shape);
-  float *data_a = static_cast<float *>(impl_a.buffer->raw_data());
+  const float *data_a = a.data<float>();
   const TensorImpl impl_result = result.get_impl();
-  float *data_result = static_cast<float *>(impl_result.buffer->raw_data());
+  float *data_result = result.data<float>();
 
   for (size_t i = 0; i < num_elements; ++i) {
     data_result[i] = 1.0f / (1.0f + std::exp(-data_a[i]));
@@ -56,9 +56,9 @@ Tensor tanh(const Tensor &a) {
   Tensor result = Tensor::empty(impl_a.shape, impl_a.dtype, impl_a.device);
 
   const size_t num_elements = total_size(impl_a.shape);
-  float *data_a = static_cast<float *>(impl_a.buffer->raw_data());
+  const float *data_a = a.data<float>();
   const TensorImpl impl_result = result.get_impl();
-  float *data_result = static_cast<float *>(impl_result.buffer->raw_data());
+  float *data_result = result.data<float>();
 
   for (size_t i = 0; i < num_elements; ++i) {
     data_result[i] = std::tanh(data_a[i]);

@@ -16,5 +16,6 @@ Tensor sigmoid(const Tensor &a);
 Tensor tanh(const Tensor &a);
 
 Tensor sum(const Tensor &a);
+Tensor mean(const Tensor &a);
 
 } // namespace quasai

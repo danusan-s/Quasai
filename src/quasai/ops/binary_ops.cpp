@@ -13,10 +13,10 @@ Tensor add(const Tensor &a, const Tensor &b) {
 
   const size_t num_elements = total_size(impl_a.shape);
 
-  float *data_a = static_cast<float *>(impl_a.buffer->raw_data());
-  float *data_b = static_cast<float *>(impl_b.buffer->raw_data());
+  const float *data_a = a.data<float>();
+  const float *data_b = b.data<float>();
   const TensorImpl impl_result = result.get_impl();
-  float *data_result = static_cast<float *>(impl_result.buffer->raw_data());
+  float *data_result = result.data<float>();
 
   // Naive implementation assuming float on cpu
   for (size_t i = 0; i < num_elements; ++i) {
@@ -37,10 +37,10 @@ Tensor sub(const Tensor &a, const Tensor &b) {
 
   const size_t num_elements = total_size(impl_a.shape);
 
-  float *data_a = static_cast<float *>(impl_a.buffer->raw_data());
-  float *data_b = static_cast<float *>(impl_b.buffer->raw_data());
+  const float *data_a = a.data<float>();
+  const float *data_b = b.data<float>();
   const TensorImpl impl_result = result.get_impl();
-  float *data_result = static_cast<float *>(impl_result.buffer->raw_data());
+  float *data_result = result.data<float>();
 
   // Naive implementation assuming float on cpu
   for (size_t i = 0; i < num_elements; ++i) {
@@ -61,10 +61,10 @@ Tensor mul(const Tensor &a, const Tensor &b) {
 
   const size_t num_elements = total_size(impl_a.shape);
 
-  float *data_a = static_cast<float *>(impl_a.buffer->raw_data());
-  float *data_b = static_cast<float *>(impl_b.buffer->raw_data());
+  const float *data_a = a.data<float>();
+  const float *data_b = b.data<float>();
   const TensorImpl impl_result = result.get_impl();
-  float *data_result = static_cast<float *>(impl_result.buffer->raw_data());
+  float *data_result = result.data<float>();
 
   // Naive implementation assuming float on cpu
   for (size_t i = 0; i < num_elements; ++i) {
@@ -85,10 +85,10 @@ Tensor div(const Tensor &a, const Tensor &b) {
 
   const size_t num_elements = total_size(impl_a.shape);
 
-  float *data_a = static_cast<float *>(impl_a.buffer->raw_data());
-  float *data_b = static_cast<float *>(impl_b.buffer->raw_data());
+  const float *data_a = a.data<float>();
+  const float *data_b = b.data<float>();
   const TensorImpl impl_result = result.get_impl();
-  float *data_result = static_cast<float *>(impl_result.buffer->raw_data());
+  float *data_result = result.data<float>();
 
   // Naive implementation assuming float on cpu
   for (size_t i = 0; i < num_elements; ++i) {

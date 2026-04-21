@@ -39,6 +39,29 @@ public:
 
   void reshape(const Shape &new_shape);
 
+  template <typename T> void check_valid_dtype() const {
+    if (impl_.dtype != DTypeTraits<T>::dtype) {
+      throw std::runtime_error(
+          "Requested data type does not match tensor dtype");
+    }
+  }
+
+  template <typename T> T *data() {
+    check_valid_dtype<T>();
+    return static_cast<T *>(impl_.buffer->raw_data());
+  }
+
+  template <typename T> const T *data() const {
+    check_valid_dtype<T>();
+    return static_cast<const T *>(impl_.buffer->raw_data());
+  }
+
+  template <typename T> T at(size_t index) const {
+    check_valid_dtype<T>();
+    const T *data_ptr = static_cast<const T *>(impl_.buffer->raw_data());
+    return data_ptr[index];
+  }
+
 private:
   Tensor(std::shared_ptr<Buffer> buffer, const Shape &shape,
          const Strides &strides, size_t offset, DType dtype, Device device);

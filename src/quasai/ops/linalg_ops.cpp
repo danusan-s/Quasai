@@ -20,10 +20,10 @@ Tensor matmul(const Tensor &a, const Tensor &b) {
   const size_t K = impl_a.shape[1];
   const size_t N = impl_b.shape[1];
 
-  float *data_a = static_cast<float *>(impl_a.buffer->raw_data());
-  float *data_b = static_cast<float *>(impl_b.buffer->raw_data());
+  const float *data_a = a.data<float>();
+  const float *data_b = b.data<float>();
   const TensorImpl impl_result = result.get_impl();
-  float *data_result = static_cast<float *>(impl_result.buffer->raw_data());
+  float *data_result = result.data<float>();
 
   // Naive matrix multiplication
   for (size_t i = 0; i < M; ++i) {
