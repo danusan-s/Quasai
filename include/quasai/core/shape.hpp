@@ -60,6 +60,22 @@ public:
     return sizes_[index];
   }
 
+  bool operator==(const Shape &other) const {
+    if (dimensions_ != other.dimensions_) {
+      return false;
+    }
+    for (std::size_t i = 0; i < dimensions_; ++i) {
+      if (sizes_[i] != other.sizes_[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool operator!=(const Shape &other) const {
+    return !(*this == other);
+  }
+
 private:
   std::size_t dimensions_;
   std::size_t sizes_[MAX_DIMENSIONS];

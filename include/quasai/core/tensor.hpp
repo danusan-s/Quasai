@@ -9,8 +9,8 @@
 
 namespace quasai {
 
-struct TensorView {
-  void *data;
+struct TensorImpl {
+  std::shared_ptr<Buffer> buffer;
 
   Shape shape;
   Strides strides;
@@ -31,9 +31,11 @@ public:
   static Tensor from_data(const void *data, const Shape &shape, DType dtype,
                           Device device = Device::cpu());
 
+  static Tensor from_impl(const TensorImpl &impl);
+
   static Allocator *allocator_for_device(const Device &device);
 
-  TensorView view() const;
+  TensorImpl get_impl() const;
 
   void reshape(const Shape &new_shape);
 
@@ -41,12 +43,7 @@ private:
   Tensor(std::shared_ptr<Buffer> buffer, const Shape &shape,
          const Strides &strides, size_t offset, DType dtype, Device device);
 
-  std::shared_ptr<Buffer> buffer_;
-  Shape shape_;
-  Strides strides_;
-  size_t offset_;
-  DType dtype_;
-  Device device_;
+  TensorImpl impl_;
 };
 
 } // namespace quasai

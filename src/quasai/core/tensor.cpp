@@ -38,23 +38,28 @@ Tensor Tensor::from_data(const void *data, const Shape &shape, DType dtype,
                 get_strides(shape), 0, dtype, device);
 }
 
-TensorView Tensor::view() const {
-  return TensorView{buffer_->raw_data(), shape_, strides_, offset_, dtype_,
-                    device_};
+// Same underlying buffer used by new tensor to create cheap copies
+Tensor Tensor::from_impl(const TensorImpl &impl) {
+  return Tensor(impl.buffer, impl.shape, impl.strides, impl.offset, impl.dtype,
+                impl.device);
+}
+
+TensorImpl Tensor::get_impl() const {
+  return impl_;
 }
 
 void Tensor::reshape(const Shape &new_shape) {
-  if (total_size(new_shape) != total_size(shape_)) {
-    throw std::runtime_error(
-        "Total size must remain the same when reshaping");
+  if (total_size(new_shape) != total_size(impl_.shape)) {
+    throw std::runtime_error("Total size must remain the same when reshaping");
   }
-  shape_ = new_shape;
-  strides_ = get_strides(new_shape);
+  impl_.shape = new_shape;
+  impl_.strides = get_strides(new_shape);
 }
 
 Tensor::Tensor(std::shared_ptr<Buffer> buffer, const Shape &shape,
-               const Strides &strides, size_t offset, DType dtype, Device device)
-    : buffer_(std::move(buffer)), shape_(shape), strides_(strides),
-      offset_(offset), dtype_(dtype), device_(device) {}
+               const Strides &strides, size_t offset, DType dtype,
+               Device device)
+    : impl_{std::move(buffer), shape, strides, offset, dtype, device} {
+}
 
 } // namespace quasai
