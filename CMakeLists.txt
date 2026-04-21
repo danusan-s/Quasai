@@ -4,11 +4,13 @@ project(Quasai LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+file(GLOB_RECURSE SRC_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
+
 # Library
 add_library(quasai STATIC
-    src/quasai/storage/allocator.cpp
-    src/quasai/storage/buffer.cpp
-    src/quasai/core/tensor.cpp
+  ${SRC_FILES}
 )
 
 target_include_directories(quasai PUBLIC
