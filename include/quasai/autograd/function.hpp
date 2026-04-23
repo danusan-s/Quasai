@@ -1,5 +1,5 @@
-
 #pragma once
+
 #include "quasai/core/tensor.hpp"
 #include <vector>
 
@@ -36,6 +36,11 @@ public:
 };
 
 class NegFunction : public Function {
+public:
+  std::vector<Tensor> backward(const Tensor &grad_output) override;
+};
+
+class SumFunction : public Function {
 public:
   std::vector<Tensor> backward(const Tensor &grad_output) override;
 };
