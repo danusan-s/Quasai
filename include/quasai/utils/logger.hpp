@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#define LOG_INFO(message) Logger::log(message, __FILE__, __LINE__)
+#define LOG_INFO(message) Logger::log_info(message, __FILE__, __LINE__)
 #define LOG_ERROR(message) Logger::log_error(message, __FILE__, __LINE__)
 
 class Logger {
