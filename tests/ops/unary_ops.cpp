@@ -10,8 +10,8 @@ TEST(TensorOpsTest, Negate) {
 
   quasai::Tensor result = quasai::neg(tensor);
 
-  const auto impl = result.get_impl();
-  const auto ref_impl = tensor.get_impl();
+  const auto impl = result.get_impl_copy();
+  const auto ref_impl = tensor.get_impl_copy();
 
   EXPECT_EQ(impl.shape, ref_impl.shape);
   EXPECT_EQ(impl.dtype, ref_impl.dtype);
@@ -33,8 +33,8 @@ TEST(TensorOpsTest, ReLU) {
 
   quasai::Tensor result = quasai::relu(tensor);
 
-  const auto impl = result.get_impl();
-  const auto ref_impl = tensor.get_impl();
+  const auto impl = result.get_impl_copy();
+  const auto ref_impl = tensor.get_impl_copy();
 
   EXPECT_EQ(impl.shape, ref_impl.shape);
   EXPECT_EQ(impl.dtype, ref_impl.dtype);
@@ -56,8 +56,8 @@ TEST(TensorOpsTest, Sigmoid) {
 
   quasai::Tensor result = quasai::sigmoid(tensor);
 
-  const auto impl = result.get_impl();
-  const auto ref_impl = tensor.get_impl();
+  const auto impl = result.get_impl_copy();
+  const auto ref_impl = tensor.get_impl_copy();
 
   EXPECT_EQ(impl.shape, ref_impl.shape);
   EXPECT_EQ(impl.dtype, ref_impl.dtype);
@@ -79,8 +79,8 @@ TEST(TensorOpsTest, Tanh) {
 
   quasai::Tensor result = quasai::tanh(tensor);
 
-  const auto impl = result.get_impl();
-  const auto ref_impl = tensor.get_impl();
+  const auto impl = result.get_impl_copy();
+  const auto ref_impl = tensor.get_impl_copy();
 
   EXPECT_EQ(impl.shape, ref_impl.shape);
   EXPECT_EQ(impl.dtype, ref_impl.dtype);

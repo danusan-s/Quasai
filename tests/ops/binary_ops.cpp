@@ -12,8 +12,8 @@ TEST(TensorOpsTest, Add) {
 
   quasai::Tensor result = quasai::add(tensor_a, tensor_b);
 
-  const auto impl = result.get_impl();
-  const auto ref_impl = tensor_a.get_impl();
+  const auto impl = result.get_impl_copy();
+  const auto ref_impl = tensor_a.get_impl_copy();
 
   EXPECT_EQ(impl.shape, ref_impl.shape);
   EXPECT_EQ(impl.dtype, ref_impl.dtype);
@@ -47,8 +47,8 @@ TEST(TensorOpsTest, Subtract) {
 
   quasai::Tensor result = quasai::sub(tensor_a, tensor_b);
 
-  const auto impl = result.get_impl();
-  const auto ref_impl = tensor_a.get_impl();
+  const auto impl = result.get_impl_copy();
+  const auto ref_impl = tensor_a.get_impl_copy();
 
   EXPECT_EQ(impl.shape, ref_impl.shape);
   EXPECT_EQ(impl.dtype, ref_impl.dtype);
@@ -82,8 +82,8 @@ TEST(TensorOpsTest, Multiply) {
 
   quasai::Tensor result = quasai::mul(tensor_a, tensor_b);
 
-  const auto impl = result.get_impl();
-  const auto ref_impl = tensor_a.get_impl();
+  const auto impl = result.get_impl_copy();
+  const auto ref_impl = tensor_a.get_impl_copy();
 
   EXPECT_EQ(impl.shape, ref_impl.shape);
   EXPECT_EQ(impl.dtype, ref_impl.dtype);
@@ -117,8 +117,8 @@ TEST(TensorOpsTest, Divide) {
 
   quasai::Tensor result = quasai::div(tensor_a, tensor_b);
 
-  const auto impl = result.get_impl();
-  const auto ref_impl = tensor_a.get_impl();
+  const auto impl = result.get_impl_copy();
+  const auto ref_impl = tensor_a.get_impl_copy();
 
   EXPECT_EQ(impl.shape, ref_impl.shape);
   EXPECT_EQ(impl.dtype, ref_impl.dtype);

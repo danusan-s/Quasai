@@ -9,7 +9,7 @@ TEST(TensorOpsTest, Sum) {
 
   quasai::Tensor result = quasai::sum(tensor);
 
-  const auto impl = result.get_impl();
+  const auto impl = result.get_impl_copy();
   EXPECT_EQ(impl.shape.dimensions(), 0); // Scalar result
   EXPECT_EQ(impl.dtype, quasai::DType::FLOAT32);
   EXPECT_EQ(impl.device.type, quasai::CPU);
@@ -26,7 +26,7 @@ TEST(TensorOpsTest, Mean) {
 
   quasai::Tensor result = quasai::mean(tensor);
 
-  const auto impl = result.get_impl();
+  const auto impl = result.get_impl_copy();
   EXPECT_EQ(impl.shape.dimensions(), 0); // Scalar result
   EXPECT_EQ(impl.dtype, quasai::DType::FLOAT32);
   EXPECT_EQ(impl.device.type, quasai::CPU);

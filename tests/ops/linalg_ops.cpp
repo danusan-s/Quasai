@@ -13,8 +13,8 @@ TEST(TensorOpsTest, MatrixMultiplication) {
 
   quasai::Tensor result = quasai::matmul(tensor_a, tensor_b);
 
-  const auto impl = result.get_impl();
-  const auto ref_impl = tensor_a.get_impl();
+  const auto impl = result.get_impl_copy();
+  const auto ref_impl = tensor_a.get_impl_copy();
 
   EXPECT_EQ(impl.shape[0], 2);
   EXPECT_EQ(impl.shape[1], 2);
@@ -43,8 +43,8 @@ TEST(TensorOpsTest, Transpose) {
 
   quasai::Tensor result = quasai::transpose(tensor);
 
-  const auto impl = result.get_impl();
-  const auto ref_impl = tensor.get_impl();
+  const auto impl = result.get_impl_copy();
+  const auto ref_impl = tensor.get_impl_copy();
 
   EXPECT_EQ(impl.shape[0], ref_impl.shape[1]);
   EXPECT_EQ(impl.shape[1], ref_impl.shape[0]);

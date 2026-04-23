@@ -6,7 +6,7 @@ TEST(TensorTest, ZerosCPU) {
   quasai::Shape shape{3, 4};
   quasai::Tensor tensor = quasai::Tensor::zeros(shape);
 
-  const auto impl = tensor.get_impl();
+  const auto impl = tensor.get_impl_copy();
   EXPECT_EQ(impl.shape[0], 3);
   EXPECT_EQ(impl.shape[1], 4);
   EXPECT_EQ(impl.dtype, quasai::DType::FLOAT32);
@@ -22,7 +22,7 @@ TEST(TensorTest, ZerosDifferentDType) {
   quasai::Shape shape{2, 3};
   quasai::Tensor tensor = quasai::Tensor::zeros(shape, quasai::DType::FLOAT64);
 
-  const auto impl = tensor.get_impl();
+  const auto impl = tensor.get_impl_copy();
   EXPECT_EQ(impl.dtype, quasai::DType::FLOAT64);
   EXPECT_EQ(impl.shape[0], 2);
   EXPECT_EQ(impl.shape[1], 3);
@@ -37,7 +37,7 @@ TEST(TensorTest, EmptyCPU) {
   quasai::Shape shape{2, 2};
   quasai::Tensor tensor = quasai::Tensor::empty(shape);
 
-  const auto impl = tensor.get_impl();
+  const auto impl = tensor.get_impl_copy();
   EXPECT_EQ(impl.shape[0], 2);
   EXPECT_EQ(impl.shape[1], 2);
   EXPECT_NE(impl.buffer->raw_data(), nullptr);
@@ -49,7 +49,7 @@ TEST(TensorTest, FromData) {
   quasai::Tensor tensor =
       quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
 
-  const auto impl = tensor.get_impl();
+  const auto impl = tensor.get_impl_copy();
   EXPECT_EQ(impl.shape[0], 2);
   EXPECT_EQ(impl.shape[1], 3);
 
@@ -67,7 +67,7 @@ TEST(TensorTest, Reshape) {
 
   tensor.reshape(quasai::Shape{3, 2});
 
-  const auto impl = tensor.get_impl();
+  const auto impl = tensor.get_impl_copy();
   EXPECT_EQ(impl.shape[0], 3);
   EXPECT_EQ(impl.shape[1], 2);
 
@@ -92,7 +92,7 @@ TEST(TensorTest, TensorView) {
   quasai::Tensor tensor =
       quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
 
-  const auto impl = tensor.get_impl();
+  const auto impl = tensor.get_impl_copy();
 
   EXPECT_EQ(impl.shape[0], 2);
   EXPECT_EQ(impl.shape[1], 2);
@@ -107,7 +107,7 @@ TEST(TensorTest, OneDimensional) {
   quasai::Tensor tensor =
       quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
 
-  const auto impl = tensor.get_impl();
+  const auto impl = tensor.get_impl_copy();
   EXPECT_EQ(impl.shape[0], 5);
   EXPECT_EQ(impl.shape.dimensions(), 1);
 
@@ -123,7 +123,7 @@ TEST(TensorTest, ThreeDimensional) {
   quasai::Tensor tensor =
       quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
 
-  const auto impl = tensor.get_impl();
+  const auto impl = tensor.get_impl_copy();
   EXPECT_EQ(impl.shape[0], 2);
   EXPECT_EQ(impl.shape[1], 3);
   EXPECT_EQ(impl.shape[2], 4);
@@ -139,7 +139,7 @@ TEST(TensorTest, Strides) {
   quasai::Shape shape{2, 3};
   quasai::Tensor tensor = quasai::Tensor::zeros(shape);
 
-  const auto impl = tensor.get_impl();
+  const auto impl = tensor.get_impl_copy();
   quasai::Strides strides = impl.strides;
   EXPECT_EQ(strides[0], 3);
   EXPECT_EQ(strides[1], 1);
@@ -151,7 +151,7 @@ TEST(TensorTest, ScalarTensor) {
   quasai::Tensor tensor =
       quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
 
-  const auto impl = tensor.get_impl();
+  const auto impl = tensor.get_impl_copy();
   EXPECT_EQ(impl.shape.dimensions(), 0);
   EXPECT_FLOAT_EQ(*static_cast<float *>(impl.buffer->raw_data()), 42.0f);
 }

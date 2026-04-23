@@ -3,13 +3,11 @@
 namespace quasai {
 
 Tensor sum(const Tensor &a) {
-  const TensorImpl impl_a = a.get_impl();
   // Scalar result so empty shape
-  Tensor result = Tensor::empty(Shape{}, impl_a.dtype, impl_a.device);
+  Tensor result = Tensor::empty(Shape{}, a.dtype(), a.device());
 
-  const size_t num_elements = total_size(impl_a.shape);
+  const size_t num_elements = total_size(a.shape());
   const float *data_a = a.data<float>();
-  const TensorImpl impl_result = result.get_impl();
   float *data_result = result.data<float>();
 
   float sum = 0.0f;
@@ -22,13 +20,11 @@ Tensor sum(const Tensor &a) {
 }
 
 Tensor mean(const Tensor &a) {
-  const TensorImpl impl_a = a.get_impl();
   // Scalar result so empty shape
-  Tensor result = Tensor::empty(Shape{}, impl_a.dtype, impl_a.device);
+  Tensor result = Tensor::empty(Shape{}, a.dtype(), a.device());
 
-  const size_t num_elements = total_size(impl_a.shape);
+  const size_t num_elements = total_size(a.shape());
   const float *data_a = a.data<float>();
-  const TensorImpl impl_result = result.get_impl();
   float *data_result = result.data<float>();
 
   float sum = 0.0f;

@@ -9,6 +9,9 @@
 
 namespace quasai {
 
+class Function;
+class AutoGradMeta;
+
 struct TensorImpl {
   std::shared_ptr<Buffer> buffer;
 
@@ -18,12 +21,17 @@ struct TensorImpl {
   size_t offset;
   DType dtype;
   Device device;
+
+  std::shared_ptr<AutoGradMeta> autograd_meta;
 };
 
 class Tensor {
 public:
   static Tensor zeros(const Shape &shape, DType dtype = DType::FLOAT32,
                       Device device = Device::cpu());
+
+  static Tensor ones(const Shape &shape, DType dtype = DType::FLOAT32,
+                     Device device = Device::cpu());
 
   static Tensor empty(const Shape &shape, DType dtype = DType::FLOAT32,
                       Device device = Device::cpu());
@@ -34,8 +42,6 @@ public:
   static Tensor from_impl(const TensorImpl &impl);
 
   static Allocator *allocator_for_device(const Device &device);
-
-  TensorImpl get_impl() const;
 
   void reshape(const Shape &new_shape);
 
@@ -61,6 +67,17 @@ public:
     const T *data_ptr = static_cast<const T *>(impl_.buffer->raw_data());
     return data_ptr[index];
   }
+
+  std::shared_ptr<Buffer> buffer() const;
+  const Shape &shape() const;
+  const Strides &strides() const;
+  DType dtype() const;
+  const Device &device() const;
+  std::shared_ptr<AutoGradMeta> autograd_meta() const;
+
+  TensorImpl get_impl_copy() const;
+
+  Tensor();
 
 private:
   Tensor(std::shared_ptr<Buffer> buffer, const Shape &shape,

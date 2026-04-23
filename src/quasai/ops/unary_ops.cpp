@@ -1,70 +1,65 @@
+#include "quasai/autograd/function.hpp"
+#include "quasai/autograd/metadata.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 #include <cmath>
 
 namespace quasai {
 
-Tensor neg(const Tensor &a) {
-  const TensorImpl impl_a = a.get_impl();
-  Tensor result = Tensor::empty(impl_a.shape, impl_a.dtype, impl_a.device);
+Tensor unary_operation(const Tensor &a,
+                       std::function<Function *()> grad_fn_constructor,
+                       std::function<float(float)> op) {
+  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
 
-  const size_t num_elements = total_size(impl_a.shape);
+  std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
+
+  if (meta_a && meta_a->requires_grad) {
+    Function *grad_fn = grad_fn_constructor();
+    if (!grad_fn) {
+      throw std::runtime_error("Gradient function constructor returned nullptr "
+                               "or not implemented for this operation");
+    }
+    grad_fn->inputs = {a};
+    meta_a->grad_fn = std::unique_ptr<Function>(grad_fn);
+  }
+
+  const size_t num_elements = total_size(a.shape());
   const float *data_a = a.data<float>();
-  const TensorImpl impl_result = result.get_impl();
   float *data_result = result.data<float>();
 
   for (size_t i = 0; i < num_elements; ++i) {
-    data_result[i] = -data_a[i];
+    data_result[i] = op(data_a[i]);
   }
 
   return result;
+}
+
+Tensor neg(const Tensor &a) {
+  return unary_operation(
+      a, []() { return new NegFunction(); }, [](float x) { return -x; });
 }
 
 Tensor relu(const Tensor &a) {
-  const TensorImpl impl_a = a.get_impl();
-  Tensor result = Tensor::empty(impl_a.shape, impl_a.dtype, impl_a.device);
+  return unary_operation(
+      a, []() { return new ReluFunction(); },
+      [](float x) { return x > 0.0f ? x : 0.0f; });
+}
 
-  const size_t num_elements = total_size(impl_a.shape);
-  const float *data_a = a.data<float>();
-  const TensorImpl impl_result = result.get_impl();
-  float *data_result = result.data<float>();
-
-  for (size_t i = 0; i < num_elements; ++i) {
-    data_result[i] = std::max(0.0f, data_a[i]);
-  }
-
-  return result;
+Tensor step(const Tensor &a) {
+  return unary_operation(
+      a, []() { return nullptr; },
+      [](float x) { return x > 0.0f ? 1.0f : 0.0f; });
 }
 
 Tensor sigmoid(const Tensor &a) {
-  const TensorImpl impl_a = a.get_impl();
-  Tensor result = Tensor::empty(impl_a.shape, impl_a.dtype, impl_a.device);
-
-  const size_t num_elements = total_size(impl_a.shape);
-  const float *data_a = a.data<float>();
-  const TensorImpl impl_result = result.get_impl();
-  float *data_result = result.data<float>();
-
-  for (size_t i = 0; i < num_elements; ++i) {
-    data_result[i] = 1.0f / (1.0f + std::exp(-data_a[i]));
-  }
-
-  return result;
+  return unary_operation(
+      a, []() { return new SigmoidFunction(); },
+      [](float x) { return 1.0f / (1.0f + std::exp(-x)); });
 }
 
 Tensor tanh(const Tensor &a) {
-  const TensorImpl impl_a = a.get_impl();
-  Tensor result = Tensor::empty(impl_a.shape, impl_a.dtype, impl_a.device);
-
-  const size_t num_elements = total_size(impl_a.shape);
-  const float *data_a = a.data<float>();
-  const TensorImpl impl_result = result.get_impl();
-  float *data_result = result.data<float>();
-
-  for (size_t i = 0; i < num_elements; ++i) {
-    data_result[i] = std::tanh(data_a[i]);
-  }
-
-  return result;
+  return unary_operation(
+      a, []() { return new TanhFunction(); },
+      [](float x) { return std::tanh(x); });
 }
 
 } // namespace quasai

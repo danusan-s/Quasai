@@ -3,26 +3,22 @@
 namespace quasai {
 
 Tensor matmul(const Tensor &a, const Tensor &b) {
-  const TensorImpl impl_a = a.get_impl();
-  const TensorImpl impl_b = b.get_impl();
-
-  if (impl_a.shape.dimensions() != 2 || impl_b.shape.dimensions() != 2) {
+  if (a.shape().dimensions() != 2 || b.shape().dimensions() != 2) {
     throw std::runtime_error("matmul requires 2D tensors");
   }
-  if (impl_a.shape[1] != impl_b.shape[0]) {
+  if (a.shape()[1] != b.shape()[0]) {
     throw std::runtime_error("Inner dimensions must match for matmul");
   }
 
-  Shape result_shape{impl_a.shape[0], impl_b.shape[1]};
-  Tensor result = Tensor::empty(result_shape, impl_a.dtype, impl_a.device);
+  const size_t M = a.shape()[0];
+  const size_t K = a.shape()[1];
+  const size_t N = b.shape()[1];
 
-  const size_t M = impl_a.shape[0];
-  const size_t K = impl_a.shape[1];
-  const size_t N = impl_b.shape[1];
+  Shape result_shape{M, N};
+  Tensor result = Tensor::empty(result_shape, a.dtype(), a.device());
 
   const float *data_a = a.data<float>();
   const float *data_b = b.data<float>();
-  const TensorImpl impl_result = result.get_impl();
   float *data_result = result.data<float>();
 
   // Naive matrix multiplication
@@ -42,16 +38,16 @@ Tensor matmul(const Tensor &a, const Tensor &b) {
 // No new buffer allocation
 // just create a new view with swapped shape and strides
 Tensor transpose(const Tensor &a) {
-  TensorImpl impl_a = a.get_impl();
-
-  if (impl_a.shape.dimensions() != 2) {
+  if (a.shape().dimensions() != 2) {
     throw std::runtime_error("transpose requires a 2D tensor");
   }
 
-  impl_a.shape = Shape{impl_a.shape[1], impl_a.shape[0]};
-  impl_a.strides = Strides{impl_a.strides[1], impl_a.strides[0]};
+  TensorImpl impl_a_copy = a.get_impl_copy();
 
-  return Tensor::from_impl(impl_a);
+  impl_a_copy.shape = Shape{a.shape()[1], a.shape()[0]};
+  impl_a_copy.strides = Strides{a.strides()[1], a.strides()[0]};
+
+  return Tensor::from_impl(impl_a_copy);
 }
 
 } // namespace quasai
