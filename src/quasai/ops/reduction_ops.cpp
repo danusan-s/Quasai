@@ -7,19 +7,27 @@ Tensor sum(const Tensor &a) {
   // Scalar result so empty shape
   Tensor result = Tensor::empty(Shape{}, a.dtype(), a.device());
 
-  const size_t num_elements = total_size(a.shape());
-  const float *data_a = a.data<float>();
-  float *data_result = result.data<float>();
-
-  float sum = 0.0f;
-  for (size_t i = 0; i < num_elements; ++i) {
-    sum += data_a[i];
+  switch (a.dtype()) {
+    case DType::FLOAT32:
+      do_sum<float>(a, result);
+      break;
+    case DType::FLOAT64:
+      do_sum<double>(a, result);
+      break;
+    case DType::INT32:
+      do_sum<int32_t>(a, result);
+      break;
+    case DType::INT64:
+      do_sum<int64_t>(a, result);
+      break;
+    default:
+      throw std::runtime_error("Unsupported data type for sum operation");
   }
-  data_result[0] = sum;
 
   return result;
 }
 
+// Reduce tensor a to target shape by summing over the appropriate dimensions
 Tensor sum_to_shape(const Tensor &a, const Shape &target) {
   Shape a_shape = a.shape();
   size_t ndim_a = a_shape.dimensions();
@@ -32,39 +40,92 @@ Tensor sum_to_shape(const Tensor &a, const Shape &target) {
                              target.to_string());
   }
 
-  // pad target shape
-  Index padded(ndim_a, 1);
-  for (size_t i = 0; i < ndim_t; ++i) {
-    padded[ndim_a - ndim_t + i] = target[i];
-  }
-
   Tensor out = Tensor::zeros(target, a.dtype(), a.device());
 
-  auto *a_data = a.data<float>();
-  auto *out_data = out.data<float>();
+  switch (a.dtype()) {
+    case DType::FLOAT32:
+      do_sum_to_shape<float>(a, out);
+      break;
+    case DType::FLOAT64:
+      do_sum_to_shape<double>(a, out);
+      break;
+    case DType::INT32:
+      do_sum_to_shape<int32_t>(a, out);
+      break;
+    case DType::INT64:
+      do_sum_to_shape<int64_t>(a, out);
+      break;
+    default:
+      throw std::runtime_error(
+          "Unsupported data type for sum_to_shape operation");
+  }
 
-  for (size_t i = 0; i < total_size(a_shape); ++i) {
-    Index idx = unravel_index(i, a_shape);
-    Index out_idx = get_broadcast_index(idx, target);
-    out_data[ravel_index(out_idx, target)] += a_data[i];
+  return out;
+}
+
+// Expand tensor a to target shape by broadcasting
+Tensor broadcast_to_shape(const Tensor &a, const Shape &target) {
+  Shape a_shape = a.shape();
+  size_t ndim_a = a_shape.dimensions();
+  size_t ndim_t = target.dimensions();
+
+  if (ndim_a > ndim_t) {
+    throw std::runtime_error("Input shape cannot have more dimensions than "
+                             "target shape, got input" +
+                             a_shape.to_string() + " and target " +
+                             target.to_string());
+  }
+
+  Tensor out = Tensor::empty(target, a.dtype(), a.device());
+
+  switch (a.dtype()) {
+    case DType::FLOAT32:
+      do_broadcast_to_shape<float>(a, out);
+      break;
+    case DType::FLOAT64:
+      do_broadcast_to_shape<double>(a, out);
+      break;
+    case DType::INT32:
+      do_broadcast_to_shape<int32_t>(a, out);
+      break;
+    case DType::INT64:
+      do_broadcast_to_shape<int64_t>(a, out);
+      break;
+    default:
+      throw std::runtime_error(
+          "Unsupported data type for broadcast_to_shape operation");
   }
 
   return out;
 }
 
 Tensor mean(const Tensor &a) {
+  if (!is_floating(a.dtype())) {
+    throw std::runtime_error(
+        "Mean operation requires floating point data type");
+  }
+
   // Scalar result so empty shape
   Tensor result = Tensor::empty(Shape{}, a.dtype(), a.device());
 
-  const size_t num_elements = total_size(a.shape());
-  const float *data_a = a.data<float>();
-  float *data_result = result.data<float>();
-
-  float sum = 0.0f;
-  for (size_t i = 0; i < num_elements; ++i) {
-    sum += data_a[i];
+  switch (a.dtype()) {
+    case DType::FLOAT32:
+      do_sum<float>(a, result);
+      do_unary_op<float>(result, result,
+                         [num_elements = total_size(a.shape())](float x) {
+                           return x / num_elements;
+                         });
+      break;
+    case DType::FLOAT64:
+      do_sum<double>(a, result);
+      do_unary_op<double>(result, result,
+                          [num_elements = total_size(a.shape())](double x) {
+                            return x / num_elements;
+                          });
+      break;
+    default:
+      throw std::runtime_error("Unsupported data type for mean operation");
   }
-  data_result[0] = sum / num_elements;
 
   return result;
 }

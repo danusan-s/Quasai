@@ -2,13 +2,28 @@
 #include "quasai/ops/tensor_ops.hpp"
 #include <cmath>
 
+#define DISPATCH_UNARY_OP(a, result, OP)                                       \
+  switch (a.dtype()) {                                                         \
+    case DType::FLOAT32:                                                       \
+      do_unary_op<float>(a, result, OP);                                       \
+      break;                                                                   \
+    case DType::FLOAT64:                                                       \
+      do_unary_op<double>(a, result, OP);                                      \
+      break;                                                                   \
+    case DType::INT32:                                                         \
+      do_unary_op<int32_t>(a, result, OP);                                     \
+      break;                                                                   \
+    case DType::INT64:                                                         \
+      do_unary_op<int64_t>(a, result, OP);                                     \
+      break;                                                                   \
+    default:                                                                   \
+      throw std::runtime_error("Unsupported data type for unary operation");   \
+  }
+
 namespace quasai {
 
-Tensor unary_operation(const Tensor &a,
-                       std::function<Function *()> grad_fn_constructor,
-                       std::function<float(float)> op) {
-  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
-
+void add_unary_gradient(const Tensor &a, Tensor &result,
+                        std::function<Function *()> grad_fn_constructor) {
   std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
 
   if (meta_a && meta_a->requires_grad) {
@@ -22,45 +37,41 @@ Tensor unary_operation(const Tensor &a,
     result.requires_grad(true);
     result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
   }
-
-  const size_t num_elements = total_size(a.shape());
-  const float *data_a = a.data<float>();
-  float *data_result = result.data<float>();
-
-  for (size_t i = 0; i < num_elements; ++i) {
-    data_result[i] = op(data_a[i]);
-  }
-
-  return result;
 }
 
 Tensor neg(const Tensor &a) {
-  return unary_operation(
-      a, []() { return new NegFunction(); }, [](float x) { return -x; });
+  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, []() { return new NegFunction(); });
+  DISPATCH_UNARY_OP(a, result, [](auto x) { return -x; });
+  return result;
 }
 
 Tensor relu(const Tensor &a) {
-  return unary_operation(
-      a, []() { return new ReluFunction(); },
-      [](float x) { return x > 0.0f ? x : 0.0f; });
+  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, []() { return new ReluFunction(); });
+  DISPATCH_UNARY_OP(a, result, [](auto x) { return x > 0 ? x : 0; });
+  return result;
 }
 
 Tensor step(const Tensor &a) {
-  return unary_operation(
-      a, []() { return nullptr; },
-      [](float x) { return x > 0.0f ? 1.0f : 0.0f; });
+  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
+  DISPATCH_UNARY_OP(a, result, [](auto x) { return x > 0 ? 1 : 0; });
+  return result;
 }
 
 Tensor sigmoid(const Tensor &a) {
-  return unary_operation(
-      a, []() { return new SigmoidFunction(); },
-      [](float x) { return 1.0f / (1.0f + std::exp(-x)); });
+  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, []() { return new SigmoidFunction(); });
+  DISPATCH_UNARY_OP(a, result,
+                    [](auto x) { return 1.0 / (1.0 + std::exp(-x)); });
+  return result;
 }
 
 Tensor tanh(const Tensor &a) {
-  return unary_operation(
-      a, []() { return new TanhFunction(); },
-      [](float x) { return std::tanh(x); });
+  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, []() { return new TanhFunction(); });
+  DISPATCH_UNARY_OP(a, result, [](auto x) { return std::tanh(x); });
+  return result;
 }
 
 } // namespace quasai

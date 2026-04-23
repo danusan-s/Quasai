@@ -2,14 +2,38 @@
 #include "quasai/core/shape.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 
+#define DISPATCH_BINARY_OP(a, b, result, OP)                                   \
+  switch (a.dtype()) {                                                         \
+    case DType::FLOAT32:                                                       \
+      do_binary_op<float>(a, b, result, OP);                                   \
+      break;                                                                   \
+    case DType::FLOAT64:                                                       \
+      do_binary_op<double>(a, b, result, OP);                                  \
+      break;                                                                   \
+    case DType::INT32:                                                         \
+      do_binary_op<int32_t>(a, b, result, OP);                                 \
+      break;                                                                   \
+    case DType::INT64:                                                         \
+      do_binary_op<int64_t>(a, b, result, OP);                                 \
+      break;                                                                   \
+    default:                                                                   \
+      throw std::runtime_error("Unsupported data type for binary operation");  \
+  }
+
 namespace quasai {
 
-Tensor binary_operation(const Tensor &a, const Tensor &b,
-                        std::function<Function *()> grad_fn_constructor,
-                        std::function<float(float, float)> op) {
-  Shape out_shape = broadcast_shape(a.shape(), b.shape());
+static Tensor create_result_tensor(const Tensor &a, const Tensor &b) {
+  if (a.dtype() != b.dtype()) {
+    throw std::runtime_error(
+        "Data types of input tensors must match for binary operations");
+  }
+  Shape result_shape = broadcast_shape(a.shape(), b.shape());
+  DType result_dtype = a.dtype();
+  return Tensor::empty(result_shape, result_dtype, a.device());
+}
 
-  Tensor result = Tensor::empty(out_shape, a.dtype(), a.device());
+void add_binary_gradient(const Tensor &a, const Tensor &b, Tensor &result,
+                         std::function<Function *()> grad_fn_constructor) {
 
   std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
   std::shared_ptr<AutoGradMeta> meta_b = b.autograd_meta();
@@ -24,51 +48,34 @@ Tensor binary_operation(const Tensor &a, const Tensor &b,
     result.requires_grad(true);
     result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
   }
-
-  const size_t num_elements = total_size(out_shape);
-
-  const float *data_a = a.data<float>();
-  const float *data_b = b.data<float>();
-  float *data_result = result.data<float>();
-
-  std::size_t ndim_a = a.shape().dimensions();
-  std::size_t ndim_b = b.shape().dimensions();
-
-  // Naive implementation assuming float on cpu
-  for (size_t i = 0; i < num_elements; ++i) {
-    Index idx = unravel_index(i, out_shape);
-    Index idx_a = get_broadcast_index(idx, a.shape());
-    Index idx_b = get_broadcast_index(idx, b.shape());
-
-    data_result[i] = op(data_a[ravel_index(idx_a, a.shape())],
-                        data_b[ravel_index(idx_b, b.shape())]);
-  }
-
-  return result;
 }
 
 Tensor add(const Tensor &a, const Tensor &b) {
-  return binary_operation(
-      a, b, []() { return new AddFunction(); },
-      [](float x, float y) { return x + y; });
+  Tensor result = create_result_tensor(a, b);
+  add_binary_gradient(a, b, result, []() { return new AddFunction(); });
+  DISPATCH_BINARY_OP(a, b, result, [](auto x, auto y) { return x + y; });
+  return result;
 }
 
 Tensor sub(const Tensor &a, const Tensor &b) {
-  return binary_operation(
-      a, b, []() { return new SubFunction(); },
-      [](float x, float y) { return x - y; });
+  Tensor result = create_result_tensor(a, b);
+  add_binary_gradient(a, b, result, []() { return new SubFunction(); });
+  DISPATCH_BINARY_OP(a, b, result, [](auto x, auto y) { return x - y; });
+  return result;
 }
 
 Tensor mul(const Tensor &a, const Tensor &b) {
-  return binary_operation(
-      a, b, []() { return new MulFunction(); },
-      [](float x, float y) { return x * y; });
+  Tensor result = create_result_tensor(a, b);
+  add_binary_gradient(a, b, result, []() { return new MulFunction(); });
+  DISPATCH_BINARY_OP(a, b, result, [](auto x, auto y) { return x * y; });
+  return result;
 }
 
 Tensor div(const Tensor &a, const Tensor &b) {
-  return binary_operation(
-      a, b, []() { return new DivFunction(); },
-      [](float x, float y) { return x / y; });
+  Tensor result = create_result_tensor(a, b);
+  add_binary_gradient(a, b, result, []() { return new DivFunction(); });
+  DISPATCH_BINARY_OP(a, b, result, [](auto x, auto y) { return x / y; });
+  return result;
 }
 
 } // namespace quasai
