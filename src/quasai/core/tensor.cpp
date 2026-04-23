@@ -49,13 +49,6 @@ Tensor Tensor::ones(const Shape &shape, DType dtype, Device device) {
       }
       break;
     }
-    case DType::BOOL: {
-      bool *data = static_cast<bool *>(buffer.raw_data());
-      for (size_t i = 0; i < count; ++i) {
-        data[i] = true;
-      }
-      break;
-    }
     default:
       throw std::runtime_error("Unsupported data type for ones");
   }

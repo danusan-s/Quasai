@@ -166,6 +166,10 @@ inline size_t ravel_index(const Index &indices, const Shape &shape) {
   return flat_index;
 }
 
+// Take in indices from the broadcasted tensor and return the mapped indices for
+// the original tensor before applying broadcasting
+// Simply take the first index (0) if the dimension is 1 as this means it was
+// broadcasted up to the larger shape, otherwise just take the index as is
 inline Index get_broadcast_index(const Index &indices, const Shape &shape) {
   std::size_t ndim = shape.dimensions();
   Index broadcast_index(ndim);
