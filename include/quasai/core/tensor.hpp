@@ -62,17 +62,27 @@ public:
     return static_cast<const T *>(impl_.buffer->raw_data());
   }
 
-  template <typename T> T at(size_t index) const {
+  template <typename T> T at(Shape index) const {
     check_valid_dtype<T>();
-    const T *data_ptr = static_cast<const T *>(impl_.buffer->raw_data());
-    return data_ptr[index];
+    if (index.dimensions() > impl_.shape.dimensions()) {
+      throw std::runtime_error(
+          "Index dimensions greater than tensor dimensions");
+    }
+    size_t flat_index = impl_.offset;
+    for (size_t i = 0; i < index.dimensions(); ++i) {
+      if (index[i] >= impl_.shape[i]) {
+        throw std::runtime_error("Index out of bounds");
+      }
+      flat_index += index[i] * impl_.strides[i];
+    }
+    return data<T>()[flat_index];
   }
 
   std::shared_ptr<Buffer> buffer() const;
   const Shape &shape() const;
   const Strides &strides() const;
   DType dtype() const;
-  const Device &device() const;
+  Device device() const;
   std::shared_ptr<AutoGradMeta> autograd_meta() const;
 
   void requires_grad(bool grad_needed);
