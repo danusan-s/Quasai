@@ -1,4 +1,5 @@
 #include "quasai/autograd/metadata.hpp"
+#include "quasai/core/shape.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 
 namespace quasai {
@@ -6,11 +7,9 @@ namespace quasai {
 Tensor binary_operation(const Tensor &a, const Tensor &b,
                         std::function<Function *()> grad_fn_constructor,
                         std::function<float(float, float)> op) {
-  if (a.shape() != b.shape()) {
-    throw std::runtime_error("Shape mismatch for binary operation");
-  }
+  Shape out_shape = broadcast_shape(a.shape(), b.shape());
 
-  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
+  Tensor result = Tensor::empty(out_shape, a.dtype(), a.device());
 
   std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
   std::shared_ptr<AutoGradMeta> meta_b = b.autograd_meta();
@@ -26,15 +25,23 @@ Tensor binary_operation(const Tensor &a, const Tensor &b,
     result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
   }
 
-  const size_t num_elements = total_size(a.shape());
+  const size_t num_elements = total_size(out_shape);
 
   const float *data_a = a.data<float>();
   const float *data_b = b.data<float>();
   float *data_result = result.data<float>();
 
+  std::size_t ndim_a = a.shape().dimensions();
+  std::size_t ndim_b = b.shape().dimensions();
+
   // Naive implementation assuming float on cpu
   for (size_t i = 0; i < num_elements; ++i) {
-    data_result[i] = op(data_a[i], data_b[i]);
+    Index idx = unravel_index(i, out_shape);
+    Index idx_a = get_broadcast_index(idx, a.shape());
+    Index idx_b = get_broadcast_index(idx, b.shape());
+
+    data_result[i] = op(data_a[ravel_index(idx_a, a.shape())],
+                        data_b[ravel_index(idx_b, b.shape())]);
   }
 
   return result;

@@ -25,6 +25,7 @@ Tensor sigmoid(const Tensor &a);
 Tensor tanh(const Tensor &a);
 
 Tensor sum(const Tensor &a);
+Tensor sum_to_shape(const Tensor &a, const Shape &target);
 Tensor mean(const Tensor &a);
 
 } // namespace quasai

@@ -110,7 +110,7 @@ DType Tensor::dtype() const {
   return impl_.dtype;
 }
 
-const Device &Tensor::device() const {
+Device Tensor::device() const {
   return impl_.device;
 }
 
@@ -125,6 +125,13 @@ void Tensor::requires_grad(bool grad_needed) {
   impl_.autograd_meta->requires_grad = grad_needed;
 }
 
+void Tensor::set_grad_fn(std::unique_ptr<Function> grad_fn) {
+  if (!impl_.autograd_meta) {
+    impl_.autograd_meta = std::make_shared<AutoGradMeta>();
+  }
+  impl_.autograd_meta->grad_fn = std::move(grad_fn);
+}
+
 TensorImpl Tensor::get_impl_copy() const {
   return impl_;
 }
@@ -134,7 +141,7 @@ void Tensor::backward() {
 }
 
 Tensor::Tensor()
-    : impl_(TensorImpl{nullptr, Shape{}, Strides{}, 0, DType::FLOAT32,
+    : impl_(TensorImpl{nullptr, Shape(), Strides(), 0, DType::FLOAT32,
                        Device::cpu(), nullptr}) {
 }
 
