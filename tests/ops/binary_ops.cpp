@@ -140,3 +140,58 @@ TEST(TensorOpsTest, DivideShapeMismatch) {
 
   EXPECT_THROW(quasai::div(tensor_a, tensor_b), std::runtime_error);
 }
+
+TEST(TensorOpsTest, BroadcastLeading) {
+  std::vector<float> data_a = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+  std::vector<float> data_b = {10.0f, 20.0f};
+  quasai::Shape shape_a{3, 2};
+  quasai::Shape shape_b{2};
+  quasai::Tensor tensor_a =
+      quasai::Tensor::from_data(data_a.data(), shape_a, quasai::DType::FLOAT32);
+  quasai::Tensor tensor_b =
+      quasai::Tensor::from_data(data_b.data(), shape_b, quasai::DType::FLOAT32);
+
+  quasai::Tensor result = quasai::add(tensor_a, tensor_b);
+
+  const auto impl = result.get_impl_copy();
+  const auto ref_impl = tensor_a.get_impl_copy();
+
+  EXPECT_EQ(impl.shape, ref_impl.shape);
+  EXPECT_EQ(impl.dtype, ref_impl.dtype);
+  EXPECT_EQ(impl.device.type, ref_impl.device.type);
+
+  float *result_data = result.data<float>();
+
+  EXPECT_FLOAT_EQ(result_data[0], 11.0f);
+  EXPECT_FLOAT_EQ(result_data[1], 22.0f);
+  EXPECT_FLOAT_EQ(result_data[2], 13.0f);
+  EXPECT_FLOAT_EQ(result_data[3], 24.0f);
+  EXPECT_FLOAT_EQ(result_data[4], 15.0f);
+  EXPECT_FLOAT_EQ(result_data[5], 26.0f);
+}
+
+TEST(TensorOpsTest, BroadcastOnes) {
+  std::vector<float> data_a = {1.0f};
+  std::vector<float> data_b = {10.0f, 20.0f, 30.0f};
+  quasai::Shape shape_a{1};
+  quasai::Shape shape_b{3};
+  quasai::Tensor tensor_a =
+      quasai::Tensor::from_data(data_a.data(), shape_a, quasai::DType::FLOAT32);
+  quasai::Tensor tensor_b =
+      quasai::Tensor::from_data(data_b.data(), shape_b, quasai::DType::FLOAT32);
+
+  quasai::Tensor result = quasai::add(tensor_a, tensor_b);
+
+  const auto impl = result.get_impl_copy();
+  const auto ref_impl = tensor_b.get_impl_copy();
+
+  EXPECT_EQ(impl.shape, ref_impl.shape);
+  EXPECT_EQ(impl.dtype, ref_impl.dtype);
+  EXPECT_EQ(impl.device.type, ref_impl.device.type);
+
+  float *result_data = result.data<float>();
+
+  EXPECT_FLOAT_EQ(result_data[0], 11.0f);
+  EXPECT_FLOAT_EQ(result_data[1], 21.0f);
+  EXPECT_FLOAT_EQ(result_data[2], 31.0f);
+}
