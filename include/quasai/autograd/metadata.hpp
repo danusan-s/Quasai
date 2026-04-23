@@ -1,5 +1,6 @@
 #pragma once
 
+#include "quasai/autograd/function.hpp"
 #include "quasai/core/tensor.hpp"
 
 namespace quasai {

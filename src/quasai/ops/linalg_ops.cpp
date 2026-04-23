@@ -1,3 +1,4 @@
+#include "quasai/autograd/metadata.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 
 namespace quasai {
@@ -20,6 +21,17 @@ Tensor matmul(const Tensor &a, const Tensor &b) {
   const float *data_a = a.data<float>();
   const float *data_b = b.data<float>();
   float *data_result = result.data<float>();
+
+  const std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
+  const std::shared_ptr<AutoGradMeta> meta_b = b.autograd_meta();
+
+  if (meta_a && meta_a->requires_grad && meta_b && meta_b->requires_grad) {
+    MatMulFunction *grad_fn = new MatMulFunction();
+    grad_fn->inputs = {a, b};
+
+    result.requires_grad(true);
+    result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
+  }
 
   // Naive matrix multiplication
   for (size_t i = 0; i < M; ++i) {

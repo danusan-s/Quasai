@@ -75,7 +75,12 @@ public:
   const Device &device() const;
   std::shared_ptr<AutoGradMeta> autograd_meta() const;
 
+  void requires_grad(bool grad_needed);
+  void set_grad_fn(std::unique_ptr<Function> grad_fn);
+
   TensorImpl get_impl_copy() const;
+
+  void backward();
 
   Tensor();
 

@@ -1,4 +1,3 @@
-#include "quasai/autograd/function.hpp"
 #include "quasai/autograd/metadata.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 #include <cmath>
@@ -19,7 +18,9 @@ Tensor unary_operation(const Tensor &a,
                                "or not implemented for this operation");
     }
     grad_fn->inputs = {a};
-    meta_a->grad_fn = std::unique_ptr<Function>(grad_fn);
+
+    result.requires_grad(true);
+    result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
   }
 
   const size_t num_elements = total_size(a.shape());

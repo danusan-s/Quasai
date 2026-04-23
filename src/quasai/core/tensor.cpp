@@ -1,4 +1,6 @@
 #include "quasai/core/tensor.hpp"
+#include "quasai/autograd/engine.hpp"
+#include "quasai/autograd/metadata.hpp"
 #include <memory>
 
 namespace quasai {
@@ -96,9 +98,6 @@ void Tensor::reshape(const Shape &new_shape) {
   impl_.strides = get_strides(new_shape);
 }
 
-Tensor::Tensor() : impl_() {
-}
-
 const Shape &Tensor::shape() const {
   return impl_.shape;
 }
@@ -119,8 +118,24 @@ std::shared_ptr<AutoGradMeta> Tensor::autograd_meta() const {
   return impl_.autograd_meta;
 }
 
+void Tensor::requires_grad(bool grad_needed) {
+  if (!impl_.autograd_meta) {
+    impl_.autograd_meta = std::make_shared<AutoGradMeta>();
+  }
+  impl_.autograd_meta->requires_grad = grad_needed;
+}
+
 TensorImpl Tensor::get_impl_copy() const {
   return impl_;
+}
+
+void Tensor::backward() {
+  AutoGradEngine::backward(*this, Tensor());
+}
+
+Tensor::Tensor()
+    : impl_(TensorImpl{nullptr, Shape{}, Strides{}, 0, DType::FLOAT32,
+                       Device::cpu(), nullptr}) {
 }
 
 Tensor::Tensor(std::shared_ptr<Buffer> buffer, const Shape &shape,
