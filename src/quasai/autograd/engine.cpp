@@ -9,7 +9,7 @@ void AutoGradEngine::backward(const Tensor &tensor, const Tensor &grad) {
   // If no grad provided, assume it's a scalar and create a grad of 1
   Tensor grad_output = grad;
   if (grad_output.shape().dimensions() == 0) {
-    grad_output = Tensor::ones(Shape{}, tensor.dtype(), tensor.device());
+    grad_output = Tensor::ones(tensor.shape(), tensor.dtype(), tensor.device());
   }
 
   // Stack for DFS traversal of the computation graph
