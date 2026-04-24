@@ -5,7 +5,7 @@ namespace quasai {
 
 void SGD::step() {
   for (Parameter &param : parameters_) {
-    if (!param.autograd_meta() || !param.autograd_meta()->grad_fn) {
+    if (!param.autograd_meta() || !param.autograd_meta()->requires_grad) {
       continue; // Skip parameters that don't require gradients
     }
     Tensor grad = param.autograd_meta()->grad;
