@@ -156,12 +156,11 @@ inline Shape broadcast_shape(const Shape &a, const Shape &b) {
 
 using Index = std::vector<std::size_t>;
 
-inline size_t ravel_index(const Index &indices, const Shape &shape) {
+// Use strides to support view only transpose
+inline size_t ravel_index(const Index &indices, const Strides &strides) {
   size_t flat_index = 0;
-  size_t stride = 1;
-  for (size_t i = shape.dimensions(); i > 0; --i) {
-    flat_index += indices[i - 1] * stride;
-    stride *= shape[i - 1];
+  for (size_t i = 0; i < indices.size(); ++i) {
+    flat_index += indices[i] * strides[i];
   }
   return flat_index;
 }
@@ -180,13 +179,15 @@ inline Index get_broadcast_index(const Index &indices, const Shape &shape) {
   return broadcast_index;
 }
 
-inline Index unravel_index(size_t flat_index, const Shape &shape) {
-  Index indices(shape.dimensions());
-  for (size_t i = shape.dimensions(); i > 0; --i) {
-    indices[i - 1] = flat_index % shape[i - 1];
-    flat_index /= shape[i - 1];
+inline Index unravel_index(size_t flat_idx, const Shape &shape) {
+  Index idx(shape.dimensions());
+
+  for (int i = shape.dimensions() - 1; i >= 0; --i) {
+    idx[i] = flat_idx % shape[i];
+    flat_idx /= shape[i];
   }
-  return indices;
+
+  return idx;
 }
 
 } // namespace quasai
