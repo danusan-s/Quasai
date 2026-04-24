@@ -21,7 +21,7 @@ Tensor transpose(const Tensor &a) {
   std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
 
   if (meta_a && meta_a->requires_grad) {
-    TransposeFunction *grad_fn = new TransposeFunction();
+    Function *grad_fn = new TransposeFunction();
     grad_fn->inputs = {a};
 
     result.requires_grad(true);
@@ -84,7 +84,19 @@ Tensor reshape(const Tensor &a, const Shape &target) {
   impl_a_copy.shape = target;
   impl_a_copy.strides = get_strides(target);
 
-  return Tensor::from_impl(impl_a_copy);
+  Tensor result = Tensor::from_impl(impl_a_copy);
+
+  std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
+
+  if (meta_a && meta_a->requires_grad) {
+    Function *grad_fn = new ReshapeFunction();
+    grad_fn->inputs = {a};
+
+    result.requires_grad(true);
+    result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
+  }
+
+  return result;
 }
 
 } // namespace quasai

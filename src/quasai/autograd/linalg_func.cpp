@@ -16,6 +16,14 @@ std::vector<Tensor> MatMulFunction::backward(const Tensor &grad_output) {
 
   Tensor grad_input1 = matmul(grad_output, transpose(input2));
   Tensor grad_input2 = matmul(transpose(input1), grad_output);
+
+  if (input1.shape().dimensions() == 1) {
+    grad_input1 = reshape(grad_input1, input1.shape());
+  }
+  if (input2.shape().dimensions() == 1) {
+    grad_input2 = reshape(grad_input2, input2.shape());
+  }
+
   return {grad_input1, grad_input2};
 }
 
@@ -28,6 +36,18 @@ std::vector<Tensor> TransposeFunction::backward(const Tensor &grad_output) {
                 .c_str());
 
   Tensor grad_input = transpose(grad_output);
+  return {grad_input};
+}
+
+std::vector<Tensor> ReshapeFunction::backward(const Tensor &grad_output) {
+  // grad for input is just grad_output reshaped to input shape
+  const Tensor &input = inputs[0];
+  LOG_DEBUG(("ReshapeFunction backward: grad_output shape = " +
+             grad_output.shape().to_string() +
+             ", input shape = " + input.shape().to_string())
+                .c_str());
+
+  Tensor grad_input = reshape(grad_output, input.shape());
   return {grad_input};
 }
 

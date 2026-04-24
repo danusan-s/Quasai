@@ -4,9 +4,30 @@
 namespace quasai {
 
 Tensor matmul(const Tensor &a, const Tensor &b) {
-  if (a.shape().dimensions() != 2 || b.shape().dimensions() != 2) {
+  if (a.shape().dimensions() > 2 || b.shape().dimensions() > 2) {
     throw std::runtime_error("matmul requires 2D tensors");
   }
+  if (a.shape().dimensions() == 0 || b.shape().dimensions() == 0) {
+    throw std::runtime_error("matmul requires non-scalar tensors");
+  }
+
+  if (a.shape().dimensions() == 1) {
+    // If a is 1D, treat it as a row vector
+    LOG_DEBUG(("matmul: treating a as row vector with shape (1, " +
+               std::to_string(a.shape()[0]) + ")")
+                  .c_str());
+    Tensor a_reshaped = reshape(a, Shape{1, a.shape()[0]});
+    return matmul(a_reshaped, b);
+  }
+  if (b.shape().dimensions() == 1) {
+    // If b is 1D, treat it as a column vector
+    LOG_DEBUG(("matmul: treating b as column vector with shape (" +
+               std::to_string(b.shape()[0]) + ", 1)")
+                  .c_str());
+    Tensor b_reshaped = reshape(b, Shape{b.shape()[0], 1});
+    return matmul(a, b_reshaped);
+  }
+
   if (a.shape()[1] != b.shape()[0]) {
     throw std::runtime_error("Inner dimensions must match for matmul");
   }

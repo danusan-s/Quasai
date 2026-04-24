@@ -86,4 +86,9 @@ public:
   std::vector<Tensor> backward(const Tensor &grad_output) override;
 };
 
+class ReshapeFunction : public Function {
+public:
+  std::vector<Tensor> backward(const Tensor &grad_output) override;
+};
+
 } // namespace quasai
