@@ -6,6 +6,7 @@
 #include <sstream>
 namespace quasai {
 
+// Binary ops
 void add_binary_gradient(const Tensor &a, const Tensor &b, Tensor &result,
                          std::function<Function *()> grad_fn_constructor);
 Tensor add(const Tensor &a, const Tensor &b);
@@ -14,8 +15,8 @@ Tensor mul(const Tensor &a, const Tensor &b);
 Tensor div(const Tensor &a, const Tensor &b);
 
 Tensor matmul(const Tensor &a, const Tensor &b);
-Tensor transpose(const Tensor &a);
 
+// Unary ops
 void add_unary_gradient(const Tensor &a, Tensor &result,
                         std::function<Function *()> grad_fn_constructor);
 Tensor neg(const Tensor &a);
@@ -24,10 +25,18 @@ Tensor step(const Tensor &a);
 Tensor sigmoid(const Tensor &a);
 Tensor tanh(const Tensor &a);
 
+// Reduction ops
 Tensor sum(const Tensor &a);
 Tensor sum_to_shape(const Tensor &a, const Shape &target);
 Tensor broadcast_to_shape(const Tensor &a, const Shape &target);
 Tensor mean(const Tensor &a);
+
+// View ops
+Tensor transpose(const Tensor &a);
+Tensor expand(const Tensor &a,
+              const Shape &target); // broadcast_to_shape but view and no new
+                                    // buffer allocation
+Tensor reshape(const Tensor &a, const Shape &target);
 
 template <typename T>
 void do_binary_op(const Tensor &a, const Tensor &b, Tensor &result,

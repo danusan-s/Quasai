@@ -59,33 +59,6 @@ TEST(TensorTest, FromData) {
   }
 }
 
-TEST(TensorTest, Reshape) {
-  std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
-  quasai::Shape shape{2, 3};
-  quasai::Tensor tensor =
-      quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
-
-  tensor.reshape(quasai::Shape{3, 2});
-
-  const auto impl = tensor.get_impl_copy();
-  EXPECT_EQ(impl.shape[0], 3);
-  EXPECT_EQ(impl.shape[1], 2);
-
-  float *tensor_data = static_cast<float *>(impl.buffer->raw_data());
-  for (size_t i = 0; i < 6; ++i) {
-    EXPECT_FLOAT_EQ(tensor_data[i], data[i]);
-  }
-}
-
-TEST(TensorTest, ReshapeInvalid) {
-  std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f};
-  quasai::Shape shape{2, 2};
-  quasai::Tensor tensor =
-      quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
-
-  EXPECT_THROW(tensor.reshape(quasai::Shape{3, 2}), std::runtime_error);
-}
-
 TEST(TensorTest, TensorView) {
   std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f};
   quasai::Shape shape{2, 2};

@@ -54,19 +54,4 @@ Tensor matmul(const Tensor &a, const Tensor &b) {
   return result;
 }
 
-// No new buffer allocation
-// just create a new view with swapped shape and strides
-Tensor transpose(const Tensor &a) {
-  if (a.shape().dimensions() != 2) {
-    throw std::runtime_error("transpose requires a 2D tensor");
-  }
-
-  TensorImpl impl_a_copy = a.get_impl_copy();
-
-  impl_a_copy.shape = Shape{a.shape()[1], a.shape()[0]};
-  impl_a_copy.strides = Strides{a.strides()[1], a.strides()[0]};
-
-  return Tensor::from_impl(impl_a_copy);
-}
-
 } // namespace quasai

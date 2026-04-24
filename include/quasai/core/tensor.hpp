@@ -17,8 +17,9 @@ struct TensorImpl {
 
   Shape shape;
   Strides strides;
-
   size_t offset;
+  bool is_contiguous;
+
   DType dtype;
   Device device;
 
@@ -42,8 +43,6 @@ public:
   static Tensor from_impl(const TensorImpl &impl);
 
   static Allocator *allocator_for_device(const Device &device);
-
-  void reshape(const Shape &new_shape);
 
   template <typename T> void check_valid_dtype() const {
     if (impl_.dtype != DTypeTraits<T>::dtype) {
@@ -81,6 +80,7 @@ public:
   std::shared_ptr<Buffer> buffer() const;
   const Shape &shape() const;
   const Strides &strides() const;
+  bool is_contiguous() const;
   DType dtype() const;
   Device device() const;
   std::shared_ptr<AutoGradMeta> autograd_meta() const;
@@ -96,7 +96,8 @@ public:
 
 private:
   Tensor(std::shared_ptr<Buffer> buffer, const Shape &shape,
-         const Strides &strides, size_t offset, DType dtype, Device device);
+         const Strides &strides, size_t offset, bool is_contiguous, DType dtype,
+         Device device);
 
   TensorImpl impl_;
 };
