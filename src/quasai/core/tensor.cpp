@@ -138,9 +138,6 @@ Tensor::Tensor()
                        Device::cpu(), nullptr}) {
 }
 
-Tensor::~Tensor() {
-}
-
 Tensor::Tensor(std::shared_ptr<Buffer> buffer, const Shape &shape,
                const Strides &strides, size_t offset, bool is_contiguous,
                DType dtype, Device device)
