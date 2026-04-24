@@ -122,16 +122,23 @@ void Tensor::set_grad_fn(std::unique_ptr<Function> grad_fn) {
 }
 
 TensorImpl Tensor::get_impl_copy() const {
-  return impl_;
+  TensorImpl copy = impl_;
+  // Don't expose the autograd metadata in the copy since it's an per tensor
+  // property and shouldnt be copied
+  copy.autograd_meta = nullptr;
+  return copy;
 }
 
 void Tensor::backward() {
-  AutoGradEngine::backward(*this, Tensor());
+  AutoGradEngine::backward(*this);
 }
 
 Tensor::Tensor()
     : impl_(TensorImpl{nullptr, Shape(), Strides(), 0, true, DType::FLOAT32,
                        Device::cpu(), nullptr}) {
+}
+
+Tensor::~Tensor() {
 }
 
 Tensor::Tensor(std::shared_ptr<Buffer> buffer, const Shape &shape,

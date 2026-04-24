@@ -5,12 +5,10 @@
 
 namespace quasai {
 
-void AutoGradEngine::backward(const Tensor &tensor, const Tensor &grad) {
+void AutoGradEngine::backward(const Tensor &tensor) {
   // If no grad provided, assume it's a scalar and create a grad of 1
-  Tensor grad_output = grad;
-  if (grad_output.shape().dimensions() == 0) {
-    grad_output = Tensor::ones(tensor.shape(), tensor.dtype(), tensor.device());
-  }
+  tensor.autograd_meta()->grad =
+      Tensor::ones(Shape{}, tensor.dtype(), tensor.device());
 
   // Stack for DFS traversal of the computation graph
   std::vector<Tensor> stack{tensor};
@@ -21,11 +19,14 @@ void AutoGradEngine::backward(const Tensor &tensor, const Tensor &grad) {
 
     std::shared_ptr<AutoGradMeta> meta = current.autograd_meta();
     if (!meta || !meta->grad_fn) {
+      LOG_DEBUG(
+          "Reached leaf node in autograd graph, stopping backward traversal");
       continue; // No gradient function means we reached a leaf node
     }
 
     // Compute gradients for inputs
-    std::vector<Tensor> input_grads = meta->grad_fn->backward(grad_output);
+    Tensor current_grad = meta->grad;
+    std::vector<Tensor> input_grads = meta->grad_fn->backward(current_grad);
 
     // Accumulate gradients for each input
     for (size_t i = 0; i < meta->grad_fn->inputs.size(); ++i) {

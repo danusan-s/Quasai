@@ -6,7 +6,7 @@ namespace quasai {
 
 class AutoGradEngine {
 public:
-  static void backward(const Tensor &tensor, const Tensor &grad = Tensor());
+  static void backward(const Tensor &tensor);
 };
 
 } // namespace quasai

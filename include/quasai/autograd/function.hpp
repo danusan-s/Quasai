@@ -1,6 +1,7 @@
 #pragma once
 
 #include "quasai/core/tensor.hpp"
+#include "quasai/utils/logger.hpp"
 #include <vector>
 
 namespace quasai {
@@ -45,6 +46,21 @@ public:
   std::vector<Tensor> backward(const Tensor &grad_output) override;
 };
 
+class SumToShapeFunction : public Function {
+public:
+  std::vector<Tensor> backward(const Tensor &grad_output) override;
+};
+
+class BroadcastToShapeFunction : public Function {
+public:
+  std::vector<Tensor> backward(const Tensor &grad_output) override;
+};
+
+class MeanFunction : public Function {
+public:
+  std::vector<Tensor> backward(const Tensor &grad_output) override;
+};
+
 class ReluFunction : public Function {
 public:
   std::vector<Tensor> backward(const Tensor &grad_output) override;
@@ -61,6 +77,11 @@ public:
 };
 
 class MatMulFunction : public Function {
+public:
+  std::vector<Tensor> backward(const Tensor &grad_output) override;
+};
+
+class TransposeFunction : public Function {
 public:
   std::vector<Tensor> backward(const Tensor &grad_output) override;
 };
