@@ -21,7 +21,7 @@ void SGD::step() {
 
 void SGD::zero_grad() {
   for (Parameter &param : parameters_) {
-    if (param.autograd_meta() && param.autograd_meta()->grad_fn) {
+    if (param.autograd_meta() && param.autograd_meta()->requires_grad) {
       Tensor grad = param.autograd_meta()->grad;
       std::memset(grad.buffer()->raw_data(), 0, grad.buffer()->size());
     }
