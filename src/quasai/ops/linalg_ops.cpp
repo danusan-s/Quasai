@@ -18,10 +18,6 @@ Tensor matmul(const Tensor &a, const Tensor &b) {
   Shape result_shape{M, N};
   Tensor result = Tensor::empty(result_shape, a.dtype(), a.device());
 
-  const float *data_a = a.data<float>();
-  const float *data_b = b.data<float>();
-  float *data_result = result.data<float>();
-
   const std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
   const std::shared_ptr<AutoGradMeta> meta_b = b.autograd_meta();
 
@@ -33,15 +29,26 @@ Tensor matmul(const Tensor &a, const Tensor &b) {
     result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
   }
 
-  // Naive matrix multiplication
-  for (size_t i = 0; i < M; ++i) {
-    for (size_t j = 0; j < N; ++j) {
-      float sum = 0.0f;
-      for (size_t k = 0; k < K; ++k) {
-        sum += data_a[i * K + k] * data_b[k * N + j];
-      }
-      data_result[i * N + j] = sum;
-    }
+  if (a.dtype() != b.dtype()) {
+    throw std::runtime_error(
+        "Data types of input tensors must match for matmul operation");
+  }
+
+  switch (a.dtype()) {
+    case DType::FLOAT32:
+      do_matmul<float>(a, b, result);
+      break;
+    case DType::FLOAT64:
+      do_matmul<double>(a, b, result);
+      break;
+    case DType::INT32:
+      do_matmul<int32_t>(a, b, result);
+      break;
+    case DType::INT64:
+      do_matmul<int64_t>(a, b, result);
+      break;
+    default:
+      throw std::runtime_error("Unsupported data type for matmul operation");
   }
 
   return result;
