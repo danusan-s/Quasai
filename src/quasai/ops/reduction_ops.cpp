@@ -1,3 +1,4 @@
+#include "quasai/autograd/metadata.hpp"
 #include "quasai/core/shape.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 
@@ -6,6 +7,15 @@ namespace quasai {
 Tensor sum(const Tensor &a) {
   // Scalar result so empty shape
   Tensor result = Tensor::empty(Shape{}, a.dtype(), a.device());
+
+  const std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
+  if (meta_a && meta_a->requires_grad) {
+    // Create a gradient function for sum that will compute the gradient
+    Function *grad_fn = new SumFunction();
+    grad_fn->inputs = {a};
+    result.requires_grad(true);
+    result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
+  }
 
   switch (a.dtype()) {
     case DType::FLOAT32:
@@ -41,6 +51,14 @@ Tensor sum_to_shape(const Tensor &a, const Shape &target) {
   }
 
   Tensor out = Tensor::zeros(target, a.dtype(), a.device());
+
+  const std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
+  if (meta_a && meta_a->requires_grad) {
+    Function *grad_fn = new SumToShapeFunction();
+    grad_fn->inputs = {a};
+    out.requires_grad(true);
+    out.set_grad_fn(std::unique_ptr<Function>(grad_fn));
+  }
 
   switch (a.dtype()) {
     case DType::FLOAT32:
@@ -78,6 +96,14 @@ Tensor broadcast_to_shape(const Tensor &a, const Shape &target) {
 
   Tensor out = Tensor::empty(target, a.dtype(), a.device());
 
+  const std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
+  if (meta_a && meta_a->requires_grad) {
+    Function *grad_fn = new BroadcastToShapeFunction();
+    grad_fn->inputs = {a};
+    out.requires_grad(true);
+    out.set_grad_fn(std::unique_ptr<Function>(grad_fn));
+  }
+
   switch (a.dtype()) {
     case DType::FLOAT32:
       do_broadcast_to_shape<float>(a, out);
@@ -107,6 +133,15 @@ Tensor mean(const Tensor &a) {
 
   // Scalar result so empty shape
   Tensor result = Tensor::empty(Shape{}, a.dtype(), a.device());
+
+  const std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
+  if (meta_a && meta_a->requires_grad) {
+    // Create a gradient function for mean that will compute the gradient of the
+    Function *grad_fn = new MeanFunction();
+    grad_fn->inputs = {a};
+    result.requires_grad(true);
+    result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
+  }
 
   switch (a.dtype()) {
     case DType::FLOAT32:

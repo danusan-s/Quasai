@@ -4,6 +4,7 @@
 #include "quasai/utils/logger.hpp"
 #include <functional>
 #include <sstream>
+
 namespace quasai {
 
 // Binary ops
@@ -53,6 +54,7 @@ void do_binary_op(const Tensor &a, const Tensor &b, Tensor &result,
   std::size_t ndim_a = a.shape().dimensions();
   std::size_t ndim_b = b.shape().dimensions();
 
+  std::ostringstream ss;
   for (size_t i = 0; i < num_elements; ++i) {
     Index idx = unravel_index(i, out_shape);
     Index idx_a = get_broadcast_index(idx, a.shape());
@@ -60,12 +62,13 @@ void do_binary_op(const Tensor &a, const Tensor &b, Tensor &result,
 
     data_result[i] = op(data_a[ravel_index(idx_a, a.strides())],
                         data_b[ravel_index(idx_b, b.strides())]);
-    std::ostringstream ss;
     ss << "a: " << data_a[ravel_index(idx_a, a.strides())]
        << ", b: " << data_b[ravel_index(idx_b, b.strides())]
-       << ", result: " << data_result[i];
-    LOG_INFO(ss.str().c_str());
+       << ", result: " << data_result[i] << std::endl;
+    ;
   }
+
+  // LOG_INFO(ss.str().c_str());
 }
 
 template <typename T>
@@ -136,25 +139,37 @@ void do_matmul(const Tensor &a, const Tensor &b, Tensor &result) {
   const T *data_b = b.data<T>();
   T *data_result = result.data<T>();
 
-  // Naive matrix multiplication
+  const Strides &a_strides = a.strides();
+  const Strides &b_strides = b.strides();
+  const Strides &c_strides = result.strides();
+
   for (size_t i = 0; i < M; ++i) {
     for (size_t j = 0; j < N; ++j) {
+
       float sum = 0.0f;
+
       for (size_t k = 0; k < K; ++k) {
-        sum += data_a[i * K + k] * data_b[k * N + j];
+
+        size_t a_idx = i * a_strides[0] + k * a_strides[1];
+        size_t b_idx = k * b_strides[0] + j * b_strides[1];
+
+        sum += data_a[a_idx] * data_b[b_idx];
       }
-      data_result[i * N + j] = sum;
+
+      data_result[i * c_strides[0] + j * c_strides[1]] = sum;
     }
   }
 
   std::ostringstream ss;
 
+  ss << "Matrix Multiplication result:" << std::endl;
   for (size_t i = 0; i < M; ++i) {
     for (size_t j = 0; j < N; ++j) {
-      ss << "result[" << i << ", " << j << "] = " << data_result[i * N + j];
-      LOG_INFO(ss.str().c_str());
+      ss << "result[" << i << ", " << j << "] = " << data_result[i * N + j]
+         << std::endl;
     }
   }
+  // LOG_INFO(ss.str().c_str());
 }
 
 } // namespace quasai

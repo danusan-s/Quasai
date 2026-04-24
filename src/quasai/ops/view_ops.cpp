@@ -1,3 +1,4 @@
+#include "quasai/autograd/metadata.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 
 namespace quasai {
@@ -15,14 +16,26 @@ Tensor transpose(const Tensor &a) {
   impl_a_copy.strides = Strides{a.strides()[1], a.strides()[0]};
   impl_a_copy.is_contiguous = false;
 
-  return Tensor::from_impl(impl_a_copy);
+  Tensor result = Tensor::from_impl(impl_a_copy);
+
+  std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
+
+  if (meta_a && meta_a->requires_grad) {
+    TransposeFunction *grad_fn = new TransposeFunction();
+    grad_fn->inputs = {a};
+
+    result.requires_grad(true);
+    result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
+  }
+
+  return result;
 }
 
 Tensor expand(const Tensor &a, const Shape &target) {
   if (target.dimensions() < a.shape().dimensions()) {
-    throw std::runtime_error(
-        "expand requires target shape to have greater than or equal number of "
-        "dimensions than input tensor");
+    throw std::runtime_error("expand requires target shape to have greater "
+                             "than or equal number of "
+                             "dimensions than input tensor");
   }
 
   TensorImpl impl_a_copy = a.get_impl_copy();
@@ -57,9 +70,10 @@ Tensor expand(const Tensor &a, const Shape &target) {
 
 Tensor reshape(const Tensor &a, const Shape &target) {
   if (total_size(a.shape()) != total_size(target)) {
-    throw std::runtime_error(
-        "Total size of new shape must be the same as the original shape, got " +
-        a.shape().to_string() + " and target " + target.to_string());
+    throw std::runtime_error("Total size of new shape must be the same as "
+                             "the original shape, got " +
+                             a.shape().to_string() + " and target " +
+                             target.to_string());
   }
   // TODO: allocate new tensor which is contiguous and then reshape
   if (!a.is_contiguous()) {
