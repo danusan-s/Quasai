@@ -15,7 +15,7 @@ Linear::Linear(size_t in_features, size_t out_features, Initialization init)
 
 Tensor Linear::forward(const Tensor &input) {
   Tensor output = add(matmul(input, transpose(weight_)), bias_);
-  return sum_to_shape(output, Shape{weight_.shape()[0]});
+  return output;
 }
 
 } // namespace quasai
