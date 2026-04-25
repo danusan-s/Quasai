@@ -20,8 +20,7 @@ public:
   }
 
 private:
-  RNG() : engine_(std::random_device{}()) {
-    seed(42); // Default seed for reproducibility
+  RNG() : engine_(42) { // Default seed for reproducibility
   }
   std::mt19937 engine_;
 };
