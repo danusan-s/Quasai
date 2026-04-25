@@ -3,8 +3,12 @@
 #include <iostream>
 #define LOG_INFO(message)                                                      \
   Logger::log_info(message, __FILE__, __LINE__, __func__)
+#ifdef QUASAI_DEBUG
 #define LOG_DEBUG(message)                                                     \
   Logger::log_debug(message, __FILE__, __LINE__, __func__)
+#else
+#define LOG_DEBUG(message)
+#endif
 #define LOG_ERROR(message)                                                     \
   Logger::log_error(message, __FILE__, __LINE__, __func__)
 
