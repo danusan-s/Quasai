@@ -42,7 +42,7 @@ Tensor matmul(const Tensor &a, const Tensor &b) {
   const std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
   const std::shared_ptr<AutoGradMeta> meta_b = b.autograd_meta();
 
-  if (meta_a && meta_a->requires_grad && meta_b && meta_b->requires_grad) {
+  if ((meta_a && meta_a->requires_grad) || (meta_b && meta_b->requires_grad)) {
     MatMulFunction *grad_fn = new MatMulFunction();
     grad_fn->inputs = {a, b};
 

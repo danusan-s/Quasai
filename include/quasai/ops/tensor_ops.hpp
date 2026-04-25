@@ -1,9 +1,7 @@
 #pragma once
 
 #include "quasai/core/tensor.hpp"
-#include "quasai/utils/logger.hpp"
 #include <functional>
-#include <sstream>
 
 namespace quasai {
 

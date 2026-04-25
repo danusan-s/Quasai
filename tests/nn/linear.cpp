@@ -14,13 +14,9 @@ TEST(Linear, SimpleRegression) {
   quasai::Tensor input = quasai::Tensor::from_data(
       input_data.data(), quasai::Shape{in_features}, quasai::DType::FLOAT32);
 
-  input.requires_grad(true);
-
   std::vector<float> target_data = {0.0f, 1.0f};
   quasai::Tensor target = quasai::Tensor::from_data(
       target_data.data(), quasai::Shape{out_features}, quasai::DType::FLOAT32);
-
-  target.requires_grad(true);
 
   quasai::Initialization init = quasai::Initialization::HE_UNIFORM;
 
@@ -60,13 +56,9 @@ TEST(Linear, OneHiddenLayer) {
   quasai::Tensor input = quasai::Tensor::from_data(
       input_data.data(), quasai::Shape{in_features}, quasai::DType::FLOAT32);
 
-  input.requires_grad(true);
-
   std::vector<float> target_data = {0.0f, 1.0f};
   quasai::Tensor target = quasai::Tensor::from_data(
       target_data.data(), quasai::Shape{out_features}, quasai::DType::FLOAT32);
-
-  target.requires_grad(true);
 
   quasai::Initialization init = quasai::Initialization::GLOROT_UNIFORM;
 
@@ -139,8 +131,6 @@ TEST(Linear, OneHiddenLayer_MultiSample) {
         target_data.data(), quasai::Shape{out_features},
         quasai::DType::FLOAT32);
 
-    input.requires_grad(true);
-    target.requires_grad(true);
     targets.push_back(target);
     inputs.push_back(input);
   }
