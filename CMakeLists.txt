@@ -20,3 +20,6 @@ target_include_directories(quasai PUBLIC
 # GoogleTest
 enable_testing()
 add_subdirectory(tests)
+
+# Examples
+add_subdirectory(examples)
