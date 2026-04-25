@@ -99,4 +99,29 @@ Tensor reshape(const Tensor &a, const Shape &target) {
   return result;
 }
 
+// Naive slice only by first dimension to keep contiguous memory layout and
+// simple implementation
+Tensor slice(const Tensor &a, size_t start, size_t end) {
+  TensorImpl impl_a_copy = a.get_impl_copy();
+
+  if (!a.is_contiguous()) {
+    throw std::runtime_error("Slice requires input tensor to be contiguous");
+  }
+
+  if (a.shape().dimensions() == 0) {
+    throw std::runtime_error("Slice requires input tensor to have at least 1 "
+                             "dimension");
+  }
+
+  if (start >= end || end > a.shape()[0]) {
+    throw std::runtime_error("Invalid slice range: [" + std::to_string(start) +
+                             ", " + std::to_string(end) + ")");
+  }
+
+  impl_a_copy.shape[0] = end - start;
+  impl_a_copy.offset += start * impl_a_copy.strides[0];
+
+  return Tensor::from_impl(impl_a_copy);
+}
+
 } // namespace quasai

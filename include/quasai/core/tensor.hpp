@@ -4,6 +4,7 @@
 #include "quasai/core/dtype.hpp"
 #include "quasai/core/shape.hpp"
 #include "quasai/storage/buffer.hpp"
+#include <cstddef>
 #include <cstring>
 #include <memory>
 
@@ -53,28 +54,18 @@ public:
 
   template <typename T> T *data() {
     check_valid_dtype<T>();
-    return static_cast<T *>(impl_.buffer->raw_data());
+    return static_cast<T *>(impl_.buffer->raw_data()) + impl_.offset;
   }
 
   template <typename T> const T *data() const {
     check_valid_dtype<T>();
-    return static_cast<const T *>(impl_.buffer->raw_data());
+    return static_cast<const T *>(impl_.buffer->raw_data()) + impl_.offset;
   }
 
-  template <typename T> T at(Shape index) const {
+  template <typename T> T &at(Index index) {
     check_valid_dtype<T>();
-    if (index.dimensions() > impl_.shape.dimensions()) {
-      throw std::runtime_error(
-          "Index dimensions greater than tensor dimensions");
-    }
-    size_t flat_index = impl_.offset;
-    for (size_t i = 0; i < index.dimensions(); ++i) {
-      if (index[i] >= impl_.shape[i]) {
-        throw std::runtime_error("Index out of bounds");
-      }
-      flat_index += index[i] * impl_.strides[i];
-    }
-    return data<T>()[flat_index];
+    size_t flat = ravel_index(index, impl_.strides);
+    return data<T>()[flat];
   }
 
   std::shared_ptr<Buffer> buffer() const;

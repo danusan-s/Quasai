@@ -36,6 +36,7 @@ Tensor expand(const Tensor &a,
               const Shape &target); // broadcast_to_shape but view and no new
                                     // buffer allocation
 Tensor reshape(const Tensor &a, const Shape &target);
+Tensor slice(const Tensor &a, size_t start, size_t end);
 
 template <typename T>
 void do_binary_op(const Tensor &a, const Tensor &b, Tensor &result,
