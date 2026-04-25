@@ -145,3 +145,93 @@ TEST(Sequential, OneHiddenLayer_MultiSample) {
   EXPECT_LT((float)(1e-2),
             1.0f); // replace with real check if you track final loss
 }
+
+TEST(Sequential, RegressionWithBatching) {
+  size_t in_features = 3;
+  size_t hidden_features = 8;
+  size_t out_features = 1;
+
+  size_t num_samples = 1000;
+
+  std::vector<float> inputs;
+  std::vector<float> targets;
+
+  // Generate dataset
+  for (size_t i = 0; i < num_samples; ++i) {
+    float x0 = static_cast<float>(i % 10) / 10.0f;
+    float x1 = static_cast<float>((i * 2) % 10) / 10.0f;
+    float x2 = static_cast<float>((i * 3) % 10) / 10.0f;
+
+    std::vector<float> input_data = {x0, x1, x2};
+    std::vector<float> target_data = {
+        x0 + x1 - 0.4f * x2,
+    };
+    inputs.insert(inputs.end(), input_data.begin(), input_data.end());
+    targets.insert(targets.end(), target_data.begin(), target_data.end());
+  }
+
+  quasai::Tensor input_tensor = quasai::Tensor::from_data(
+      inputs.data(), quasai::Shape{num_samples, in_features},
+      quasai::DType::FLOAT32);
+  quasai::Tensor target_tensor = quasai::Tensor::from_data(
+      targets.data(), quasai::Shape{num_samples, out_features},
+      quasai::DType::FLOAT32);
+
+  quasai::Initialization init = quasai::Initialization::GLOROT_UNIFORM;
+
+  auto linear1 =
+      std::make_shared<quasai::Linear>(in_features, hidden_features, init);
+  auto relu = std::make_shared<quasai::ReLU>();
+  auto linear2 =
+      std::make_shared<quasai::Linear>(hidden_features, out_features, init);
+
+  quasai::Sequential model({linear1, relu, linear2});
+
+  float learning_rate = 0.001f;
+  float momentum = 0.9f;
+  quasai::SGD optimizer(model.parameters(), learning_rate, momentum);
+
+  size_t epochs = 50;
+  size_t batch_size = 10;
+
+  std::cout << "Starting training on " << num_samples << " samples for "
+            << epochs << " epochs with batch size " << batch_size << std::endl;
+
+  for (size_t epoch = 0; epoch < epochs; ++epoch) {
+    float total_loss = 0.0f;
+
+    for (size_t i = 0; i < num_samples; i += batch_size) {
+      size_t current_batch_size = std::min(batch_size, num_samples - i);
+      quasai::Tensor batch_input =
+          slice(input_tensor, i, i + current_batch_size); // Get batch input
+      quasai::Tensor batch_target =
+          slice(target_tensor, i, i + current_batch_size); // Get batch target
+      quasai::Tensor output = model(batch_input);
+
+      quasai::Tensor loss = quasai::mse_loss(output, batch_target);
+
+      loss.backward();
+
+      total_loss += loss.data<float>()[0];
+
+      optimizer.step();
+      optimizer.zero_grad();
+    }
+
+    std::cout << "Epoch " << epoch + 1
+              << ", Avg Loss: " << total_loss / num_samples << std::endl;
+  }
+
+  std::cout << "Starting testing on training data." << std::endl;
+
+  quasai::Tensor output = model.forward(input_tensor);
+  const float *output_data = output.data<float>();
+  const float *target_data = target_tensor.data<float>();
+
+  quasai::Tensor final_loss = quasai::mse_loss(output, target_tensor);
+
+  std::cout << "Final Loss: " << final_loss.data<float>()[0] << std::endl;
+
+  // Basic assertion: loss should be small after training
+  EXPECT_LT(float(final_loss.data<float>()[0]), 1e-2f);
+}
