@@ -33,16 +33,20 @@ int main() {
   }
   std::string target_column = "median_income";
 
-  std::vector<float> input_data;
-  std::vector<float> target_data;
+  std::vector<float> train_input_data;
+  std::vector<float> train_target_data;
+  std::vector<float> test_input_data;
+  std::vector<float> test_target_data;
 
   std::cout << "Preparing data for training..." << std::endl;
   size_t num_samples = data.begin()->second.size();
   size_t num_features = data.size() - 1; // Exclude target column
+                                         //
   std::cout << "Number of samples: " << num_samples << std::endl;
   std::cout << "Number of features: " << num_features << std::endl;
 
   for (size_t i = 0; i < num_samples; ++i) {
+    bool is_test_sample = (rand() % 5 == 0); // 20% chance for test sample
     for (const auto &pair : data) {
       if (pair.first == target_column) {
         const std::vector<std::string> &values = pair.second;
@@ -50,7 +54,12 @@ int main() {
           throw std::runtime_error(
               "Inconsistent number of samples across features");
         }
-        target_data.push_back(std::stof(values[i]));
+        float value = std::stof(values[i]);
+        if (is_test_sample) {
+          test_target_data.push_back(value);
+        } else {
+          train_target_data.push_back(value);
+        }
       } else {
         const std::vector<std::string> &values = pair.second;
         if (i >= values.size()) {
@@ -58,57 +67,65 @@ int main() {
               "Inconsistent number of samples across features");
         }
         float value = std::stof(values[i]);
-        input_data.push_back(value);
+        if (is_test_sample) {
+          test_input_data.push_back(value);
+        } else {
+          train_input_data.push_back(value);
+        }
       }
     }
   }
+
+  size_t train_samples = train_target_data.size();
+  size_t test_samples = test_target_data.size();
+
+  std::cout << "Training samples: " << train_samples << std::endl;
+  std::cout << "Testing samples: " << test_samples << std::endl;
 
   std::vector<float> means(num_features, 0.0f);
   std::vector<float> stddevs(num_features, 0.0f);
 
   for (size_t j = 0; j < num_features; ++j) {
     float sum = 0.0f;
-    for (size_t i = 0; i < num_samples; ++i) {
-      sum += input_data[i * num_features + j];
+    for (size_t i = 0; i < train_samples; ++i) {
+      sum += train_input_data[i * num_features + j];
     }
-    means[j] = sum / num_samples;
+    means[j] = sum / train_samples;
 
     float variance_sum = 0.0f;
-    for (size_t i = 0; i < num_samples; ++i) {
-      float diff = input_data[i * num_features + j] - means[j];
+    for (size_t i = 0; i < train_samples; ++i) {
+      float diff = train_input_data[i * num_features + j] - means[j];
       variance_sum += diff * diff;
     }
-    stddevs[j] = std::sqrt(variance_sum / num_samples);
+    stddevs[j] = std::sqrt(variance_sum / train_samples);
 
-    for (size_t i = 0; i < num_samples; ++i) {
-      input_data[i * num_features + j] =
-          (input_data[i * num_features + j] - means[j]) / stddevs[j];
+    for (size_t i = 0; i < train_samples; ++i) {
+      train_input_data[i * num_features + j] =
+          (train_input_data[i * num_features + j] - means[j]) / stddevs[j];
     }
   }
 
-  float target_mean = 0.0f;
-  for (size_t i = 0; i < num_samples; ++i) {
-    target_mean += target_data[i];
-  }
-  target_mean /= num_samples;
-
-  float target_variance_sum = 0.0f;
-  for (size_t i = 0; i < num_samples; ++i) {
-    float diff = target_data[i] - target_mean;
-    target_variance_sum += diff * diff;
-  }
-  float target_stddev = std::sqrt(target_variance_sum / num_samples);
-
-  for (size_t i = 0; i < num_samples; ++i) {
-    target_data[i] = (target_data[i] - target_mean) / target_stddev;
+  for (size_t i = 0; i < test_samples; ++i) {
+    for (size_t j = 0; j < num_features; ++j) {
+      test_input_data[i * num_features + j] =
+          (test_input_data[i * num_features + j] - means[j]) / stddevs[j];
+    }
   }
 
-  quasai::Tensor input = quasai::Tensor::from_data(
-      input_data.data(), quasai::Shape{num_samples, num_features},
+  quasai::Tensor train_input = quasai::Tensor::from_data(
+      train_input_data.data(), quasai::Shape{train_samples, num_features},
       quasai::DType::FLOAT32);
 
-  quasai::Tensor target = quasai::Tensor::from_data(
-      target_data.data(), quasai::Shape{num_samples, 1},
+  quasai::Tensor train_target = quasai::Tensor::from_data(
+      train_target_data.data(), quasai::Shape{train_samples, 1},
+      quasai::DType::FLOAT32);
+
+  quasai::Tensor test_input = quasai::Tensor::from_data(
+      test_input_data.data(), quasai::Shape{test_samples, num_features},
+      quasai::DType::FLOAT32);
+
+  quasai::Tensor test_target = quasai::Tensor::from_data(
+      test_target_data.data(), quasai::Shape{test_samples, 1},
       quasai::DType::FLOAT32);
 
   auto linear1 = std::make_shared<quasai::Linear>(num_features, 10);
@@ -120,7 +137,7 @@ int main() {
 
   quasai::Model model(sequential);
 
-  size_t num_epochs = 30;
+  size_t num_epochs = 20;
   size_t batch_size = 32;
 
   float learning_rate = 0.01f;
@@ -129,12 +146,13 @@ int main() {
 
   std::cout << "Starting training..." << std::endl;
 
-  model.train(input, target, quasai::Loss::MSE, optimizer, num_epochs,
-              batch_size);
+  model.train(train_input, train_target, quasai::Loss::MSE, optimizer,
+              num_epochs, batch_size);
 
   std::cout << "Evaluating model performance on training data..." << std::endl;
 
-  quasai::Tensor loss = model.evaluate(input, target, quasai::Loss::MSE);
+  quasai::Tensor loss =
+      model.evaluate(test_input, test_target, quasai::Loss::MSE);
 
   std::cout << "Final training loss: " << loss.data<float>()[0] << std::endl;
 
