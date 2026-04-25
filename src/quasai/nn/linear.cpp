@@ -9,8 +9,8 @@ Linear::Linear(size_t in_features, size_t out_features, Initialization init)
                          Device::cpu(), init)),
       bias_(
           initialize({1, out_features}, DType::FLOAT32, Device::cpu(), init)) {
-  params_.push_back(&weight_);
-  params_.push_back(&bias_);
+  params_.push_back(weight_);
+  params_.push_back(bias_);
 }
 
 Tensor Linear::forward(const Tensor &input) {
