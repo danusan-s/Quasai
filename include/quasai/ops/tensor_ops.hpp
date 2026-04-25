@@ -54,7 +54,6 @@ void do_binary_op(const Tensor &a, const Tensor &b, Tensor &result,
   std::size_t ndim_a = a.shape().dimensions();
   std::size_t ndim_b = b.shape().dimensions();
 
-  std::ostringstream ss;
   for (size_t i = 0; i < num_elements; ++i) {
     Index idx = unravel_index(i, out_shape);
     Index idx_a = get_broadcast_index(idx, a.shape());
@@ -62,13 +61,7 @@ void do_binary_op(const Tensor &a, const Tensor &b, Tensor &result,
 
     data_result[i] = op(data_a[ravel_index(idx_a, a.strides())],
                         data_b[ravel_index(idx_b, b.strides())]);
-    ss << "a: " << data_a[ravel_index(idx_a, a.strides())]
-       << ", b: " << data_b[ravel_index(idx_b, b.strides())]
-       << ", result: " << data_result[i] << std::endl;
-    ;
   }
-
-  // LOG_INFO(ss.str().c_str());
 }
 
 template <typename T>
@@ -159,17 +152,6 @@ void do_matmul(const Tensor &a, const Tensor &b, Tensor &result) {
       data_result[i * c_strides[0] + j * c_strides[1]] = sum;
     }
   }
-
-  std::ostringstream ss;
-
-  ss << "Matrix Multiplication result:" << std::endl;
-  for (size_t i = 0; i < M; ++i) {
-    for (size_t j = 0; j < N; ++j) {
-      ss << "result[" << i << ", " << j << "] = " << data_result[i * N + j]
-         << std::endl;
-    }
-  }
-  // LOG_INFO(ss.str().c_str());
 }
 
 } // namespace quasai
