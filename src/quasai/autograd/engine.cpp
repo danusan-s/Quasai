@@ -6,9 +6,13 @@
 namespace quasai {
 
 void AutoGradEngine::backward(const Tensor &tensor) {
-  // If no grad provided, assume it's a scalar and create a grad of 1
+  if (!tensor.autograd_meta() || !tensor.autograd_meta()->requires_grad) {
+    LOG_DEBUG("No gradients to compute since requires_grad is false");
+    return; // No gradients to compute if requires_grad is false
+  }
+
   tensor.autograd_meta()->grad =
-      Tensor::ones(Shape{}, tensor.dtype(), tensor.device());
+      Tensor::ones(tensor.shape(), tensor.dtype(), tensor.device());
 
   // Stack for DFS traversal of the computation graph
   std::vector<Tensor> stack{tensor};

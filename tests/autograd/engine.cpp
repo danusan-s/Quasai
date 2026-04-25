@@ -28,8 +28,6 @@ TEST(AutoGradEngineTest, BackwardSimpleGraph) {
   std::shared_ptr<quasai::AutoGradMeta> meta_a = a.autograd_meta();
   std::shared_ptr<quasai::AutoGradMeta> meta_b = b.autograd_meta();
 
-  EXPECT_TRUE(meta_a);
-  EXPECT_TRUE(meta_b);
   EXPECT_TRUE(meta_a->grad.buffer());
   EXPECT_TRUE(meta_b->grad.buffer());
 
