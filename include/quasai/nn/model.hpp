@@ -1,3 +1,5 @@
+#pragma once
+
 #include "quasai/nn/loss.hpp"
 #include "quasai/nn/module.hpp"
 #include "quasai/optim/optimizer.hpp"
@@ -23,6 +25,13 @@ public:
         Tensor batch_output = module_->forward(batch_input);
         Tensor loss = compute_loss(batch_output, batch_targets, loss_fn);
         total_loss += loss.data<float>()[0];
+
+        std::ostringstream batch_oss;
+        batch_oss << "Batch " << (i / batch_size) + 1 << "/"
+                  << (num_samples + batch_size - 1) / batch_size
+                  << ", Loss: " << loss.data<float>()[0] << "\n";
+        LOG_DEBUG(batch_oss.str().c_str());
+
         loss.backward();
         optimizer.step();
         optimizer.zero_grad();
@@ -42,6 +51,10 @@ public:
   Tensor evaluate(const Tensor &input, const Tensor &targets, Loss loss_fn) {
     Tensor output = module_->forward(input);
     return compute_loss(output, targets, loss_fn);
+  }
+
+  std::vector<Parameter> parameters() const {
+    return module_->parameters();
   }
 
 private:

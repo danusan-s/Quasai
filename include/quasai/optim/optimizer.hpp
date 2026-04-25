@@ -1,4 +1,4 @@
-#include "quasai/nn/parameter.hpp"
+#pragma once
 
 namespace quasai {
 
