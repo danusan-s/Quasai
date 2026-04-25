@@ -1,12 +1,12 @@
 #pragma once
 
 #include "quasai/nn/parameter.hpp"
-#include <iostream>
+#include "quasai/optim/optimizer.hpp"
 #include <vector>
 
 namespace quasai {
 
-class SGD {
+class SGD : public Optimizer {
 public:
   SGD(std::vector<Parameter> parameters, float learning_rate,
       float momentum = 0.0f)
@@ -18,9 +18,9 @@ public:
     }
   }
 
-  void step();
+  void step() override;
 
-  void zero_grad();
+  void zero_grad() override;
 
 private:
   std::vector<Parameter> parameters_;
