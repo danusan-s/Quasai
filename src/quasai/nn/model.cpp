@@ -10,9 +10,25 @@ Model::Model(std::shared_ptr<Module> module) : module_(module) {
 
 void Model::train(const Tensor &input, const Tensor &targets, Loss loss_fn,
                   Optimizer &optimizer, size_t epochs, size_t batch_size) {
+  std::ostringstream oss;
+  oss << "Starting training for " << epochs << " epochs with batch size "
+      << batch_size << "...\n";
+  LOG_INFO(oss.str().c_str());
+
   const size_t num_samples = input.shape()[0];
+  const size_t num_batches = (num_samples + batch_size - 1) / batch_size;
+  constexpr size_t log_interval = 10; // Log every 10% of the batches
+  const size_t batches_per_log =
+      std::max<size_t>(1, num_batches / log_interval);
+
   for (size_t epoch = 0; epoch < epochs; ++epoch) {
     float total_loss = 0.0f;
+    size_t batch_counter = 0;
+
+    LOG_INFO(("Epoch " + std::to_string(epoch + 1) + "/" +
+              std::to_string(epochs) + "\n")
+                 .c_str());
+
     for (size_t i = 0; i < num_samples; i += batch_size) {
       size_t current_batch_size = std::min(batch_size, input.shape()[0] - i);
       Tensor batch_input = slice(input, i, i + current_batch_size);
@@ -21,11 +37,13 @@ void Model::train(const Tensor &input, const Tensor &targets, Loss loss_fn,
       Tensor loss = compute_loss(batch_output, batch_targets, loss_fn);
       total_loss += loss.data<float>()[0];
 
-      std::ostringstream batch_oss;
-      batch_oss << "Batch " << (i / batch_size) + 1 << "/"
-                << (num_samples + batch_size - 1) / batch_size
-                << ", Loss: " << loss.data<float>()[0] << "\n";
-      LOG_DEBUG(batch_oss.str().c_str());
+      if (++batch_counter % batches_per_log == 0 ||
+          batch_counter == num_batches) {
+        std::ostringstream batch_oss;
+        batch_oss << "Batch " << (i / batch_size) + 1 << "/" << num_batches
+                  << ", Loss: " << loss.data<float>()[0] << "\n";
+        LOG_INFO(batch_oss.str().c_str());
+      }
 
       loss.backward();
       optimizer.step();
@@ -33,8 +51,7 @@ void Model::train(const Tensor &input, const Tensor &targets, Loss loss_fn,
     }
 
     std::ostringstream oss;
-    oss << "Epoch " << epoch + 1 << ", Avg Loss: " << total_loss / num_samples
-        << "\n";
+    oss << "Avg Loss: " << total_loss / num_samples << "\n";
     LOG_INFO(oss.str().c_str());
   }
 }
