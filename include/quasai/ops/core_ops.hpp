@@ -1,6 +1,7 @@
 #pragma once
 
 #include "quasai/core/tensor.hpp"
+#include "quasai/utils/logger.hpp"
 #include <functional>
 
 namespace quasai {
@@ -141,19 +142,35 @@ void do_matmul(const Tensor &a, const Tensor &b, Tensor &result) {
 
   const T *A = a.data<T>();
   const T *B = b.data<T>();
+
+  if (result.shape() != Shape{M, N}) {
+    throw std::runtime_error("Result tensor has incorrect shape for matmul");
+  }
+
   T *C = result.data<T>();
+  for (size_t i = 0; i < M * N; ++i) {
+    C[i] = 0;
+  }
 
   auto a_strides = a.strides();
   auto b_strides = b.strides();
   auto c_strides = result.strides();
 
+  bool fast_path =
+      a.is_contiguous() && b.is_contiguous() && result.is_contiguous();
+
   for (size_t i = 0; i < M; ++i) {
     for (size_t k = 0; k < K; ++k) {
-      T a_val = A[i * a_strides[0] + k * a_strides[1]];
+      T a_val =
+          fast_path ? A[i * K + k] : A[i * a_strides[0] + k * a_strides[1]];
 
       for (size_t j = 0; j < N; ++j) {
-        C[i * c_strides[0] + j * c_strides[1]] +=
-            a_val * B[k * b_strides[0] + j * b_strides[1]];
+        if (fast_path) {
+          C[i * N + j] += a_val * B[k * N + j];
+        } else {
+          C[i * c_strides[0] + j * c_strides[1]] +=
+              a_val * B[k * b_strides[0] + j * b_strides[1]];
+        }
       }
     }
   }

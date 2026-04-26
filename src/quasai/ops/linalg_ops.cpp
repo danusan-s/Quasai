@@ -43,7 +43,7 @@ Tensor matmul(const Tensor &a, const Tensor &b) {
   const size_t N = b.shape()[1];
 
   Shape result_shape{M, N};
-  Tensor result = Tensor::zeros(result_shape, a.dtype(), a.device());
+  Tensor result = Tensor::empty(result_shape, a.dtype(), a.device());
 
   const std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
   const std::shared_ptr<AutoGradMeta> meta_b = b.autograd_meta();
