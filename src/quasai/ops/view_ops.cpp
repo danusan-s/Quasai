@@ -3,8 +3,9 @@
 
 namespace quasai {
 
-inline void add_unary_gradient(const Tensor &a, Tensor &result,
-                        std::function<Function *()> grad_fn_constructor) {
+inline void
+add_unary_gradient(const Tensor &a, Tensor &result,
+                   std::function<Function *()> grad_fn_constructor) {
   std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
 
   if (meta_a && meta_a->requires_grad) {
@@ -89,9 +90,21 @@ Tensor make_contiguous(const Tensor &a) {
 
   size_t num_elements = total_size(a.shape());
 
-  for (size_t i = 0; i < num_elements; ++i) {
-    Index idx = unravel_index(i, a.shape());
-    result.data<float>()[i] = a.data<float>()[ravel_index(idx, a.strides())];
+  switch (a.dtype()) {
+    case DType::FLOAT32:
+      do_contiguous_copy<float>(a, result);
+      break;
+    case DType::FLOAT64:
+      do_contiguous_copy<double>(a, result);
+      break;
+    case DType::INT32:
+      do_contiguous_copy<int32_t>(a, result);
+      break;
+    case DType::INT64:
+      do_contiguous_copy<int64_t>(a, result);
+      break;
+    default:
+      throw std::runtime_error("Unsupported data type for make_contiguous.");
   }
 
   add_unary_gradient(a, result, []() { return new MakeContiguousFunction(); });

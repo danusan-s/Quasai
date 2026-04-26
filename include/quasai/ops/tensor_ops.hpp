@@ -156,4 +156,18 @@ void do_matmul(const Tensor &a, const Tensor &b, Tensor &result) {
   }
 }
 
+template <typename T> void do_contiguous_copy(const Tensor &a, Tensor &result) {
+  const Shape &a_shape = a.shape();
+  const Strides &a_strides = a.strides();
+
+  const size_t num_elements = total_size(a_shape);
+  const T *data_a = a.data<T>();
+  T *data_result = result.data<T>();
+
+  for (size_t i = 0; i < num_elements; ++i) {
+    Index idx_a = unravel_index(i, a_shape);
+    data_result[i] = data_a[ravel_index(idx_a, a_strides)];
+  }
+}
+
 } // namespace quasai
