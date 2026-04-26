@@ -1,4 +1,5 @@
 #include "quasai/ops/tensor_ops.hpp"
+#include "quasai/autograd/metadata.hpp"
 #include <gtest/gtest.h>
 #include <cmath>
 
@@ -28,4 +29,24 @@ TEST(Tanh, Float64) {
   EXPECT_DOUBLE_EQ(result_data[1], std::tanh(1.0));
   EXPECT_DOUBLE_EQ(result_data[2], std::tanh(-1.0));
   EXPECT_DOUBLE_EQ(result_data[3], std::tanh(2.0));
+}
+
+TEST(Tanh, Gradient) {
+  float eps = 1e-3f;
+  float val = 0.5f;
+  quasai::Tensor input = quasai::Tensor::from_data(&val, quasai::Shape{}, quasai::DType::FLOAT32);
+  input.requires_grad(true);
+
+  quasai::Tensor output = quasai::tanh(input);
+  output.backward();
+
+  quasai::Tensor grad = input.autograd_meta()->grad;
+  float computed_grad = grad.data<float>()[0];
+
+  float f_plus = std::tanh(val + eps);
+  float f_minus = std::tanh(val - eps);
+  float finite_diff = (f_plus - f_minus) / (2.0f * eps);
+  float rel_err = std::abs(computed_grad - finite_diff) / std::max(1.0f, std::abs(val));
+
+  EXPECT_NEAR(rel_err, 0.0f, 1e-2f);
 }

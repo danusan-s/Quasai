@@ -1,5 +1,7 @@
 #include "quasai/ops/tensor_ops.hpp"
+#include "quasai/autograd/metadata.hpp"
 #include <gtest/gtest.h>
+#include <cmath>
 
 TEST(Sum, Float32) {
   std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f};
@@ -54,4 +56,25 @@ TEST(Sum, Negative) {
   quasai::Tensor result = quasai::sum(tensor);
   float *result_data = result.data<float>();
   EXPECT_FLOAT_EQ(result_data[0], 2.0f);
+}
+
+TEST(Sum, Gradient) {
+  float eps = 1e-3f;
+  std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f};
+  quasai::Shape shape{2, 2};
+  quasai::Tensor input = quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
+  input.requires_grad(true);
+
+  quasai::Tensor output = quasai::sum(input);
+  output.backward();
+
+  quasai::Tensor grad = input.autograd_meta()->grad;
+  float computed_grad_00 = grad.data<float>()[0];
+
+  float f_plus = (1.0f + eps) + 2.0f + 3.0f + 4.0f;
+  float f_minus = (1.0f - eps) + 2.0f + 3.0f + 4.0f;
+  float finite_diff = (f_plus - f_minus) / (2.0f * eps);
+  float rel_err = std::abs(computed_grad_00 - finite_diff) / std::max(1.0f, std::abs(data[0]));
+
+  EXPECT_NEAR(rel_err, 0.0f, 1e-2f);
 }

@@ -1,5 +1,7 @@
 #include "quasai/ops/tensor_ops.hpp"
+#include "quasai/autograd/metadata.hpp"
 #include <gtest/gtest.h>
+#include <cmath>
 
 TEST(Mean, Float32) {
   std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f};
@@ -30,4 +32,25 @@ TEST(Mean, Int32ShouldThrow) {
       quasai::Tensor::from_data(data.data(), shape, quasai::DType::INT32);
 
   EXPECT_THROW(quasai::mean(tensor), std::runtime_error);
+}
+
+TEST(Mean, Gradient) {
+  float eps = 1e-3f;
+  std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f};
+  quasai::Shape shape{2, 2};
+  quasai::Tensor input = quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
+  input.requires_grad(true);
+
+  quasai::Tensor output = quasai::mean(input);
+  output.backward();
+
+  quasai::Tensor grad = input.autograd_meta()->grad;
+  float computed_grad_00 = grad.data<float>()[0];
+
+  float f_plus = (1.0f + eps + 2.0f + 3.0f + 4.0f) / 4.0f;
+  float f_minus = (1.0f - eps + 2.0f + 3.0f + 4.0f) / 4.0f;
+  float finite_diff = (f_plus - f_minus) / (2.0f * eps);
+  float rel_err = std::abs(computed_grad_00 - finite_diff) / std::max(1.0f, std::abs(data[0]));
+
+  EXPECT_NEAR(rel_err, 0.0f, 1e-2f);
 }

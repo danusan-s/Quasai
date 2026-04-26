@@ -1,4 +1,5 @@
 #include "quasai/ops/tensor_ops.hpp"
+#include "quasai/autograd/metadata.hpp"
 #include <gtest/gtest.h>
 
 TEST(Add, Float32) {
@@ -67,4 +68,50 @@ TEST(Add, Int64) {
   EXPECT_EQ(result_data[1], 8);
   EXPECT_EQ(result_data[2], 10);
   EXPECT_EQ(result_data[3], 12);
+}
+
+TEST(Add, GradientA) {
+  float eps = 1e-3f;
+  float val_a = 2.0f;
+  float val_b = 3.0f;
+  quasai::Tensor input_a = quasai::Tensor::from_data(&val_a, quasai::Shape{}, quasai::DType::FLOAT32);
+  quasai::Tensor input_b = quasai::Tensor::from_data(&val_b, quasai::Shape{}, quasai::DType::FLOAT32);
+  input_a.requires_grad(true);
+  input_b.requires_grad(true);
+
+  quasai::Tensor output = quasai::add(input_a, input_b);
+  output.backward();
+
+  quasai::Tensor grad_a = input_a.autograd_meta()->grad;
+  float computed_grad_a = grad_a.data<float>()[0];
+
+  float f_plus = (val_a + eps) + val_b;
+  float f_minus = (val_a - eps) + val_b;
+  float finite_diff = (f_plus - f_minus) / (2.0f * eps);
+  float rel_err = std::abs(computed_grad_a - finite_diff) / std::max(1.0f, std::abs(val_a));
+
+  EXPECT_NEAR(rel_err, 0.0f, 1e-2f);
+}
+
+TEST(Add, GradientB) {
+  float eps = 1e-3f;
+  float val_a = 2.0f;
+  float val_b = 3.0f;
+  quasai::Tensor input_a = quasai::Tensor::from_data(&val_a, quasai::Shape{}, quasai::DType::FLOAT32);
+  quasai::Tensor input_b = quasai::Tensor::from_data(&val_b, quasai::Shape{}, quasai::DType::FLOAT32);
+  input_a.requires_grad(true);
+  input_b.requires_grad(true);
+
+  quasai::Tensor output = quasai::add(input_a, input_b);
+  output.backward();
+
+  quasai::Tensor grad_b = input_b.autograd_meta()->grad;
+  float computed_grad_b = grad_b.data<float>()[0];
+
+  float f_plus = val_a + (val_b + eps);
+  float f_minus = val_a + (val_b - eps);
+  float finite_diff = (f_plus - f_minus) / (2.0f * eps);
+  float rel_err = std::abs(computed_grad_b - finite_diff) / std::max(1.0f, std::abs(val_b));
+
+  EXPECT_NEAR(rel_err, 0.0f, 1e-2f);
 }
