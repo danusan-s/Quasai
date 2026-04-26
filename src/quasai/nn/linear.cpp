@@ -5,7 +5,7 @@
 namespace quasai {
 
 Linear::Linear(size_t in_features, size_t out_features, Initialization init)
-    : weight_(initialize({out_features, in_features}, DType::FLOAT32,
+    : weight_(initialize({in_features, out_features}, DType::FLOAT32,
                          Device::cpu(), init)),
       bias_(
           initialize({1, out_features}, DType::FLOAT32, Device::cpu(), init)) {
@@ -14,7 +14,7 @@ Linear::Linear(size_t in_features, size_t out_features, Initialization init)
 }
 
 Tensor Linear::forward(const Tensor &input) {
-  Tensor output = add(matmul(input, transpose(weight_)), bias_);
+  Tensor output = add(matmul(input, weight_), bias_);
   return output;
 }
 
