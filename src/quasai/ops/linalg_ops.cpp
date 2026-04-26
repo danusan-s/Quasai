@@ -33,12 +33,17 @@ Tensor matmul(const Tensor &a, const Tensor &b) {
     throw std::runtime_error("Inner dimensions must match for matmul");
   }
 
+  if (a.dtype() != b.dtype()) {
+    throw std::runtime_error(
+        "Data types of input tensors must match for matmul operation");
+  }
+
   const size_t M = a.shape()[0];
   const size_t K = a.shape()[1];
   const size_t N = b.shape()[1];
 
   Shape result_shape{M, N};
-  Tensor result = Tensor::empty(result_shape, a.dtype(), a.device());
+  Tensor result = Tensor::zeros(result_shape, a.dtype(), a.device());
 
   const std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
   const std::shared_ptr<AutoGradMeta> meta_b = b.autograd_meta();
@@ -49,11 +54,6 @@ Tensor matmul(const Tensor &a, const Tensor &b) {
 
     result.requires_grad(true);
     result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
-  }
-
-  if (a.dtype() != b.dtype()) {
-    throw std::runtime_error(
-        "Data types of input tensors must match for matmul operation");
   }
 
   switch (a.dtype()) {

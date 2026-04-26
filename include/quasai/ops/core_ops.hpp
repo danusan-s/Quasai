@@ -135,32 +135,26 @@ void do_broadcast_to_shape(const Tensor &a, Tensor &result) {
 
 template <typename T>
 void do_matmul(const Tensor &a, const Tensor &b, Tensor &result) {
-  const size_t M = a.shape()[0];
-  const size_t K = a.shape()[1];
-  const size_t N = b.shape()[1];
+  size_t M = a.shape()[0];
+  size_t K = a.shape()[1];
+  size_t N = b.shape()[1];
 
-  const T *data_a = a.data<T>();
-  const T *data_b = b.data<T>();
-  T *data_result = result.data<T>();
+  const T *A = a.data<T>();
+  const T *B = b.data<T>();
+  T *C = result.data<T>();
 
-  const Strides &a_strides = a.strides();
-  const Strides &b_strides = b.strides();
-  const Strides &c_strides = result.strides();
+  auto a_strides = a.strides();
+  auto b_strides = b.strides();
+  auto c_strides = result.strides();
 
   for (size_t i = 0; i < M; ++i) {
-    for (size_t j = 0; j < N; ++j) {
+    for (size_t k = 0; k < K; ++k) {
+      T a_val = A[i * a_strides[0] + k * a_strides[1]];
 
-      float sum = 0.0f;
-
-      for (size_t k = 0; k < K; ++k) {
-
-        size_t a_idx = i * a_strides[0] + k * a_strides[1];
-        size_t b_idx = k * b_strides[0] + j * b_strides[1];
-
-        sum += data_a[a_idx] * data_b[b_idx];
+      for (size_t j = 0; j < N; ++j) {
+        C[i * c_strides[0] + j * c_strides[1]] +=
+            a_val * B[k * b_strides[0] + j * b_strides[1]];
       }
-
-      data_result[i * c_strides[0] + j * c_strides[1]] = sum;
     }
   }
 }
