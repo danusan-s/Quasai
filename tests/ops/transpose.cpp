@@ -1,5 +1,7 @@
 #include "quasai/ops/tensor_ops.hpp"
+#include "quasai/autograd/metadata.hpp"
 #include <gtest/gtest.h>
+#include <cmath>
 
 TEST(Transpose, Float32) {
   std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
@@ -55,4 +57,32 @@ TEST(Transpose, AddWithTranspose) {
   EXPECT_FLOAT_EQ(result_data[3], 24.0f);
   EXPECT_FLOAT_EQ(result_data[4], 45.0f);
   EXPECT_FLOAT_EQ(result_data[5], 66.0f);
+}
+
+TEST(Transpose, Gradient) {
+  float eps = 1e-3f;
+  std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f};
+  quasai::Shape shape{2, 2};
+  quasai::Tensor input = quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
+  input.requires_grad(true);
+
+  quasai::Tensor output = quasai::transpose(input);
+  output.backward();
+
+  quasai::Tensor grad = input.autograd_meta()->grad;
+  float computed_grad_00 = grad.data<float>()[0];
+
+  std::vector<float> data_plus = {1.0f + eps, 2.0f, 3.0f, 4.0f};
+  std::vector<float> data_minus = {1.0f - eps, 2.0f, 3.0f, 4.0f};
+  quasai::Tensor input_plus = quasai::Tensor::from_data(data_plus.data(), shape, quasai::DType::FLOAT32);
+  quasai::Tensor input_minus = quasai::Tensor::from_data(data_minus.data(), shape, quasai::DType::FLOAT32);
+
+  quasai::Tensor out_plus = quasai::transpose(input_plus);
+  quasai::Tensor out_minus = quasai::transpose(input_minus);
+  float f_plus = out_plus.data<float>()[0];
+  float f_minus = out_minus.data<float>()[0];
+  float finite_diff = (f_plus - f_minus) / (2.0f * eps);
+  float rel_err = std::abs(computed_grad_00 - finite_diff) / std::max(1.0f, std::abs(data[0]));
+
+  EXPECT_NEAR(rel_err, 0.0f, 1e-2f);
 }
