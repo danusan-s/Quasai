@@ -4,6 +4,8 @@ project(Quasai LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_package(OpenMP)
+
 file(GLOB_RECURSE SRC_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
@@ -16,6 +18,10 @@ add_library(quasai STATIC
 target_include_directories(quasai PUBLIC
     ${CMAKE_SOURCE_DIR}/include
 )
+
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(quasai PUBLIC OpenMP::OpenMP_CXX)
+endif()
 
 # GoogleTest
 enable_testing()
