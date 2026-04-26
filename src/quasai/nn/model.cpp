@@ -5,7 +5,7 @@
 
 namespace quasai {
 
-Model::Model(std::unique_ptr<Module> module) : module_(std::move(module)) {
+Model::Model(std::shared_ptr<Module> module) : module_(module) {
 }
 
 void Model::train(const Tensor &input, const Tensor &targets, Loss loss_fn,

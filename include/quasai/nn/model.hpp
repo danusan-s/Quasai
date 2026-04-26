@@ -8,7 +8,7 @@ namespace quasai {
 
 class Model {
 public:
-  Model(std::unique_ptr<Module> module);
+  Model(std::shared_ptr<Module> module);
 
   void train(const Tensor &input, const Tensor &targets, Loss loss_fn,
              Optimizer &optimizer, size_t epochs = 1, size_t batch_size = 1);
@@ -20,7 +20,7 @@ public:
   std::vector<Parameter> parameters() const;
 
 private:
-  std::unique_ptr<Module> module_;
+  std::shared_ptr<Module> module_;
 };
 
 } // namespace quasai
