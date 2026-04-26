@@ -61,6 +61,8 @@ parse_csv(const std::string &filename) {
               << ", Number of values: " << pair.second.size() << std::endl;
   }
 
+  file.close();
+
   return data;
 }
 
