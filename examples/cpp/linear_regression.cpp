@@ -112,16 +112,19 @@ int main() {
   train_target = target_scaler.transform(train_target);
   test_target = target_scaler.transform(test_target);
 
-  auto linear1 = std::make_shared<quasai::Linear>(num_features, 10);
-  auto relu = std::make_shared<quasai::ReLU>();
-  auto linear2 = std::make_shared<quasai::Linear>(10, 1);
+  auto linear1 = std::make_shared<quasai::Linear>(num_features, 64);
+  auto relu1 = std::make_shared<quasai::ReLU>();
+  auto linear2 = std::make_shared<quasai::Linear>(64, 32);
+  auto relu2 = std::make_shared<quasai::ReLU>();
+  auto linear3 = std::make_shared<quasai::Linear>(32, 1);
 
   auto sequential = std::make_shared<quasai::Sequential>(
-      std::vector<std::shared_ptr<quasai::Module>>{linear1, relu, linear2});
+      std::vector<std::shared_ptr<quasai::Module>>{linear1, relu1, linear2,
+                                                   relu2, linear3});
 
   quasai::Model model(sequential);
 
-  size_t num_epochs = 20;
+  size_t num_epochs = 10;
   size_t batch_size = 32;
 
   float learning_rate = 0.01f;
