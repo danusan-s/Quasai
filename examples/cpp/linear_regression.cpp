@@ -7,6 +7,7 @@
 #include "quasai/nn/model.hpp"
 #include "quasai/nn/sequential.hpp"
 #include "quasai/optim/sgd.hpp"
+#include "quasai/transform/standard_scaler.hpp"
 #include <iostream>
 #include <vector>
 
@@ -85,33 +86,6 @@ int main() {
   std::vector<float> means(num_features, 0.0f);
   std::vector<float> stddevs(num_features, 0.0f);
 
-  for (size_t j = 0; j < num_features; ++j) {
-    float sum = 0.0f;
-    for (size_t i = 0; i < train_samples; ++i) {
-      sum += train_input_data[i * num_features + j];
-    }
-    means[j] = sum / train_samples;
-
-    float variance_sum = 0.0f;
-    for (size_t i = 0; i < train_samples; ++i) {
-      float diff = train_input_data[i * num_features + j] - means[j];
-      variance_sum += diff * diff;
-    }
-    stddevs[j] = std::sqrt(variance_sum / train_samples);
-
-    for (size_t i = 0; i < train_samples; ++i) {
-      train_input_data[i * num_features + j] =
-          (train_input_data[i * num_features + j] - means[j]) / stddevs[j];
-    }
-  }
-
-  for (size_t i = 0; i < test_samples; ++i) {
-    for (size_t j = 0; j < num_features; ++j) {
-      test_input_data[i * num_features + j] =
-          (test_input_data[i * num_features + j] - means[j]) / stddevs[j];
-    }
-  }
-
   quasai::Tensor train_input = quasai::Tensor::from_data(
       train_input_data.data(), quasai::Shape{train_samples, num_features},
       quasai::DType::FLOAT32);
@@ -128,6 +102,16 @@ int main() {
       test_target_data.data(), quasai::Shape{test_samples, 1},
       quasai::DType::FLOAT32);
 
+  quasai::StandardScaler input_scaler;
+  input_scaler.fit(train_input);
+  train_input = input_scaler.transform(train_input);
+  test_input = input_scaler.transform(test_input);
+
+  quasai::StandardScaler target_scaler;
+  target_scaler.fit(train_target);
+  train_target = target_scaler.transform(train_target);
+  test_target = target_scaler.transform(test_target);
+
   auto linear1 = std::make_shared<quasai::Linear>(num_features, 10);
   auto relu = std::make_shared<quasai::ReLU>();
   auto linear2 = std::make_shared<quasai::Linear>(10, 1);
@@ -141,7 +125,7 @@ int main() {
   size_t batch_size = 32;
 
   float learning_rate = 0.01f;
-  float momentum = 0.0f;
+  float momentum = 0.3f;
   quasai::SGD optimizer(model.parameters(), learning_rate, momentum);
 
   std::cout << "Starting training..." << std::endl;
@@ -155,6 +139,22 @@ int main() {
       model.evaluate(test_input, test_target, quasai::Loss::MSE);
 
   std::cout << "Final training loss: " << loss.data<float>()[0] << std::endl;
+
+  // Pick a few samples to show predictions
+  std::cout << "Sample predictions vs targets:" << std::endl;
+  quasai::Tensor predictions = model.predict(test_input);
+
+  quasai::Tensor predictions_unscaled =
+      target_scaler.inverse_transform(predictions);
+  quasai::Tensor targets_unscaled =
+      target_scaler.inverse_transform(test_target);
+
+  for (size_t i = 0; i < std::min<size_t>(20, test_samples); ++i) {
+    float pred = predictions_unscaled.data<float>()[i];
+    float target = targets_unscaled.data<float>()[i];
+    std::cout << "Sample " << i + 1 << ": Predicted: " << pred
+              << ", Target: " << target << std::endl;
+  }
 
   return 0;
 }
