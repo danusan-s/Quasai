@@ -7,8 +7,9 @@ Tensor matmul(const Tensor &a, const Tensor &b) {
   if (a.shape().dimensions() > 2 || b.shape().dimensions() > 2) {
     throw std::runtime_error("matmul requires 2D tensors");
   }
+
   if (a.shape().dimensions() == 0 || b.shape().dimensions() == 0) {
-    throw std::runtime_error("matmul requires non-scalar tensors");
+    throw std::runtime_error("matmul does not support scalar tensors");
   }
 
   if (a.shape().dimensions() == 1) {

@@ -5,6 +5,7 @@
 #include "quasai/core/shape.hpp"
 #include "quasai/storage/buffer.hpp"
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <memory>
 
@@ -42,6 +43,32 @@ public:
                           Device device = Device::cpu());
 
   static Tensor from_impl(const TensorImpl &impl);
+
+  template <typename T>
+  static Tensor from_scalar(T scalar, DType dtype = DTypeTraits<T>::dtype,
+                            Device device = Device::cpu()) {
+
+    Tensor out = Tensor::empty({}, dtype, device);
+
+    switch (dtype) {
+      case DType::INT32:
+        *out.data<int32_t>() = static_cast<int32_t>(scalar);
+        break;
+      case DType::INT64:
+        *out.data<int64_t>() = static_cast<int64_t>(scalar);
+        break;
+      case DType::FLOAT32:
+        *out.data<float>() = static_cast<float>(scalar);
+        break;
+      case DType::FLOAT64:
+        *out.data<double>() = static_cast<double>(scalar);
+        break;
+      default:
+        throw std::runtime_error("Unsupported dtype");
+    }
+
+    return out;
+  }
 
   static Allocator *allocator_for_device(const Device &device);
 
