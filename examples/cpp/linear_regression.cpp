@@ -1,12 +1,12 @@
 // src/examples/cpp/linear_regression.cpp
 // Linear regression example
 
+#include "quasai/data/csv_parser.hpp"
 #include "quasai/nn/activations.hpp"
 #include "quasai/nn/linear.hpp"
 #include "quasai/nn/model.hpp"
 #include "quasai/nn/sequential.hpp"
 #include "quasai/optim/sgd.hpp"
-#include "quasai/utils/csv_parser.hpp"
 #include <iostream>
 #include <vector>
 
