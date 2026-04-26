@@ -1,5 +1,6 @@
 #include "quasai/autograd/metadata.hpp"
 #include "quasai/ops/tensor_ops.hpp"
+#include "quasai/utils/logger.hpp"
 
 namespace quasai {
 
@@ -121,8 +122,8 @@ Tensor reshape(const Tensor &a, const Shape &target) {
   }
   TensorImpl impl_a_copy = a.get_impl_copy();
   if (!a.is_contiguous()) {
-    LOG_INFO("Input tensor is not contiguous, making it contiguous before "
-             "reshaping");
+    LOG_WARNING("Input tensor is not contiguous, making it contiguous before "
+                "reshaping");
     impl_a_copy = make_contiguous(a).get_impl_copy();
   }
   impl_a_copy.shape = target;
@@ -141,7 +142,7 @@ Tensor slice(const Tensor &a, size_t start, size_t end) {
   TensorImpl impl_a_copy = a.get_impl_copy();
 
   if (!a.is_contiguous()) {
-    LOG_INFO(
+    LOG_WARNING(
         "Input tensor is not contiguous, making it contiguous before slicing");
     impl_a_copy = make_contiguous(a).get_impl_copy();
   }
