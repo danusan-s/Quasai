@@ -11,7 +11,6 @@ public:
 
   Tensor inverse_transform(const Tensor &data) const;
 
-private:
   Tensor mean_;
   Tensor std_;
 };
