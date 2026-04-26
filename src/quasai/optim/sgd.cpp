@@ -6,8 +6,6 @@ namespace quasai {
 
 void SGD::step() {
   const size_t num_params = parameters_.size();
-  Tensor momentum_scalar =
-      Tensor::from_data(&momentum_, Shape{}, DType::FLOAT32);
   for (size_t i = 0; i < num_params; ++i) {
     Parameter &param = parameters_[i];
     if (!param.autograd_meta() || !param.autograd_meta()->requires_grad) {
@@ -21,7 +19,7 @@ void SGD::step() {
       velocity = Tensor::zeros(param.shape(), param.dtype(), param.device());
     }
 
-    velocity = add(mul(velocity, momentum_scalar), grad);
+    velocity = add(mul(velocity, momentum_), grad);
 
     const float *grad_data = grad.data<float>();
     const float *velocity_data = velocity.data<float>();
