@@ -37,7 +37,7 @@ public:
   Heaviside() = default;
 
   Tensor forward(const Tensor &input) override {
-    return step(input);
+    return heaviside(input);
   }
 };
 

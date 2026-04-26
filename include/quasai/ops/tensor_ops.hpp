@@ -19,8 +19,10 @@ Tensor matmul(const Tensor &a, const Tensor &b);
 void add_unary_gradient(const Tensor &a, Tensor &result,
                         std::function<Function *()> grad_fn_constructor);
 Tensor neg(const Tensor &a);
+Tensor abs(const Tensor &a);
 Tensor relu(const Tensor &a);
-Tensor step(const Tensor &a);
+Tensor heaviside(const Tensor &a);
+Tensor signum(const Tensor &a);
 Tensor sigmoid(const Tensor &a);
 Tensor tanh(const Tensor &a);
 
@@ -36,6 +38,7 @@ Tensor expand(const Tensor &a,
               const Shape &target); // broadcast_to_shape but view and no new
                                     // buffer allocation
 Tensor reshape(const Tensor &a, const Shape &target);
+Tensor make_contiguous(const Tensor &a);
 Tensor slice(const Tensor &a, size_t start, size_t end);
 
 template <typename T>

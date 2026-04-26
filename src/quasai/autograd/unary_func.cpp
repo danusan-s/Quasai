@@ -11,6 +11,42 @@ std::vector<Tensor> NegFunction::backward(const Tensor &grad_output) {
   return {neg(grad_output)};
 }
 
+std::vector<Tensor> AbsFunction::backward(const Tensor &grad_output) {
+  // grad for input is grad_output where input > 0, -grad_output where input < 0
+  // and 0 where input == 0
+  const Tensor &input = inputs[0];
+  LOG_DEBUG(
+      ("AbsFunction backward: input shape = " + input.shape().to_string() +
+       ", grad_output shape = " + grad_output.shape().to_string())
+          .c_str());
+  Tensor grad_input = mul(grad_output, signum(input));
+  return {grad_input};
+}
+
+std::vector<Tensor> HeavisideFunction::backward(const Tensor &grad_output) {
+  // grad for input is 0 everywhere since heaviside is not differentiable at 0
+  const Tensor &input = inputs[0];
+  LOG_DEBUG(("HeavisideFunction backward: input shape = " +
+             input.shape().to_string() +
+             ", grad_output shape = " + grad_output.shape().to_string())
+                .c_str());
+  Tensor grad_input =
+      Tensor::zeros(input.shape(), input.dtype(), input.device());
+  return {grad_input};
+}
+
+std::vector<Tensor> SignumFunction::backward(const Tensor &grad_output) {
+  // grad for input is 0 everywhere since signum is not differentiable at 0
+  const Tensor &input = inputs[0];
+  LOG_DEBUG(
+      ("SignumFunction backward: input shape = " + input.shape().to_string() +
+       ", grad_output shape = " + grad_output.shape().to_string())
+          .c_str());
+  Tensor grad_input =
+      Tensor::zeros(input.shape(), input.dtype(), input.device());
+  return {grad_input};
+}
+
 std::vector<Tensor> ReluFunction::backward(const Tensor &grad_output) {
   // grad for input is grad_output where input > 0 and 0 otherwise
   const Tensor &input = inputs[0];
@@ -18,7 +54,7 @@ std::vector<Tensor> ReluFunction::backward(const Tensor &grad_output) {
       ("ReluFunction backward: input shape = " + input.shape().to_string() +
        ", grad_output shape = " + grad_output.shape().to_string())
           .c_str());
-  Tensor grad_input = mul(grad_output, step(input));
+  Tensor grad_input = mul(grad_output, heaviside(input));
   return {grad_input};
 }
 

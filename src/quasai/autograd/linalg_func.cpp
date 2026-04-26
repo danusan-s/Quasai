@@ -27,28 +27,4 @@ std::vector<Tensor> MatMulFunction::backward(const Tensor &grad_output) {
   return {grad_input1, grad_input2};
 }
 
-std::vector<Tensor> TransposeFunction::backward(const Tensor &grad_output) {
-  // grad for input is just the transpose of grad_output
-  const Tensor &input = inputs[0];
-  LOG_DEBUG(("TransposeFunction backward: grad_output shape = " +
-             grad_output.shape().to_string() +
-             ", input shape = " + input.shape().to_string())
-                .c_str());
-
-  Tensor grad_input = transpose(grad_output);
-  return {grad_input};
-}
-
-std::vector<Tensor> ReshapeFunction::backward(const Tensor &grad_output) {
-  // grad for input is just grad_output reshaped to input shape
-  const Tensor &input = inputs[0];
-  LOG_DEBUG(("ReshapeFunction backward: grad_output shape = " +
-             grad_output.shape().to_string() +
-             ", input shape = " + input.shape().to_string())
-                .c_str());
-
-  Tensor grad_input = reshape(grad_output, input.shape());
-  return {grad_input};
-}
-
 } // namespace quasai

@@ -22,7 +22,7 @@
 
 namespace quasai {
 
-void add_unary_gradient(const Tensor &a, Tensor &result,
+inline void add_unary_gradient(const Tensor &a, Tensor &result,
                         std::function<Function *()> grad_fn_constructor) {
   std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
 
@@ -46,6 +46,13 @@ Tensor neg(const Tensor &a) {
   return result;
 }
 
+Tensor abs(const Tensor &a) {
+  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, []() { return new AbsFunction(); });
+  DISPATCH_UNARY_OP(a, result, [](auto x) { return x >= 0 ? x : -x; });
+  return result;
+}
+
 Tensor relu(const Tensor &a) {
   Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
   add_unary_gradient(a, result, []() { return new ReluFunction(); });
@@ -53,9 +60,18 @@ Tensor relu(const Tensor &a) {
   return result;
 }
 
-Tensor step(const Tensor &a) {
+Tensor heaviside(const Tensor &a) {
   Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, []() { return new HeavisideFunction(); });
   DISPATCH_UNARY_OP(a, result, [](auto x) { return x > 0 ? 1 : 0; });
+  return result;
+}
+
+Tensor signum(const Tensor &a) {
+  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, []() { return new SignumFunction(); });
+  DISPATCH_UNARY_OP(a, result,
+                    [](auto x) { return x > 0 ? 1 : (x < 0 ? -1 : 0); });
   return result;
 }
 

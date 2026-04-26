@@ -3,6 +3,23 @@
 
 namespace quasai {
 
+inline void add_unary_gradient(const Tensor &a, Tensor &result,
+                        std::function<Function *()> grad_fn_constructor) {
+  std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
+
+  if (meta_a && meta_a->requires_grad) {
+    Function *grad_fn = grad_fn_constructor();
+    if (!grad_fn) {
+      throw std::runtime_error("Gradient function constructor returned nullptr "
+                               "or not implemented for this operation");
+    }
+    grad_fn->inputs = {a};
+
+    result.requires_grad(true);
+    result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
+  }
+}
+
 // No new buffer allocation
 // just create a new view with swapped shape and strides
 Tensor transpose(const Tensor &a) {
@@ -18,15 +35,7 @@ Tensor transpose(const Tensor &a) {
 
   Tensor result = Tensor::from_impl(impl_a_copy);
 
-  std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
-
-  if (meta_a && meta_a->requires_grad) {
-    Function *grad_fn = new TransposeFunction();
-    grad_fn->inputs = {a};
-
-    result.requires_grad(true);
-    result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
-  }
+  add_unary_gradient(a, result, []() { return new TransposeFunction(); });
 
   return result;
 }
@@ -65,7 +74,29 @@ Tensor expand(const Tensor &a, const Shape &target) {
   impl_a_copy.strides = new_strides;
   impl_a_copy.is_contiguous = false;
 
-  return Tensor::from_impl(impl_a_copy);
+  Tensor result = Tensor::from_impl(impl_a_copy);
+
+  add_unary_gradient(a, result, []() { return new ExpandFunction(); });
+  return result;
+}
+
+Tensor make_contiguous(const Tensor &a) {
+  if (a.is_contiguous()) {
+    return a;
+  }
+
+  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
+
+  size_t num_elements = total_size(a.shape());
+
+  for (size_t i = 0; i < num_elements; ++i) {
+    Index idx = unravel_index(i, a.shape());
+    result.data<float>()[i] = a.data<float>()[ravel_index(idx, a.strides())];
+  }
+
+  add_unary_gradient(a, result, []() { return new MakeContiguousFunction(); });
+
+  return result;
 }
 
 Tensor reshape(const Tensor &a, const Shape &target) {
@@ -75,26 +106,18 @@ Tensor reshape(const Tensor &a, const Shape &target) {
                              a.shape().to_string() + " and target " +
                              target.to_string());
   }
-  // TODO: allocate new tensor which is contiguous and then reshape
-  if (!a.is_contiguous()) {
-    throw std::runtime_error("Reshape requires input tensor to be contiguous");
-  }
-
   TensorImpl impl_a_copy = a.get_impl_copy();
+  if (!a.is_contiguous()) {
+    LOG_INFO("Input tensor is not contiguous, making it contiguous before "
+             "reshaping");
+    impl_a_copy = make_contiguous(a).get_impl_copy();
+  }
   impl_a_copy.shape = target;
   impl_a_copy.strides = get_strides(target);
 
   Tensor result = Tensor::from_impl(impl_a_copy);
 
-  std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
-
-  if (meta_a && meta_a->requires_grad) {
-    Function *grad_fn = new ReshapeFunction();
-    grad_fn->inputs = {a};
-
-    result.requires_grad(true);
-    result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
-  }
+  add_unary_gradient(a, result, []() { return new ReshapeFunction(); });
 
   return result;
 }
@@ -105,7 +128,9 @@ Tensor slice(const Tensor &a, size_t start, size_t end) {
   TensorImpl impl_a_copy = a.get_impl_copy();
 
   if (!a.is_contiguous()) {
-    throw std::runtime_error("Slice requires input tensor to be contiguous");
+    LOG_INFO(
+        "Input tensor is not contiguous, making it contiguous before slicing");
+    impl_a_copy = make_contiguous(a).get_impl_copy();
   }
 
   if (a.shape().dimensions() == 0) {

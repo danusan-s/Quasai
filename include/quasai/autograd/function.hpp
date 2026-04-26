@@ -41,6 +41,21 @@ public:
   std::vector<Tensor> backward(const Tensor &grad_output) override;
 };
 
+class AbsFunction : public Function {
+public:
+  std::vector<Tensor> backward(const Tensor &grad_output) override;
+};
+
+class HeavisideFunction : public Function {
+public:
+  std::vector<Tensor> backward(const Tensor &grad_output) override;
+};
+
+class SignumFunction : public Function {
+public:
+  std::vector<Tensor> backward(const Tensor &grad_output) override;
+};
+
 class SumFunction : public Function {
 public:
   std::vector<Tensor> backward(const Tensor &grad_output) override;
@@ -87,6 +102,16 @@ public:
 };
 
 class ReshapeFunction : public Function {
+public:
+  std::vector<Tensor> backward(const Tensor &grad_output) override;
+};
+
+class ExpandFunction : public Function {
+public:
+  std::vector<Tensor> backward(const Tensor &grad_output) override;
+};
+
+class MakeContiguousFunction : public Function {
 public:
   std::vector<Tensor> backward(const Tensor &grad_output) override;
 };
