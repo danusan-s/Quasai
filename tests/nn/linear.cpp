@@ -28,7 +28,8 @@ TEST(Linear, SimpleRegression) {
 
   float learning_rate = 0.005f;
   float momentum = 0.9f;
-  quasai::SGD optimizer(params, learning_rate, momentum);
+  quasai::SGD optimizer(learning_rate, momentum);
+  optimizer.compile(params);
 
   for (size_t epoch = 0; epoch < epochs; ++epoch) {
     quasai::Tensor output = linear.forward(input);
@@ -77,7 +78,8 @@ TEST(Linear, OneHiddenLayer) {
     params.push_back(p);
   }
 
-  quasai::SGD optimizer(params, 0.01f, 0.9f);
+  quasai::SGD optimizer(0.01f, 0.9f);
+  optimizer.compile(params);
 
   for (size_t epoch = 0; epoch < epochs; ++epoch) {
     std::cout << "Epoch " << epoch + 1 << std::endl;
@@ -150,7 +152,8 @@ TEST(Linear, OneHiddenLayer_MultiSample) {
 
   float learning_rate = 0.001f;
   float momentum = 0.9f;
-  quasai::SGD optimizer(params, learning_rate, momentum);
+  quasai::SGD optimizer(learning_rate, momentum);
+  optimizer.compile(params);
 
   size_t epochs = 50;
 

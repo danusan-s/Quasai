@@ -8,8 +8,19 @@ namespace quasai {
 Model::Model(std::shared_ptr<Module> module) : module_(module) {
 }
 
-void Model::train(const Tensor &input, const Tensor &targets, Loss loss_fn,
-                  Optimizer &optimizer, size_t epochs, size_t batch_size) {
+void Model::compile(Loss loss_fn, Optimizer &optimizer) {
+  loss_fn_ = loss_fn;
+  optimizer.compile(parameters());
+  optimizer_ = &optimizer;
+}
+
+void Model::train(const Tensor &input, const Tensor &targets, size_t epochs,
+                  size_t batch_size) {
+  if (!optimizer_) {
+    throw std::runtime_error(
+        "Optimizer not set. Call compile() before training.");
+  }
+
   std::ostringstream oss;
   oss << "Starting training for " << epochs << " epochs with batch size "
       << batch_size << "...\n";
@@ -34,7 +45,7 @@ void Model::train(const Tensor &input, const Tensor &targets, Loss loss_fn,
       Tensor batch_input = slice(input, i, i + current_batch_size);
       Tensor batch_targets = slice(targets, i, i + current_batch_size);
       Tensor batch_output = module_->forward(batch_input);
-      Tensor loss = compute_loss(batch_output, batch_targets, loss_fn);
+      Tensor loss = compute_loss(batch_output, batch_targets, loss_fn_);
       total_loss += loss.data<float>()[0];
 
       if (++batch_counter % batches_per_log == 0 ||
@@ -46,8 +57,8 @@ void Model::train(const Tensor &input, const Tensor &targets, Loss loss_fn,
       }
 
       loss.backward();
-      optimizer.step();
-      optimizer.zero_grad();
+      optimizer_->step();
+      optimizer_->zero_grad();
     }
 
     std::ostringstream oss;

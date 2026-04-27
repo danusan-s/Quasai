@@ -129,12 +129,14 @@ int main() {
 
   float learning_rate = 0.01f;
   float momentum = 0.3f;
-  quasai::SGD optimizer(model.parameters(), learning_rate, momentum);
+
+  quasai::SGD optimizer(learning_rate, momentum);
+
+  model.compile(quasai::Loss::MSE, optimizer);
 
   std::cout << "Starting training..." << std::endl;
 
-  model.train(train_input, train_target, quasai::Loss::MSE, optimizer,
-              num_epochs, batch_size);
+  model.train(train_input, train_target, num_epochs, batch_size);
 
   std::cout << "Evaluating model performance on training data..." << std::endl;
 

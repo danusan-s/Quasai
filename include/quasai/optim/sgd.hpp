@@ -8,15 +8,14 @@ namespace quasai {
 
 class SGD : public Optimizer {
 public:
-  SGD(std::vector<Parameter> parameters, float learning_rate,
-      float momentum = 0.0f)
-      : parameters_(parameters), learning_rate_(learning_rate),
-        momentum_(momentum) {
-    gradients_.resize(parameters.size());
+  SGD(float learning_rate, float momentum = 0.0f)
+      : learning_rate_(learning_rate), momentum_(momentum) {
     if (momentum >= 1.0f || momentum < 0.0f) {
       throw std::invalid_argument("Momentum must be in the range [0, 1)");
     }
   }
+
+  void compile(const std::vector<Parameter> &parameters) override;
 
   void step() override;
 

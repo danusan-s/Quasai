@@ -33,7 +33,8 @@ TEST(Sequential, TwoLayerRegression) {
 
   float learning_rate = 0.001f;
   float momentum = 0.9f;
-  quasai::SGD optimizer(params, learning_rate, momentum);
+  quasai::SGD optimizer(learning_rate, momentum);
+  optimizer.compile(params);
 
   size_t epochs = 10;
 
@@ -101,7 +102,8 @@ TEST(Sequential, OneHiddenLayer_MultiSample) {
 
   float learning_rate = 0.001f;
   float momentum = 0.9f;
-  quasai::SGD optimizer(model.parameters(), learning_rate, momentum);
+  quasai::SGD optimizer(learning_rate, momentum);
+  optimizer.compile(model.parameters());
 
   size_t epochs = 50;
 
@@ -189,7 +191,8 @@ TEST(Sequential, RegressionWithBatching) {
 
   float learning_rate = 0.001f;
   float momentum = 0.9f;
-  quasai::SGD optimizer(model.parameters(), learning_rate, momentum);
+  quasai::SGD optimizer(learning_rate, momentum);
+  optimizer.compile(model.parameters());
 
   size_t epochs = 50;
   size_t batch_size = 10;

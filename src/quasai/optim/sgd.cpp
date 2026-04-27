@@ -4,7 +4,17 @@
 
 namespace quasai {
 
+void SGD::compile(const std::vector<Parameter> &parameters) {
+  parameters_ = parameters;
+  gradients_.resize(parameters.size());
+}
+
 void SGD::step() {
+  if (parameters_.empty()) {
+    throw std::runtime_error(
+        "SGD optimizer not compiled with parameters. Call compile() first.");
+  }
+
   const size_t num_params = parameters_.size();
   for (size_t i = 0; i < num_params; ++i) {
     Parameter &param = parameters_[i];
@@ -34,6 +44,11 @@ void SGD::step() {
 }
 
 void SGD::zero_grad() {
+  if (parameters_.empty()) {
+    throw std::runtime_error(
+        "SGD optimizer not compiled with parameters. Call compile() first.");
+  }
+
   for (Parameter &param : parameters_) {
     if (param.autograd_meta() && param.autograd_meta()->requires_grad) {
       Tensor grad = param.autograd_meta()->grad;
