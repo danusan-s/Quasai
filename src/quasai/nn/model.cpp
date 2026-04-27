@@ -1,5 +1,6 @@
 #include "quasai/nn/model.hpp"
 #include "quasai/ops/tensor_ops.hpp"
+#include "quasai/optim/optimizer.hpp"
 #include "quasai/utils/logger.hpp"
 #include <sstream>
 
@@ -8,10 +9,10 @@ namespace quasai {
 Model::Model(std::shared_ptr<Module> module) : module_(module) {
 }
 
-void Model::compile(Loss loss_fn, Optimizer &optimizer) {
+void Model::compile(Loss loss_fn, std::shared_ptr<Optimizer> optimizer) {
   loss_fn_ = loss_fn;
-  optimizer.compile(parameters());
-  optimizer_ = &optimizer;
+  optimizer->compile(parameters());
+  optimizer_ = optimizer;
 }
 
 void Model::train(const Tensor &input, const Tensor &targets, size_t epochs,

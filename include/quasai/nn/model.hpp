@@ -10,7 +10,7 @@ class Model {
 public:
   Model(std::shared_ptr<Module> module);
 
-  void compile(Loss loss_fn, Optimizer &optimizer);
+  void compile(Loss loss_fn, std::shared_ptr<Optimizer> optimizer);
 
   void train(const Tensor &input, const Tensor &targets, size_t epochs = 1,
              size_t batch_size = 1);
@@ -24,7 +24,7 @@ public:
 private:
   std::shared_ptr<Module> module_;
   Loss loss_fn_;
-  Optimizer *optimizer_;
+  std::shared_ptr<Optimizer> optimizer_;
 };
 
 } // namespace quasai
