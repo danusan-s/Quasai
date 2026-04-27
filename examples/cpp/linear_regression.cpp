@@ -130,7 +130,7 @@ int main() {
   float learning_rate = 0.01f;
   float momentum = 0.3f;
 
-  quasai::SGD optimizer(learning_rate, momentum);
+  auto optimizer = std::make_shared<quasai::SGD>(learning_rate, momentum);
 
   model.compile(quasai::Loss::MSE, optimizer);
 

@@ -1,15 +1,17 @@
 #include <memory>
+#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/numpy.h>
 
 #include "quasai/core/shape.hpp"
 #include "quasai/core/tensor.hpp"
 #include "quasai/nn/activations.hpp"
 #include "quasai/nn/linear.hpp"
+#include "quasai/nn/loss.hpp"
 #include "quasai/nn/model.hpp"
 #include "quasai/nn/module.hpp"
 #include "quasai/nn/sequential.hpp"
+#include "quasai/optim/sgd.hpp"
 
 namespace py = pybind11;
 
@@ -32,7 +34,7 @@ PYBIND11_MODULE(pyquasai, m) {
   m.def("tensor", [](py::array_t<float> arr) {
     auto buf = arr.request();
     size_t ndim = static_cast<size_t>(buf.ndim);
-    std::vector<size_t> sizes(ndim);
+    std::vector<size_t> sizes(ndim, 0);
     for (size_t i = 0; i < ndim; ++i) {
       sizes[i] = static_cast<size_t>(buf.shape[i]);
     }
@@ -70,11 +72,26 @@ PYBIND11_MODULE(pyquasai, m) {
              std::shared_ptr<quasai::Sequential>>(m, "Sequential")
       .def(py::init<std::vector<std::shared_ptr<quasai::Module>>>());
 
+  py::class_<quasai::Optimizer, std::shared_ptr<quasai::Optimizer>>(
+      m, "Optimizer");
+
+  py::class_<quasai::SGD, quasai::Optimizer, std::shared_ptr<quasai::SGD>>(
+      m, "SGD")
+      .def(py::init<float, float>());
+
+  py::enum_<quasai::Loss>(m, "Loss")
+      .value("MSE", quasai::Loss::MSE)
+      .value("L1", quasai::Loss::L1)
+      .export_values();
+
   // -------------------------
   // Model
   // -------------------------
   py::class_<quasai::Model, std::shared_ptr<quasai::Model>>(m, "Model")
       .def(py::init<std::shared_ptr<quasai::Module>>())
-      .def("predict", &quasai::Model::predict)
-      .def("parameters", &quasai::Model::parameters);
+      .def("compile", &quasai::Model::compile, py::arg("loss_fn"),
+           py::arg("optimizer"))
+      .def("train", &quasai::Model::train, py::arg("x"), py::arg("y"),
+           py::arg("epochs"), py::arg("batch_size") = 32)
+      .def("predict", &quasai::Model::predict, py::arg("x"));
 }
