@@ -16,7 +16,7 @@ void SGD::step() {
     Tensor &velocity = gradients_[i];
 
     if (!velocity.buffer() || velocity.buffer()->size() == 0) {
-      velocity = Tensor::zeros(param.shape(), param.dtype(), param.device());
+      velocity = Tensor::zeros(grad.shape(), grad.dtype(), grad.device());
     }
 
     velocity = add(mul(velocity, momentum_), grad);
