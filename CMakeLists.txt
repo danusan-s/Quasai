@@ -14,6 +14,7 @@ file(GLOB_RECURSE SRC_FILES
 add_library(quasai STATIC
   ${SRC_FILES}
 )
+set_target_properties(quasai PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(quasai PUBLIC
     ${CMAKE_SOURCE_DIR}/include
@@ -26,6 +27,9 @@ endif()
 # GoogleTest
 enable_testing()
 add_subdirectory(tests)
+
+# Python bindings
+add_subdirectory(bindings)
 
 # Examples
 add_subdirectory(examples)
