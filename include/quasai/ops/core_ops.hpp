@@ -245,9 +245,10 @@ void do_matmul_slow(const Tensor &a, const Tensor &b, Tensor &result) {
       for (size_t kk = 0; kk < K; kk += BS) {
         for (size_t i = ii; i < std::min(ii + BS, M); ++i) {
           for (size_t k = kk; k < std::min(kk + BS, K); ++k) {
-            T a_val = A[i * K + k];
+            T a_val = A[i * a_strides[0] + k * a_strides[1]];
             for (size_t j = jj; j < std::min(jj + BS, N); ++j) {
-              C[i * N + j] += a_val * B[k * N + j];
+              C[i * c_strides[0] + j * c_strides[1]] +=
+                  a_val * B[k * b_strides[0] + j * b_strides[1]];
             }
           }
         }
