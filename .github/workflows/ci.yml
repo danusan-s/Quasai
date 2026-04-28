@@ -35,7 +35,7 @@ jobs:
       run: cmake --build build --parallel $(nproc)
 
     - name: Run tests
-      run: ctest --test-dir build --output-on-failure --parallel $(nproc)
+      run: ctest --test-dir build/tests --output-on-failure --parallel $(nproc)
 
     - name: Run benchmarks
       run: |

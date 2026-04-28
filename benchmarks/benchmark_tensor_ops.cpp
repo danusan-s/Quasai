@@ -4,9 +4,9 @@
 #include <vector>
 
 // Large tensor sizes to trigger OpenMP parallelism
-constexpr size_t LARGE_2D = 4096;     // 4096x4096 = 16M elements
-constexpr size_t HUGE_2D = 8192;      // 8192x8192 = 64M elements
-constexpr size_t LARGE_1D = 10000000; // 10M elements
+constexpr size_t LARGE_2D = 2048;    // 2048x2048 = 4M elements
+constexpr size_t HUGE_2D = 4096;      // 4096x4096 = 16M elements
+constexpr size_t LARGE_1D = 5000000; // 5M elements
 
 // Benchmark: Tensor addition (large 2D)
 static void BM_TensorAdd_Large2D(benchmark::State &state) {
