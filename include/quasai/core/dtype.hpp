@@ -2,7 +2,9 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <stdexcept>
+#include <type_traits>
 
 namespace quasai::core {
 
@@ -12,6 +14,22 @@ typedef enum {
   INT32,
   INT64,
 } DType;
+
+// C++20 dtype dispatch helper using generic lambdas
+template <typename F> constexpr auto dispatch_by_dtype(DType dtype, F &&f) {
+  switch (dtype) {
+    case DType::FLOAT32:
+      return std::forward<F>(f).template operator()<float>();
+    case DType::FLOAT64:
+      return std::forward<F>(f).template operator()<double>();
+    case DType::INT32:
+      return std::forward<F>(f).template operator()<int32_t>();
+    case DType::INT64:
+      return std::forward<F>(f).template operator()<int64_t>();
+    default:
+      throw std::runtime_error("Unsupported data type for dispatch");
+  }
+}
 
 template <typename T> struct DTypeTraits;
 

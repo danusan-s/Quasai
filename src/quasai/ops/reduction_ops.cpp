@@ -11,28 +11,13 @@ core::Tensor sum(const core::Tensor &a) {
 
   const std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
   if (meta_a && meta_a->requires_grad) {
-    autograd::Function *grad_fn = new autograd::SumFunction();
+    auto grad_fn = std::make_unique<autograd::SumFunction>();
     grad_fn->inputs = {a};
     result.requires_grad(true);
-    result.set_grad_fn(std::unique_ptr<autograd::Function>(grad_fn));
+    result.set_grad_fn(std::move(grad_fn));
   }
 
-  switch (a.dtype()) {
-    case core::DType::FLOAT32:
-      do_sum<float>(a, result);
-      break;
-    case core::DType::FLOAT64:
-      do_sum<double>(a, result);
-      break;
-    case core::DType::INT32:
-      do_sum<int32_t>(a, result);
-      break;
-    case core::DType::INT64:
-      do_sum<int64_t>(a, result);
-      break;
-    default:
-      throw std::runtime_error("Unsupported data type for sum operation");
-  }
+  dispatch_by_dtype(a.dtype(), [&]<typename T>() { do_sum<T>(a, result); });
 
   return result;
 }
@@ -53,29 +38,14 @@ core::Tensor sum_to_shape(const core::Tensor &a, const core::Shape &target) {
 
   const std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
   if (meta_a && meta_a->requires_grad) {
-    autograd::Function *grad_fn = new autograd::SumToShapeFunction();
+    auto grad_fn = std::make_unique<autograd::SumToShapeFunction>();
     grad_fn->inputs = {a};
     out.requires_grad(true);
-    out.set_grad_fn(std::unique_ptr<autograd::Function>(grad_fn));
+    out.set_grad_fn(std::move(grad_fn));
   }
 
-  switch (a.dtype()) {
-    case core::DType::FLOAT32:
-      do_sum_to_shape<float>(a, out);
-      break;
-    case core::DType::FLOAT64:
-      do_sum_to_shape<double>(a, out);
-      break;
-    case core::DType::INT32:
-      do_sum_to_shape<int32_t>(a, out);
-      break;
-    case core::DType::INT64:
-      do_sum_to_shape<int64_t>(a, out);
-      break;
-    default:
-      throw std::runtime_error(
-          "Unsupported data type for sum_to_shape operation");
-  }
+  dispatch_by_dtype(a.dtype(),
+                    [&]<typename T>() { do_sum_to_shape<T>(a, out); });
 
   return out;
 }
@@ -97,29 +67,14 @@ core::Tensor broadcast_to_shape(const core::Tensor &a,
 
   const std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
   if (meta_a && meta_a->requires_grad) {
-    autograd::Function *grad_fn = new autograd::BroadcastToShapeFunction();
+    auto grad_fn = std::make_unique<autograd::BroadcastToShapeFunction>();
     grad_fn->inputs = {a};
     out.requires_grad(true);
-    out.set_grad_fn(std::unique_ptr<autograd::Function>(grad_fn));
+    out.set_grad_fn(std::move(grad_fn));
   }
 
-  switch (a.dtype()) {
-    case core::DType::FLOAT32:
-      do_broadcast_to_shape<float>(a, out);
-      break;
-    case core::DType::FLOAT64:
-      do_broadcast_to_shape<double>(a, out);
-      break;
-    case core::DType::INT32:
-      do_broadcast_to_shape<int32_t>(a, out);
-      break;
-    case core::DType::INT64:
-      do_broadcast_to_shape<int64_t>(a, out);
-      break;
-    default:
-      throw std::runtime_error(
-          "Unsupported data type for broadcast_to_shape operation");
-  }
+  dispatch_by_dtype(a.dtype(),
+                    [&]<typename T>() { do_broadcast_to_shape<T>(a, out); });
 
   return out;
 }
@@ -135,29 +90,19 @@ core::Tensor mean(const core::Tensor &a) {
 
   const std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
   if (meta_a && meta_a->requires_grad) {
-    autograd::Function *grad_fn = new autograd::MeanFunction();
+    auto grad_fn = std::make_unique<autograd::MeanFunction>();
     grad_fn->inputs = {a};
     result.requires_grad(true);
-    result.set_grad_fn(std::unique_ptr<autograd::Function>(grad_fn));
+    result.set_grad_fn(std::move(grad_fn));
   }
 
-  switch (a.dtype()) {
-    case core::DType::FLOAT32:
-      do_sum<float>(a, result);
-      do_unary_op<float>(result, result,
-                         [num_elements = core::total_size(a.shape())](float x) {
-                           return x / num_elements;
-                         });
-      break;
-    case core::DType::FLOAT64:
-      do_sum<double>(a, result);
-      do_unary_op<double>(result, result,
-                          [num_elements = core::total_size(a.shape())](
-                              double x) { return x / num_elements; });
-      break;
-    default:
-      throw std::runtime_error("Unsupported data type for mean operation");
-  }
+  dispatch_by_dtype(a.dtype(), [&]<typename T>() {
+    do_sum<T>(a, result);
+    do_unary_op<T>(result, result,
+                   [num_elements = core::total_size(a.shape())](T x) {
+                     return x / static_cast<T>(num_elements);
+                   });
+  });
 
   return result;
 }

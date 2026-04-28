@@ -5,13 +5,13 @@
 
 namespace quasai::ops {
 
-inline void
-add_unary_gradient(const core::Tensor &a, core::Tensor &result,
-                   std::function<autograd::Function *()> grad_fn_constructor) {
+inline void add_unary_gradient(
+    const core::Tensor &a, core::Tensor &result,
+    std::function<std::unique_ptr<autograd::Function>()> grad_fn_constructor) {
   std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
 
   if (meta_a && meta_a->requires_grad) {
-    autograd::Function *grad_fn = grad_fn_constructor();
+    auto grad_fn = grad_fn_constructor();
     if (!grad_fn) {
       throw std::runtime_error("Gradient function constructor returned nullptr "
                                "or not implemented for this operation");
@@ -19,7 +19,7 @@ add_unary_gradient(const core::Tensor &a, core::Tensor &result,
     grad_fn->inputs = {a};
 
     result.requires_grad(true);
-    result.set_grad_fn(std::unique_ptr<autograd::Function>(grad_fn));
+    result.set_grad_fn(std::move(grad_fn));
   }
 }
 
@@ -36,8 +36,9 @@ core::Tensor transpose(const core::Tensor &a) {
 
   core::Tensor result = core::Tensor::from_impl(impl_a_copy);
 
-  add_unary_gradient(a, result,
-                     []() { return new autograd::TransposeFunction(); });
+  add_unary_gradient(a, result, []() {
+    return std::make_unique<autograd::TransposeFunction>();
+  });
 
   return result;
 }
@@ -78,8 +79,8 @@ core::Tensor expand(const core::Tensor &a, const core::Shape &target) {
 
   core::Tensor result = core::Tensor::from_impl(impl_a_copy);
 
-  add_unary_gradient(a, result,
-                     []() { return new autograd::ExpandFunction(); });
+  add_unary_gradient(
+      a, result, []() { return std::make_unique<autograd::ExpandFunction>(); });
   return result;
 }
 
@@ -92,25 +93,12 @@ core::Tensor make_contiguous(const core::Tensor &a) {
 
   size_t num_elements = core::total_size(a.shape());
 
-  switch (a.dtype()) {
-    case core::DType::FLOAT32:
-      do_contiguous_copy<float>(a, result);
-      break;
-    case core::DType::FLOAT64:
-      do_contiguous_copy<double>(a, result);
-      break;
-    case core::DType::INT32:
-      do_contiguous_copy<int32_t>(a, result);
-      break;
-    case core::DType::INT64:
-      do_contiguous_copy<int64_t>(a, result);
-      break;
-    default:
-      throw std::runtime_error("Unsupported data type for make_contiguous.");
-  }
+  dispatch_by_dtype(a.dtype(),
+                    [&]<typename T>() { do_contiguous_copy<T>(a, result); });
 
-  add_unary_gradient(a, result,
-                     []() { return new autograd::MakeContiguousFunction(); });
+  add_unary_gradient(a, result, []() {
+    return std::make_unique<autograd::MakeContiguousFunction>();
+  });
 
   return result;
 }
@@ -133,8 +121,9 @@ core::Tensor reshape(const core::Tensor &a, const core::Shape &target) {
 
   core::Tensor result = core::Tensor::from_impl(impl_a_copy);
 
-  add_unary_gradient(a, result,
-                     []() { return new autograd::ReshapeFunction(); });
+  add_unary_gradient(a, result, []() {
+    return std::make_unique<autograd::ReshapeFunction>();
+  });
 
   return result;
 }

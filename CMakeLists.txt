@@ -4,6 +4,16 @@ project(Quasai LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Compiler warnings
+add_compile_options(-Wall -Wextra -Wpedantic)
+
+# Sanitizers
+option(ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+if(ENABLE_SANITIZERS)
+  set(SANITIZER_FLAGS -fsanitize=address,undefined -fno-omit-frame-pointer)
+  add_compile_options(${SANITIZER_FLAGS})
+  add_link_options(${SANITIZER_FLAGS})
+endif()
 
 find_package(OpenMP)
 
@@ -39,4 +49,5 @@ add_subdirectory(bindings)
 add_subdirectory(examples)
 
 # Tests
+enable_testing()
 add_subdirectory(tests)

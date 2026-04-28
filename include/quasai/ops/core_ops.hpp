@@ -30,7 +30,7 @@ inline bool can_use_parallel_matmul(size_t M, size_t N, size_t BS) {
 // Binary ops
 void add_binary_gradient(
     const core::Tensor &a, const core::Tensor &b, core::Tensor &result,
-    std::function<autograd::Function *()> grad_fn_constructor);
+    std::function<std::unique_ptr<autograd::Function>()> grad_fn_constructor);
 core::Tensor add(const core::Tensor &a, const core::Tensor &b);
 core::Tensor sub(const core::Tensor &a, const core::Tensor &b);
 core::Tensor mul(const core::Tensor &a, const core::Tensor &b);
@@ -41,7 +41,7 @@ core::Tensor matmul(const core::Tensor &a, const core::Tensor &b);
 // Unary ops
 void add_unary_gradient(
     const core::Tensor &a, core::Tensor &result,
-    std::function<autograd::Function *()> grad_fn_constructor);
+    std::function<std::unique_ptr<autograd::Function>()> grad_fn_constructor);
 core::Tensor neg(const core::Tensor &a);
 core::Tensor abs(const core::Tensor &a);
 core::Tensor relu(const core::Tensor &a);

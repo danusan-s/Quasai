@@ -52,22 +52,8 @@ public:
 
     Tensor out = Tensor::empty({}, dtype, device);
 
-    switch (dtype) {
-      case DType::INT32:
-        *out.data<int32_t>() = static_cast<int32_t>(scalar);
-        break;
-      case DType::INT64:
-        *out.data<int64_t>() = static_cast<int64_t>(scalar);
-        break;
-      case DType::FLOAT32:
-        *out.data<float>() = static_cast<float>(scalar);
-        break;
-      case DType::FLOAT64:
-        *out.data<double>() = static_cast<double>(scalar);
-        break;
-      default:
-        throw std::runtime_error("Unsupported dtype");
-    }
+    dispatch_by_dtype(
+        dtype, [&]<typename U>() { *out.data<U>() = static_cast<U>(scalar); });
 
     return out;
   }

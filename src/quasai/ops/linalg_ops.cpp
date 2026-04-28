@@ -48,29 +48,15 @@ core::Tensor matmul(const core::Tensor &a, const core::Tensor &b) {
   const std::shared_ptr<autograd::AutoGradMeta> meta_b = b.autograd_meta();
 
   if ((meta_a && meta_a->requires_grad) || (meta_b && meta_b->requires_grad)) {
-    autograd::MatMulFunction *grad_fn = new autograd::MatMulFunction();
+    auto grad_fn = std::make_unique<autograd::MatMulFunction>();
     grad_fn->inputs = {a, b};
 
     result.requires_grad(true);
-    result.set_grad_fn(std::unique_ptr<autograd::Function>(grad_fn));
+    result.set_grad_fn(std::move(grad_fn));
   }
 
-  switch (a.dtype()) {
-    case core::DType::FLOAT32:
-      do_matmul<float>(a, b, result);
-      break;
-    case core::DType::FLOAT64:
-      do_matmul<double>(a, b, result);
-      break;
-    case core::DType::INT32:
-      do_matmul<int32_t>(a, b, result);
-      break;
-    case core::DType::INT64:
-      do_matmul<int64_t>(a, b, result);
-      break;
-    default:
-      throw std::runtime_error("Unsupported data type for matmul operation");
-  }
+  dispatch_by_dtype(a.dtype(),
+                    [&]<typename T>() { do_matmul<T>(a, b, result); });
 
   return result;
 }
