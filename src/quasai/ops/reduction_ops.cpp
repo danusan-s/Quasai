@@ -50,35 +50,6 @@ core::Tensor sum_to_shape(const core::Tensor &a, const core::Shape &target) {
   return out;
 }
 
-core::Tensor broadcast_to_shape(const core::Tensor &a,
-                                const core::Shape &target) {
-  core::Shape a_shape = a.shape();
-  size_t ndim_a = a_shape.dimensions();
-  size_t ndim_t = target.dimensions();
-
-  if (ndim_a > ndim_t) {
-    throw std::runtime_error("Input shape cannot have more dimensions than "
-                             "target shape, got input" +
-                             a_shape.to_string() + " and target " +
-                             target.to_string());
-  }
-
-  core::Tensor out = core::Tensor::empty(target, a.dtype(), a.device());
-
-  const std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
-  if (meta_a && meta_a->requires_grad) {
-    auto grad_fn = std::make_unique<autograd::BroadcastToShapeFunction>();
-    grad_fn->inputs = {a};
-    out.requires_grad(true);
-    out.set_grad_fn(std::move(grad_fn));
-  }
-
-  dispatch_by_dtype(a.dtype(),
-                    [&]<typename T>() { do_broadcast_to_shape<T>(a, out); });
-
-  return out;
-}
-
 core::Tensor mean(const core::Tensor &a) {
   if (!core::is_floating(a.dtype())) {
     throw std::runtime_error(

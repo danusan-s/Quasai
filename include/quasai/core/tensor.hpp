@@ -52,8 +52,28 @@ public:
 
     Tensor out = Tensor::empty({}, dtype, device);
 
-    dispatch_by_dtype(
-        dtype, [&]<typename U>() { *out.data<U>() = static_cast<U>(scalar); });
+    switch (dtype) {
+      case DType::FLOAT32: {
+        float *data_ptr = out.data<float>();
+        data_ptr[0] = static_cast<float>(scalar);
+        break;
+      }
+      case DType::INT32: {
+        int32_t *data_ptr = out.data<int32_t>();
+        data_ptr[0] = static_cast<int32_t>(scalar);
+        break;
+      }
+      case DType::FLOAT64: {
+        double *data_ptr = out.data<double>();
+        data_ptr[0] = static_cast<double>(scalar);
+        break;
+      }
+      case DType::INT64: {
+        int64_t *data_ptr = out.data<int64_t>();
+        data_ptr[0] = static_cast<int64_t>(scalar);
+        break;
+      }
+    }
 
     return out;
   }
