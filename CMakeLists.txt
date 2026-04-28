@@ -26,9 +26,11 @@ if(OpenMP_CXX_FOUND)
     target_link_libraries(quasai PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
-# GoogleTest
-enable_testing()
-add_subdirectory(tests)
+# Benchmarks (optional)
+option(BUILD_BENCHMARKS "Build benchmarks" OFF)
+if(BUILD_BENCHMARKS)
+  add_subdirectory(benchmarks)
+endif()
 
 # Python bindings
 add_subdirectory(bindings)
@@ -36,8 +38,5 @@ add_subdirectory(bindings)
 # Examples
 add_subdirectory(examples)
 
-# Benchmarks (optional)
-option(BUILD_BENCHMARKS "Build benchmarks" OFF)
-if(BUILD_BENCHMARKS)
-  add_subdirectory(benchmarks)
-endif()
+# Tests
+add_subdirectory(tests)

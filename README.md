@@ -82,7 +82,7 @@ cmake -S . -B build
 cmake --build build
 
 # Run tests
-ctest --test-dir build --output-on-failure
+ctest --test-dir build/tests --output-on-failure
 
 # Use python bindings (if built with pybind11)
 DPYTHONPATH=build/python python examples/python/example.py
