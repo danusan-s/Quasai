@@ -1,93 +1,94 @@
 #include "quasai/autograd/metadata.hpp"
+#include "quasai/autograd/unary_func.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 #include <cmath>
 
 #define DISPATCH_UNARY_OP(a, result, OP)                                       \
   switch (a.dtype()) {                                                         \
-    case DType::FLOAT32:                                                       \
-      do_unary_op<float>(a, result, OP);                                       \
+    case core::DType::FLOAT32:                                                   \
+      do_unary_op<float>(a, result, OP);                                         \
       break;                                                                   \
-    case DType::FLOAT64:                                                       \
-      do_unary_op<double>(a, result, OP);                                      \
+    case core::DType::FLOAT64:                                                   \
+      do_unary_op<double>(a, result, OP);                                          \
       break;                                                                   \
-    case DType::INT32:                                                         \
-      do_unary_op<int32_t>(a, result, OP);                                     \
+    case core::DType::INT32:                                                    \
+      do_unary_op<int32_t>(a, result, OP);                                      \
       break;                                                                   \
-    case DType::INT64:                                                         \
-      do_unary_op<int64_t>(a, result, OP);                                     \
+    case core::DType::INT64:                                                      \
+      do_unary_op<int64_t>(a, result, OP);                                      \
       break;                                                                   \
     default:                                                                   \
       throw std::runtime_error("Unsupported data type for unary operation");   \
   }
 
-namespace quasai {
+namespace quasai::ops {
 
-inline void add_unary_gradient(const Tensor &a, Tensor &result,
-                        std::function<Function *()> grad_fn_constructor) {
-  std::shared_ptr<AutoGradMeta> meta_a = a.autograd_meta();
+inline void add_unary_gradient(const core::Tensor &a, core::Tensor &result,
+                        std::function<autograd::Function *()> grad_fn_constructor) {
+  std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
 
   if (meta_a && meta_a->requires_grad) {
-    Function *grad_fn = grad_fn_constructor();
+    autograd::Function *grad_fn = grad_fn_constructor();
     if (!grad_fn) {
       throw std::runtime_error("Gradient function constructor returned nullptr "
-                               "or not implemented for this operation");
+                           "or not implemented for this operation");
     }
     grad_fn->inputs = {a};
 
     result.requires_grad(true);
-    result.set_grad_fn(std::unique_ptr<Function>(grad_fn));
+    result.set_grad_fn(std::unique_ptr<autograd::Function>(grad_fn));
   }
 }
 
-Tensor neg(const Tensor &a) {
-  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
-  add_unary_gradient(a, result, []() { return new NegFunction(); });
+core::Tensor neg(const core::Tensor &a) {
+  core::Tensor result = core::Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, []() { return new autograd::NegFunction(); });
   DISPATCH_UNARY_OP(a, result, [](auto x) { return -x; });
   return result;
 }
 
-Tensor abs(const Tensor &a) {
-  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
-  add_unary_gradient(a, result, []() { return new AbsFunction(); });
+core::Tensor abs(const core::Tensor &a) {
+  core::Tensor result = core::Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, []() { return new autograd::AbsFunction(); });
   DISPATCH_UNARY_OP(a, result, [](auto x) { return x >= 0 ? x : -x; });
   return result;
 }
 
-Tensor relu(const Tensor &a) {
-  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
-  add_unary_gradient(a, result, []() { return new ReluFunction(); });
+core::Tensor relu(const core::Tensor &a) {
+  core::Tensor result = core::Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, []() { return new autograd::ReluFunction(); });
   DISPATCH_UNARY_OP(a, result, [](auto x) { return x > 0 ? x : 0; });
   return result;
 }
 
-Tensor heaviside(const Tensor &a) {
-  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
-  add_unary_gradient(a, result, []() { return new HeavisideFunction(); });
+core::Tensor heaviside(const core::Tensor &a) {
+  core::Tensor result = core::Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, []() { return new autograd::HeavisideFunction(); });
   DISPATCH_UNARY_OP(a, result, [](auto x) { return x > 0 ? 1 : 0; });
   return result;
 }
 
-Tensor signum(const Tensor &a) {
-  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
-  add_unary_gradient(a, result, []() { return new SignumFunction(); });
+core::Tensor signum(const core::Tensor &a) {
+  core::Tensor result = core::Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, []() { return new autograd::SignumFunction(); });
   DISPATCH_UNARY_OP(a, result,
                     [](auto x) { return x > 0 ? 1 : (x < 0 ? -1 : 0); });
   return result;
 }
 
-Tensor sigmoid(const Tensor &a) {
-  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
-  add_unary_gradient(a, result, []() { return new SigmoidFunction(); });
+core::Tensor sigmoid(const core::Tensor &a) {
+  core::Tensor result = core::Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, []() { return new autograd::SigmoidFunction(); });
   DISPATCH_UNARY_OP(a, result,
                     [](auto x) { return 1.0 / (1.0 + std::exp(-x)); });
   return result;
 }
 
-Tensor tanh(const Tensor &a) {
-  Tensor result = Tensor::empty(a.shape(), a.dtype(), a.device());
-  add_unary_gradient(a, result, []() { return new TanhFunction(); });
+core::Tensor tanh(const core::Tensor &a) {
+  core::Tensor result = core::Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, []() { return new autograd::TanhFunction(); });
   DISPATCH_UNARY_OP(a, result, [](auto x) { return std::tanh(x); });
   return result;
 }
 
-} // namespace quasai
+} // namespace quasai::ops

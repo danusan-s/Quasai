@@ -1,6 +1,6 @@
 #include "quasai/storage/buffer.hpp"
 
-namespace quasai {
+namespace quasai::storage {
 
 Buffer::Buffer(Allocator *allocator, std::size_t size)
     : allocator_(allocator), size_(size) {
@@ -42,4 +42,4 @@ std::size_t Buffer::size() const {
   return size_;
 }
 
-} // namespace quasai
+} // namespace quasai::storage

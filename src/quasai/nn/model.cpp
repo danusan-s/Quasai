@@ -4,18 +4,18 @@
 #include "quasai/utils/logger.hpp"
 #include <sstream>
 
-namespace quasai {
+namespace quasai::nn {
 
 Model::Model(std::shared_ptr<Module> module) : module_(module) {
 }
 
-void Model::compile(Loss loss_fn, std::shared_ptr<Optimizer> optimizer) {
+void Model::compile(Loss loss_fn, std::shared_ptr<optim::Optimizer> optimizer) {
   loss_fn_ = loss_fn;
   optimizer->compile(parameters());
   optimizer_ = optimizer;
 }
 
-void Model::train(const Tensor &input, const Tensor &targets, size_t epochs,
+void Model::train(const core::Tensor &input, const core::Tensor &targets, size_t epochs,
                   size_t batch_size) {
   if (!optimizer_) {
     throw std::runtime_error(
@@ -29,7 +29,7 @@ void Model::train(const Tensor &input, const Tensor &targets, size_t epochs,
 
   const size_t num_samples = input.shape()[0];
   const size_t num_batches = (num_samples + batch_size - 1) / batch_size;
-  constexpr size_t log_interval = 10; // Log every 10% of the batches
+  constexpr size_t log_interval = 10;
   const size_t batches_per_log =
       std::max<size_t>(1, num_batches / log_interval);
 
@@ -43,10 +43,10 @@ void Model::train(const Tensor &input, const Tensor &targets, size_t epochs,
 
     for (size_t i = 0; i < num_samples; i += batch_size) {
       size_t current_batch_size = std::min(batch_size, input.shape()[0] - i);
-      Tensor batch_input = slice(input, i, i + current_batch_size);
-      Tensor batch_targets = slice(targets, i, i + current_batch_size);
-      Tensor batch_output = module_->forward(batch_input);
-      Tensor loss = compute_loss(batch_output, batch_targets, loss_fn_);
+      core::Tensor batch_input = ops::slice(input, i, i + current_batch_size);
+      core::Tensor batch_targets = ops::slice(targets, i, i + current_batch_size);
+      core::Tensor batch_output = module_->forward(batch_input);
+      core::Tensor loss = compute_loss(batch_output, batch_targets, loss_fn_);
       total_loss += loss.data<float>()[0];
 
       if (++batch_counter % batches_per_log == 0 ||
@@ -68,13 +68,13 @@ void Model::train(const Tensor &input, const Tensor &targets, size_t epochs,
   }
 }
 
-Tensor Model::predict(const Tensor &input) {
+core::Tensor Model::predict(const core::Tensor &input) {
   return module_->forward(input);
 }
 
-Tensor Model::evaluate(const Tensor &input, const Tensor &targets,
-                       Loss loss_fn) {
-  Tensor output = module_->forward(input);
+core::Tensor Model::evaluate(const core::Tensor &input, const core::Tensor &targets,
+                           Loss loss_fn) {
+  core::Tensor output = module_->forward(input);
   return compute_loss(output, targets, loss_fn);
 }
 
@@ -82,4 +82,4 @@ std::vector<Parameter> Model::parameters() const {
   return module_->parameters();
 }
 
-} // namespace quasai
+} // namespace quasai::nn

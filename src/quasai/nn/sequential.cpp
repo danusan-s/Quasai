@@ -1,6 +1,6 @@
 #include "quasai/nn/sequential.hpp"
 
-namespace quasai {
+namespace quasai::nn {
 
 Sequential::Sequential(const std::vector<std::shared_ptr<Module>> &modules)
     : modules_(modules) {
@@ -12,12 +12,12 @@ Sequential::Sequential(const std::vector<std::shared_ptr<Module>> &modules)
   }
 }
 
-Tensor Sequential::forward(const Tensor &input) {
-  Tensor output = input;
+core::Tensor Sequential::forward(const core::Tensor &input) {
+  core::Tensor output = input;
   for (const auto &module : modules_) {
     output = module->forward(output);
   }
   return output;
 }
 
-} // namespace quasai
+} // namespace quasai::nn

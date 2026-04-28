@@ -1,7 +1,9 @@
 #include "quasai/storage/allocator.hpp"
+#ifdef QUASAI_CUDA
 #include <cuda_runtime.h>
+#endif
 
-namespace quasai {
+namespace quasai::storage {
 
 void *CpuAllocator::allocate(std::size_t size) {
   if (size == 0) {
@@ -19,6 +21,7 @@ CpuAllocator &CpuAllocator::instance() {
   return allocator;
 }
 
+#ifdef QUASAI_CUDA
 void *CudaAllocator::allocate(std::size_t size) {
   if (size == 0) {
     size = 1;
@@ -36,5 +39,6 @@ CudaAllocator &CudaAllocator::instance() {
   static CudaAllocator allocator;
   return allocator;
 }
+#endif
 
-} // namespace quasai
+} // namespace quasai::storage
