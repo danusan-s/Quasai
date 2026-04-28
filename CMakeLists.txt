@@ -4,6 +4,7 @@ project(Quasai LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
 find_package(OpenMP)
 
 file(GLOB_RECURSE SRC_FILES
@@ -23,6 +24,14 @@ target_include_directories(quasai PUBLIC
 if(OpenMP_CXX_FOUND)
     target_link_libraries(quasai PUBLIC OpenMP::OpenMP_CXX)
 endif()
+
+enable_language(CUDA)
+
+find_package(CUDAToolkit REQUIRED)
+
+target_link_libraries(your_target CUDA::cudart)
+
+
 
 # GoogleTest
 enable_testing()

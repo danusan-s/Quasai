@@ -26,7 +26,12 @@ public:
   static CpuAllocator &instance();
 };
 
-class GpuAllocator : public Allocator {
+class CudaAllocator : public Allocator {
+public:
+  void *allocate(std::size_t size) override;
+  void deallocate(void *ptr) override;
+
+  static CudaAllocator &instance();
 };
 
 } // namespace quasai
