@@ -9,7 +9,7 @@
 #include <cstring>
 #include <memory>
 
-namespace quasai {
+namespace quasai::core {
 
 class Function;
 class AutoGradMeta;
@@ -120,4 +120,4 @@ private:
   TensorImpl impl_;
 };
 
-} // namespace quasai
+} // namespace quasai::core

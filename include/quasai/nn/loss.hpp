@@ -2,13 +2,14 @@
 
 #include "quasai/core/tensor.hpp"
 
-namespace quasai {
+namespace quasai::nn {
 
 enum class Loss { MSE, L1, CROSS_ENTROPY };
 
-Tensor mse_loss(const Tensor &predictions, const Tensor &targets);
+core::Tensor mse_loss(const core::Tensor &predictions,
+                      const core::Tensor &targets);
 
-Tensor compute_loss(const Tensor &predictions, const Tensor &targets,
-                    Loss loss);
+core::Tensor compute_loss(const core::Tensor &predictions,
+                          const core::Tensor &targets, Loss loss);
 
-} // namespace quasai
+} // namespace quasai::nn

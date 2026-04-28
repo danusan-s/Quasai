@@ -4,7 +4,7 @@
 #include "quasai/nn/module.hpp"
 #include "quasai/optim/optimizer.hpp"
 
-namespace quasai {
+namespace quasai::nn {
 
 class Model {
 public:
@@ -12,12 +12,13 @@ public:
 
   void compile(Loss loss_fn, std::shared_ptr<Optimizer> optimizer);
 
-  void train(const Tensor &input, const Tensor &targets, size_t epochs = 1,
-             size_t batch_size = 1);
+  void train(const core::Tensor &input, const core::Tensor &targets,
+             size_t epochs = 1, size_t batch_size = 1);
 
-  Tensor predict(const Tensor &input);
+  core::Tensor predict(const core::Tensor &input);
 
-  Tensor evaluate(const Tensor &input, const Tensor &targets, Loss loss_fn);
+  core::Tensor evaluate(const core::Tensor &input, const core::Tensor &targets,
+                        Loss loss_fn);
 
   std::vector<Parameter> parameters() const;
 
@@ -27,4 +28,4 @@ private:
   std::shared_ptr<Optimizer> optimizer_;
 };
 
-} // namespace quasai
+} // namespace quasai::nn

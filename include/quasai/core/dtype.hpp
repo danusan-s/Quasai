@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-namespace quasai {
+namespace quasai::core {
 
 typedef enum {
   FLOAT32,
@@ -78,4 +78,4 @@ inline bool is_floating(DType dtype) {
   }
 }
 
-} // namespace quasai
+} // namespace quasai::core

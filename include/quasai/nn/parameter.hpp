@@ -2,13 +2,13 @@
 
 #include "quasai/core/tensor.hpp"
 
-namespace quasai {
+namespace quasai::nn {
 
-class Parameter : public Tensor {
+class Parameter : public core::Tensor {
 public:
-  Parameter(const Tensor &tensor) : Tensor(tensor) {
+  Parameter(const core::Tensor &tensor) : Tensor(tensor) {
     this->requires_grad(true);
   }
 };
 
-} // namespace quasai
+} // namespace quasai::nn

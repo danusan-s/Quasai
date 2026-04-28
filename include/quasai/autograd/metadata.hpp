@@ -3,10 +3,10 @@
 #include "quasai/autograd/function.hpp"
 #include "quasai/core/tensor.hpp"
 
-namespace quasai {
+namespace quasai::autograd {
 
 struct AutoGradMeta {
-  Tensor grad;
+  core::Tensor grad;
   std::unique_ptr<Function> grad_fn;
   bool requires_grad;
 
@@ -14,4 +14,4 @@ struct AutoGradMeta {
   }
 };
 
-} // namespace quasai
+} // namespace quasai::autograd

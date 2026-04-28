@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace quasai {
+namespace quasai::core {
 
 constexpr std::size_t MAX_DIMENSIONS = 8;
 
@@ -190,4 +190,4 @@ inline Index unravel_index(size_t flat_idx, const Shape &shape) {
   return idx;
 }
 
-} // namespace quasai
+} // namespace quasai::core

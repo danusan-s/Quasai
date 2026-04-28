@@ -3,18 +3,18 @@
 #include "quasai/nn/init.hpp"
 #include "quasai/nn/module.hpp"
 
-namespace quasai {
+namespace quasai::nn {
 
 class Linear : public Module {
 public:
   Linear(size_t in_features, size_t out_features,
          Initialization init = Initialization::GLOROT_UNIFORM);
 
-  Tensor forward(const Tensor &input) override;
+  core::Tensor forward(const core::Tensor &input) override;
 
 private:
   Parameter weight_;
   Parameter bias_;
 };
 
-} // namespace quasai
+} // namespace quasai::nn

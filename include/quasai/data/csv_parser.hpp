@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace quasai {
+namespace quasai::data {
 
 inline std::unordered_map<std::string, std::vector<std::string>>
 parse_csv(const std::string &filename) {
@@ -82,4 +82,4 @@ inline bool clean_is_float(std::vector<std::string> &values) {
   return is_float;
 }
 
-} // namespace quasai
+} // namespace quasai::data

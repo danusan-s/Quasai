@@ -2,11 +2,11 @@
 
 #include "quasai/core/tensor.hpp"
 
-namespace quasai {
+namespace quasai::autograd {
 
 class AutoGradEngine {
 public:
-  static void backward(const Tensor &tensor);
+  static void backward(const core::Tensor &tensor);
 };
 
-} // namespace quasai
+} // namespace quasai::autograd

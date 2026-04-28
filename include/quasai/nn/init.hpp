@@ -5,7 +5,7 @@
 #include "quasai/nn/parameter.hpp"
 #include "quasai/utils/random.hpp"
 
-namespace quasai {
+namespace quasai::nn {
 
 enum class Initialization {
   ZEROS,
@@ -35,11 +35,13 @@ inline std::string to_string(Initialization init) {
   }
 }
 
-Parameter zeros(const Shape &shape, DType dtype = DType::FLOAT32,
-                Device device = Device::cpu());
+Parameter zeros(const core::Shape &shape,
+                core::DType dtype = core::DType::FLOAT32,
+                core::Device device = core::Device::cpu());
 
-Parameter ones(const Shape &shape, DType dtype = DType::FLOAT32,
-               Device device = Device::cpu());
+Parameter ones(const core::Shape &shape,
+               core::DType dtype = core::DType::FLOAT32,
+               core::Device device = core::Device::cpu());
 
 template <typename T> void uniform(Parameter &t, T low, T high) {
   std::uniform_real_distribution<T> dist(low, high);
@@ -65,19 +67,23 @@ void uniform(Parameter &t, float low, float high);
 
 void normal(Parameter &t, float mean, float stddev);
 
-Parameter he_uniform(const Shape &shape, DType dtype = DType::FLOAT32,
-                     Device device = Device::cpu());
+Parameter he_uniform(const core::Shape &shape,
+                     core::DType dtype = core::DType::FLOAT32,
+                     core::Device device = core::Device::cpu());
 
-Parameter he_normal(const Shape &shape, DType dtype = DType::FLOAT32,
-                    Device device = Device::cpu());
+Parameter he_normal(const core::Shape &shape,
+                    core::DType dtype = core::DType::FLOAT32,
+                    core::Device device = core::Device::cpu());
 
-Parameter glorot_uniform(const Shape &shape, DType dtype = DType::FLOAT32,
-                         Device device = Device::cpu());
+Parameter glorot_uniform(const core::Shape &shape,
+                         core::DType dtype = core::DType::FLOAT32,
+                         core::Device device = core::Device::cpu());
 
-Parameter glorot_normal(const Shape &shape, DType dtype = DType::FLOAT32,
-                        Device device = Device::cpu());
+Parameter glorot_normal(const core::Shape &shape,
+                        core::DType dtype = core::DType::FLOAT32,
+                        core::Device device = core::Device::cpu());
 
-Parameter initialize(const Shape &shape, DType dtype, Device device,
-                     Initialization init);
+Parameter initialize(const core::Shape &shape, core::DType dtype,
+                     core::Device device, Initialization init);
 
-} // namespace quasai
+} // namespace quasai::nn

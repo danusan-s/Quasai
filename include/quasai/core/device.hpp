@@ -1,6 +1,6 @@
 #pragma once
 
-namespace quasai {
+namespace quasai::core {
 
 typedef enum {
   CPU,
@@ -22,4 +22,4 @@ struct Device {
   }
 };
 
-} // namespace quasai
+} // namespace quasai::core
