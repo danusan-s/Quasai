@@ -9,10 +9,12 @@
 #include <cstring>
 #include <memory>
 
-namespace quasai::core {
-
-class Function;
+namespace quasai::autograd {
 class AutoGradMeta;
+class Function;
+} // namespace quasai::autograd
+
+namespace quasai::core {
 
 struct TensorImpl {
   std::shared_ptr<storage::Buffer> buffer;
@@ -25,7 +27,7 @@ struct TensorImpl {
   DType dtype;
   Device device;
 
-  std::shared_ptr<AutoGradMeta> autograd_meta;
+  std::shared_ptr<autograd::AutoGradMeta> autograd_meta;
 };
 
 class Tensor {
@@ -101,10 +103,10 @@ public:
   bool is_contiguous() const;
   DType dtype() const;
   Device device() const;
-  std::shared_ptr<AutoGradMeta> autograd_meta() const;
+  std::shared_ptr<autograd::AutoGradMeta> autograd_meta() const;
 
   void requires_grad(bool grad_needed);
-  void set_grad_fn(std::unique_ptr<Function> grad_fn);
+  void set_grad_fn(std::unique_ptr<autograd::Function> grad_fn);
 
   TensorImpl get_impl_copy() const;
 

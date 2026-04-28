@@ -4,6 +4,10 @@
 #include "quasai/utils/logger.hpp"
 #include <functional>
 
+namespace quasai::autograd {
+class Function;
+} // namespace quasai::autograd
+
 namespace quasai::ops {
 
 constexpr size_t MIN_NUM_ELEMENTS_FOR_PARALLEL = 10000;
@@ -23,12 +27,10 @@ inline bool can_use_parallel_matmul(size_t M, size_t N, size_t BS) {
   return num_tiles > MIN_NUM_TILES_FOR_PARALLEL_MATMUL;
 }
 
-class Function;
-
 // Binary ops
-void add_binary_gradient(const core::Tensor &a, const core::Tensor &b,
-                         core::Tensor &result,
-                         std::function<Function *()> grad_fn_constructor);
+void add_binary_gradient(
+    const core::Tensor &a, const core::Tensor &b, core::Tensor &result,
+    std::function<autograd::Function *()> grad_fn_constructor);
 core::Tensor add(const core::Tensor &a, const core::Tensor &b);
 core::Tensor sub(const core::Tensor &a, const core::Tensor &b);
 core::Tensor mul(const core::Tensor &a, const core::Tensor &b);
@@ -37,8 +39,9 @@ core::Tensor div(const core::Tensor &a, const core::Tensor &b);
 core::Tensor matmul(const core::Tensor &a, const core::Tensor &b);
 
 // Unary ops
-void add_unary_gradient(const core::Tensor &a, core::Tensor &result,
-                        std::function<Function *()> grad_fn_constructor);
+void add_unary_gradient(
+    const core::Tensor &a, core::Tensor &result,
+    std::function<autograd::Function *()> grad_fn_constructor);
 core::Tensor neg(const core::Tensor &a);
 core::Tensor abs(const core::Tensor &a);
 core::Tensor relu(const core::Tensor &a);
@@ -63,19 +66,6 @@ core::Tensor reshape(const core::Tensor &a, const core::Shape &target);
 core::Tensor make_contiguous(const core::Tensor &a);
 core::Tensor slice(const core::Tensor &a, size_t start, size_t end);
 
-template <typename T>
-void do_binary_op(const core::Tensor &a, const core::Tensor &b,
-                  core::Tensor &result, std::function<T(T, T)> op) {
-  // Take when no broadcasting and both tensors are contiguous as a fast path
-  bool fast_path =
-      (a.shape() == b.shape()) && a.is_contiguous() && b.is_contiguous();
-
-  if (fast_path) {
-    do_binary_fast<T>(a, b, result, op);
-  } else {
-    do_binary_slow<T>(a, b, result, op);
-  }
-}
 template <typename T>
 void do_binary_fast(const core::Tensor &a, const core::Tensor &b,
                     core::Tensor &result, std::function<T(T, T)> op) {
@@ -108,6 +98,20 @@ void do_binary_slow(const core::Tensor &a, const core::Tensor &b,
 
     data_result[i] = op(data_a[ravel_index(idx_a, a.strides())],
                         data_b[ravel_index(idx_b, b.strides())]);
+  }
+}
+
+template <typename T>
+void do_binary_op(const core::Tensor &a, const core::Tensor &b,
+                  core::Tensor &result, std::function<T(T, T)> op) {
+  // Take when no broadcasting and both tensors are contiguous as a fast path
+  bool fast_path =
+      (a.shape() == b.shape()) && a.is_contiguous() && b.is_contiguous();
+
+  if (fast_path) {
+    do_binary_fast<T>(a, b, result, op);
+  } else {
+    do_binary_slow<T>(a, b, result, op);
   }
 }
 
@@ -175,32 +179,6 @@ void do_broadcast_to_shape(const core::Tensor &a, core::Tensor &result) {
     data_result[i] = data_a[ravel_index(idx_a, a_strides)];
   }
 }
-
-template <typename T>
-void do_matmul(const core::Tensor &a, const core::Tensor &b,
-               core::Tensor &result) {
-  size_t M = a.shape()[0];
-  size_t N = b.shape()[1];
-
-  if (result.shape() != core::Shape{M, N}) {
-    throw std::runtime_error("Result tensor has incorrect shape for matmul");
-  }
-
-  T *C = result.data<T>();
-  for (size_t i = 0; i < M * N; ++i) {
-    C[i] = 0;
-  }
-
-  bool fast_path =
-      a.is_contiguous() && b.is_contiguous() && result.is_contiguous();
-
-  if (fast_path) {
-    do_matmul_fast<T>(a, b, result);
-  } else {
-    do_matmul_slow<T>(a, b, result);
-  }
-}
-
 template <typename T>
 void do_matmul_fast(const core::Tensor &a, const core::Tensor &b,
                     core::Tensor &result) {
@@ -263,6 +241,31 @@ void do_matmul_slow(const core::Tensor &a, const core::Tensor &b,
         }
       }
     }
+  }
+}
+
+template <typename T>
+void do_matmul(const core::Tensor &a, const core::Tensor &b,
+               core::Tensor &result) {
+  size_t M = a.shape()[0];
+  size_t N = b.shape()[1];
+
+  if (result.shape() != core::Shape{M, N}) {
+    throw std::runtime_error("Result tensor has incorrect shape for matmul");
+  }
+
+  T *C = result.data<T>();
+  for (size_t i = 0; i < M * N; ++i) {
+    C[i] = 0;
+  }
+
+  bool fast_path =
+      a.is_contiguous() && b.is_contiguous() && result.is_contiguous();
+
+  if (fast_path) {
+    do_matmul_fast<T>(a, b, result);
+  } else {
+    do_matmul_slow<T>(a, b, result);
   }
 }
 

@@ -49,7 +49,7 @@ template <typename T> void uniform(Parameter &t, T low, T high) {
   T *data = static_cast<T *>(t.buffer()->raw_data());
   size_t num_elements = total_size(t.shape());
   for (size_t i = 0; i < num_elements; ++i) {
-    data[i] = dist(RNG::instance().engine());
+    data[i] = dist(utils::RNG::instance().engine());
   }
 }
 
@@ -59,7 +59,7 @@ template <typename T> void normal(Parameter &t, T mean, T stddev) {
   T *data = static_cast<T *>(t.buffer()->raw_data());
   size_t num_elements = total_size(t.shape());
   for (size_t i = 0; i < num_elements; ++i) {
-    data[i] = dist(RNG::instance().engine());
+    data[i] = dist(utils::RNG::instance().engine());
   }
 }
 

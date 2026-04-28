@@ -6,11 +6,11 @@
 namespace quasai::utils {
 
 #define LOG_INFO(message)                                                      \
-  Logger::log_info(message, __FILE__, __LINE__, __func__)
+  utils::Logger::log_info(message, __FILE__, __LINE__, __func__)
 
 #ifdef QUASAI_DEBUG
 #define LOG_DEBUG(message)                                                     \
-  Logger::log_debug(message, __FILE__, __LINE__, __func__)
+  utils::Logger::log_debug(message, __FILE__, __LINE__, __func__)
 #else
 #define LOG_DEBUG(message)
 #endif
@@ -19,11 +19,11 @@ namespace quasai::utils {
 #define LOG_WARNING(message)
 #else
 #define LOG_WARNING(message)                                                   \
-  Logger::log_warning(message, __FILE__, __LINE__, __func__)
+  utils::Logger::log_warning(message, __FILE__, __LINE__, __func__)
 #endif
 
 #define LOG_ERROR(message)                                                     \
-  Logger::log_error(message, __FILE__, __LINE__, __func__)
+  utils::Logger::log_error(message, __FILE__, __LINE__, __func__)
 
 class Logger {
 public:

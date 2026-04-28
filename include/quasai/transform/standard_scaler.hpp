@@ -2,7 +2,7 @@
 
 #include "quasai/core/tensor.hpp"
 
-namespace quasai::tranform {
+namespace quasai::transform {
 
 class StandardScaler {
 public:
@@ -18,4 +18,4 @@ public:
   core::Tensor std_;
 };
 
-} // namespace quasai::tranform
+} // namespace quasai::transform
