@@ -1,5 +1,7 @@
 # Quasai
 
+[![CI](https://github.com/danusan-s/Quasai/actions/workflows/ci.yml/badge.svg)](https://github.com/danusan-s/Quasai/actions/workflows/ci.yml)
+
 A from-scratch C++20 machine learning framework built to demonstrate automatic differentiation, tensor operations, neural network systems and data processing utilities.
 
 ## Features
@@ -46,7 +48,7 @@ A from-scratch C++20 machine learning framework built to demonstrate automatic d
 - More layers (Conv2D, LSTM, etc.)
 - More optimizers (Adam, RMSProp)
 - Serialization/persistence
-- Comprehensive benchmarks
+- More comprehensive benchmarks
 - API documentation
 
 ---
@@ -87,6 +89,25 @@ DPYTHONPATH=build/python python examples/python/example.py
 ```
 
 See `examples/cpp/` for C++ examples and `examples/python/` for Python examples.
+
+---
+
+## Benchmarks
+
+Quasai includes benchmarks for large tensor operations that trigger OpenMP parallelization (tested with up to 64M element tensors):
+
+```bash
+# Configure with benchmarks enabled
+cmake -S . -B build -DBUILD_BENCHMARKS=ON -DCMAKE_BUILD_TYPE=Release
+
+# Build benchmarks
+cmake --build build --target quasai_benchmarks
+
+# Run benchmarks (large tensors will use OpenMP)
+./build/benchmarks/quasai_benchmarks --benchmark_min_time=1.0
+```
+
+**OpenMP Speedup**: Benchmarks show ~5x speedup on 16-core systems for large tensor operations (8192x8192 float32 addition: 125ms vs 624ms single-threaded).
 
 ---
 

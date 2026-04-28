@@ -1,0 +1,57 @@
+name: Quasai CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [g++-12, clang++-15]
+        build-type: [Release, Debug]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake g++-12 clang-15 libomp-dev python3 python3-pip
+        pip3 install pybind11
+
+    - name: Configure CMake
+      env:
+        CXX: ${{ matrix.compiler }}
+      run: |
+        cmake -S . -B build \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} \
+          -DBUILD_BENCHMARKS=ON
+
+    - name: Build
+      run: cmake --build build --parallel $(nproc)
+
+    - name: Run tests
+      run: ctest --test-dir build --output-on-failure --parallel $(nproc)
+
+    - name: Run benchmarks
+      run: |
+        echo "Running benchmarks with ${{ matrix.compiler }} (${{ matrix.build-type }})"
+        ./build/benchmarks/quasai_benchmarks --benchmark_min_time=1.0
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install clang-format
+      run: sudo apt-get install -y clang-format
+
+    - name: Check formatting
+      run: |
+        find include src tests examples benchmarks \
+          -name "*.hpp" -o -name "*.cpp" | \
+          xargs clang-format --dry-run --Werror
