@@ -120,7 +120,7 @@ int main() {
 
   auto sequential = std::make_shared<quasai::nn::Sequential>(
       std::vector<std::shared_ptr<quasai::nn::Module>>{linear1, relu1, linear2,
-                                                   relu2, linear3});
+                                                       relu2, linear3});
 
   quasai::nn::Model model(sequential);
 
@@ -130,7 +130,8 @@ int main() {
   float learning_rate = 0.01f;
   float momentum = 0.3f;
 
-  auto optimizer = std::make_shared<quasai::optim::SGD>(learning_rate, momentum);
+  auto optimizer =
+      std::make_shared<quasai::optim::SGD>(learning_rate, momentum);
 
   model.compile(quasai::nn::Loss::MSE, optimizer);
 

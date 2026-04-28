@@ -20,8 +20,8 @@ Allocator *Tensor::allocator_for_device(const Device &device) {
 }
 
 Tensor Tensor::zeros(const Shape &shape, DType dtype, Device device) {
-  storage::Buffer buffer = storage::Buffer(allocator_for_device(device),
-                         total_size(shape) * dtype_size(dtype));
+  storage::Buffer buffer = storage::Buffer(
+      allocator_for_device(device), total_size(shape) * dtype_size(dtype));
 
   std::memset(buffer.raw_data(), 0, buffer.size());
   return Tensor(std::make_shared<storage::Buffer>(std::move(buffer)), shape,
@@ -29,8 +29,8 @@ Tensor Tensor::zeros(const Shape &shape, DType dtype, Device device) {
 }
 
 Tensor Tensor::ones(const Shape &shape, DType dtype, Device device) {
-  storage::Buffer buffer = storage::Buffer(allocator_for_device(device),
-                         total_size(shape) * dtype_size(dtype));
+  storage::Buffer buffer = storage::Buffer(
+      allocator_for_device(device), total_size(shape) * dtype_size(dtype));
 
   size_t count = total_size(shape);
 
@@ -60,16 +60,16 @@ Tensor Tensor::ones(const Shape &shape, DType dtype, Device device) {
 }
 
 Tensor Tensor::empty(const Shape &shape, DType dtype, Device device) {
-  storage::Buffer buffer = storage::Buffer(allocator_for_device(device),
-                         total_size(shape) * dtype_size(dtype));
+  storage::Buffer buffer = storage::Buffer(
+      allocator_for_device(device), total_size(shape) * dtype_size(dtype));
   return Tensor(std::make_shared<storage::Buffer>(std::move(buffer)), shape,
                 get_strides(shape), 0, true, dtype, device);
 }
 
 Tensor Tensor::from_data(const void *data, const Shape &shape, DType dtype,
-                       Device device) {
-  storage::Buffer buffer = storage::Buffer(allocator_for_device(device),
-                         total_size(shape) * dtype_size(dtype));
+                         Device device) {
+  storage::Buffer buffer = storage::Buffer(
+      allocator_for_device(device), total_size(shape) * dtype_size(dtype));
   std::memcpy(buffer.raw_data(), data, buffer.size());
   return Tensor(std::make_shared<storage::Buffer>(std::move(buffer)), shape,
                 get_strides(shape), 0, true, dtype, device);
@@ -77,7 +77,7 @@ Tensor Tensor::from_data(const void *data, const Shape &shape, DType dtype,
 
 Tensor Tensor::from_impl(const TensorImpl &impl) {
   return Tensor(impl.buffer, impl.shape, impl.strides, impl.offset,
-               impl.is_contiguous, impl.dtype, impl.device);
+                impl.is_contiguous, impl.dtype, impl.device);
 }
 
 std::shared_ptr<storage::Buffer> Tensor::buffer() const {
@@ -134,14 +134,14 @@ void Tensor::backward() {
 
 Tensor::Tensor()
     : impl_(TensorImpl{nullptr, Shape(), Strides(), 0, true, DType::FLOAT32,
-                   Device::cpu(), nullptr}) {
+                       Device::cpu(), nullptr}) {
 }
 
 Tensor::Tensor(std::shared_ptr<storage::Buffer> buffer, const Shape &shape,
                const Strides &strides, size_t offset, bool is_contiguous,
                DType dtype, Device device)
     : impl_(TensorImpl{std::move(buffer), shape, strides, offset, is_contiguous,
-                   dtype, device, nullptr}) {
+                       dtype, device, nullptr}) {
 }
 
 } // namespace quasai::core

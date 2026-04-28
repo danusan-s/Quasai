@@ -4,8 +4,8 @@
 TEST(SumToShape, Float32) {
   std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
   quasai::core::Shape shape{2, 3};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT32);
   quasai::core::Shape target{3};
 
   quasai::core::Tensor result = quasai::ops::sum_to_shape(tensor, target);
@@ -18,8 +18,8 @@ TEST(SumToShape, Float32) {
 TEST(SumToShape, Float64) {
   std::vector<double> data = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
   quasai::core::Shape shape{2, 3};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT64);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT64);
   quasai::core::Shape target{3};
 
   quasai::core::Tensor result = quasai::ops::sum_to_shape(tensor, target);
@@ -32,8 +32,8 @@ TEST(SumToShape, Float64) {
 TEST(SumToShape, Int32) {
   std::vector<int32_t> data = {1, 2, 3, 4, 5, 6};
   quasai::core::Shape shape{2, 3};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::INT32);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::INT32);
   quasai::core::Shape target{3};
 
   quasai::core::Tensor result = quasai::ops::sum_to_shape(tensor, target);
@@ -46,8 +46,8 @@ TEST(SumToShape, Int32) {
 TEST(SumToShape, Int64) {
   std::vector<int64_t> data = {1, 2, 3, 4, 5, 6};
   quasai::core::Shape shape{2, 3};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::INT64);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::INT64);
   quasai::core::Shape target{3};
 
   quasai::core::Tensor result = quasai::ops::sum_to_shape(tensor, target);
@@ -60,8 +60,8 @@ TEST(SumToShape, Int64) {
 TEST(SumToShape, Broadcast) {
   std::vector<float> data = {1.0f, 2.0f};
   quasai::core::Shape shape{2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT32);
   quasai::core::Shape target{2, 3};
 
   EXPECT_THROW(quasai::ops::sum_to_shape(tensor, target), std::runtime_error);

@@ -5,7 +5,8 @@
 
 TEST(AutoGradEngineTest, BackwardNoGrad) {
   // Create a tensor that does not require grad
-  quasai::core::Tensor tensor = quasai::core::Tensor::zeros(quasai::core::Shape{2, 2});
+  quasai::core::Tensor tensor =
+      quasai::core::Tensor::zeros(quasai::core::Shape{2, 2});
 
   // Call backward and ensure it does not throw
   EXPECT_NO_THROW(tensor.backward());
@@ -13,9 +14,11 @@ TEST(AutoGradEngineTest, BackwardNoGrad) {
 
 TEST(AutoGradEngineTest, BackwardSimpleGraph) {
   // Create tensors that require grad
-  quasai::core::Tensor a = quasai::core::Tensor::zeros(quasai::core::Shape{2, 2});
+  quasai::core::Tensor a =
+      quasai::core::Tensor::zeros(quasai::core::Shape{2, 2});
   a.requires_grad(true);
-  quasai::core::Tensor b = quasai::core::Tensor::zeros(quasai::core::Shape{2, 2});
+  quasai::core::Tensor b =
+      quasai::core::Tensor::zeros(quasai::core::Shape{2, 2});
   b.requires_grad(true);
 
   // Create a simple computation graph: c = a + b
@@ -43,9 +46,11 @@ TEST(AutoGradEngineTest, BackwardSimpleGraph) {
 
 TEST(AutoGradEngineTest, BackwardAccumulateGrad) {
   // Create tensors that require grad
-  quasai::core::Tensor a = quasai::core::Tensor::zeros(quasai::core::Shape{2, 2});
+  quasai::core::Tensor a =
+      quasai::core::Tensor::zeros(quasai::core::Shape{2, 2});
   a.requires_grad(true);
-  quasai::core::Tensor b = quasai::core::Tensor::zeros(quasai::core::Shape{2, 2});
+  quasai::core::Tensor b =
+      quasai::core::Tensor::zeros(quasai::core::Shape{2, 2});
   b.requires_grad(true);
 
   // Create a computation graph: c = a + b, d = a + b
@@ -76,9 +81,11 @@ TEST(AutoGradEngineTest, BackwardAccumulateGrad) {
 
 TEST(AutoGradEngineTest, SubtractionBackward) {
   // Create tensors that require grad
-  quasai::core::Tensor a = quasai::core::Tensor::zeros(quasai::core::Shape{2, 2});
+  quasai::core::Tensor a =
+      quasai::core::Tensor::zeros(quasai::core::Shape{2, 2});
   a.requires_grad(true);
-  quasai::core::Tensor b = quasai::core::Tensor::zeros(quasai::core::Shape{2, 2});
+  quasai::core::Tensor b =
+      quasai::core::Tensor::zeros(quasai::core::Shape{2, 2});
   b.requires_grad(true);
 
   // Create a computation graph: c = a - b

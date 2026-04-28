@@ -1,13 +1,13 @@
-#include "quasai/ops/tensor_ops.hpp"
 #include "quasai/autograd/metadata.hpp"
-#include <gtest/gtest.h>
+#include "quasai/ops/tensor_ops.hpp"
 #include <cmath>
+#include <gtest/gtest.h>
 
 TEST(Heaviside, Float32) {
   std::vector<float> data = {0.0f, 1.0f, -1.0f, 2.0f};
   quasai::core::Shape shape{2, 2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT32);
 
   quasai::core::Tensor result = quasai::ops::heaviside(tensor);
   float *result_data = result.data<float>();
@@ -20,8 +20,8 @@ TEST(Heaviside, Float32) {
 TEST(Heaviside, Float64) {
   std::vector<double> data = {0.0, 1.0, -1.0, 2.0};
   quasai::core::Shape shape{2, 2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT64);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT64);
 
   quasai::core::Tensor result = quasai::ops::heaviside(tensor);
   double *result_data = result.data<double>();
@@ -33,7 +33,8 @@ TEST(Heaviside, Float64) {
 
 TEST(Heaviside, Gradient) {
   float val = 2.0f;
-  quasai::core::Tensor input = quasai::core::Tensor::from_data(&val, quasai::core::Shape{}, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor input = quasai::core::Tensor::from_data(
+      &val, quasai::core::Shape{}, quasai::core::DType::FLOAT32);
   input.requires_grad(true);
 
   quasai::core::Tensor output = quasai::ops::heaviside(input);

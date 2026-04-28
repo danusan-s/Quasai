@@ -1,13 +1,13 @@
-#include "quasai/ops/tensor_ops.hpp"
 #include "quasai/autograd/metadata.hpp"
-#include <gtest/gtest.h>
+#include "quasai/ops/tensor_ops.hpp"
 #include <cmath>
+#include <gtest/gtest.h>
 
 TEST(Sigmoid, Float32) {
   std::vector<float> data = {0.0f, 1.0f, -1.0f, 2.0f};
   quasai::core::Shape shape{2, 2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT32);
 
   quasai::core::Tensor result = quasai::ops::sigmoid(tensor);
   float *result_data = result.data<float>();
@@ -20,8 +20,8 @@ TEST(Sigmoid, Float32) {
 TEST(Sigmoid, Float64) {
   std::vector<double> data = {0.0, 1.0, -1.0, 2.0};
   quasai::core::Shape shape{2, 2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT64);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT64);
 
   quasai::core::Tensor result = quasai::ops::sigmoid(tensor);
   double *result_data = result.data<double>();
@@ -34,7 +34,8 @@ TEST(Sigmoid, Float64) {
 TEST(Sigmoid, Gradient) {
   float eps = 1e-3f;
   float val = 0.5f;
-  quasai::core::Tensor input = quasai::core::Tensor::from_data(&val, quasai::core::Shape{}, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor input = quasai::core::Tensor::from_data(
+      &val, quasai::core::Shape{}, quasai::core::DType::FLOAT32);
   input.requires_grad(true);
 
   quasai::core::Tensor output = quasai::ops::sigmoid(input);
@@ -47,7 +48,8 @@ TEST(Sigmoid, Gradient) {
   float f_plus = sigmoid(val + eps);
   float f_minus = sigmoid(val - eps);
   float finite_diff = (f_plus - f_minus) / (2.0f * eps);
-  float rel_err = std::abs(computed_grad - finite_diff) / std::max(1.0f, std::abs(val));
+  float rel_err =
+      std::abs(computed_grad - finite_diff) / std::max(1.0f, std::abs(val));
 
   EXPECT_NEAR(rel_err, 0.0f, 1e-2f);
 }

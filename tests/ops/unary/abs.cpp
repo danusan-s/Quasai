@@ -6,8 +6,8 @@
 TEST(Abs, Float32) {
   std::vector<float> data = {1.0f, -2.0f, 3.0f, -4.0f};
   quasai::core::Shape shape{2, 2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT32);
 
   quasai::core::Tensor result = quasai::ops::abs(tensor);
   float *result_data = result.data<float>();
@@ -20,8 +20,8 @@ TEST(Abs, Float32) {
 TEST(Abs, Float64) {
   std::vector<double> data = {1.0, -2.0, 3.0, -4.0};
   quasai::core::Shape shape{2, 2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT64);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT64);
 
   quasai::core::Tensor result = quasai::ops::abs(tensor);
   double *result_data = result.data<double>();
@@ -34,8 +34,8 @@ TEST(Abs, Float64) {
 TEST(Abs, Int32) {
   std::vector<int32_t> data = {1, -2, 3, -4};
   quasai::core::Shape shape{2, 2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::INT32);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::INT32);
 
   quasai::core::Tensor result = quasai::ops::abs(tensor);
   int32_t *result_data = result.data<int32_t>();
@@ -48,8 +48,8 @@ TEST(Abs, Int32) {
 TEST(Abs, Gradient) {
   float eps = 1e-3f;
   float val = 2.0f;
-  quasai::core::Tensor input =
-      quasai::core::Tensor::from_data(&val, quasai::core::Shape{}, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor input = quasai::core::Tensor::from_data(
+      &val, quasai::core::Shape{}, quasai::core::DType::FLOAT32);
   input.requires_grad(true);
 
   quasai::core::Tensor output = quasai::ops::abs(input);
@@ -61,7 +61,8 @@ TEST(Abs, Gradient) {
   float f_plus = std::abs(val + eps);
   float f_minus = std::abs(val - eps);
   float finite_diff = (f_plus - f_minus) / (2.0f * eps);
-  float rel_err = std::abs(computed_grad - finite_diff) / std::max(1.0f, std::abs(val));
+  float rel_err =
+      std::abs(computed_grad - finite_diff) / std::max(1.0f, std::abs(val));
 
   EXPECT_NEAR(rel_err, 0.0f, 1e-2f);
 }
@@ -69,8 +70,8 @@ TEST(Abs, Gradient) {
 TEST(Abs, GradientNegative) {
   float eps = 1e-3f;
   float val = -2.0f;
-  quasai::core::Tensor input =
-      quasai::core::Tensor::from_data(&val, quasai::core::Shape{}, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor input = quasai::core::Tensor::from_data(
+      &val, quasai::core::Shape{}, quasai::core::DType::FLOAT32);
   input.requires_grad(true);
 
   quasai::core::Tensor output = quasai::ops::abs(input);
@@ -82,7 +83,8 @@ TEST(Abs, GradientNegative) {
   float f_plus = std::abs(val + eps);
   float f_minus = std::abs(val - eps);
   float finite_diff = (f_plus - f_minus) / (2.0f * eps);
-  float rel_err = std::abs(computed_grad - finite_diff) / std::max(1.0f, std::abs(val));
+  float rel_err =
+      std::abs(computed_grad - finite_diff) / std::max(1.0f, std::abs(val));
 
   EXPECT_NEAR(rel_err, 0.0f, 1e-2f);
 }

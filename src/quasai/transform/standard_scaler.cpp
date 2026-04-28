@@ -61,7 +61,8 @@ core::Tensor StandardScaler::transform(const core::Tensor &data) const {
     throw std::runtime_error("Feature mismatch in transform");
   }
 
-  core::Tensor out = core::Tensor::empty(data.shape(), data.dtype(), data.device());
+  core::Tensor out =
+      core::Tensor::empty(data.shape(), data.dtype(), data.device());
 
   const float *x = data.data<float>();
   float *y = out.data<float>();
@@ -92,7 +93,8 @@ core::Tensor StandardScaler::inverse_transform(const core::Tensor &data) const {
   size_t M = data.shape()[0];
   size_t N = data.shape()[1];
 
-  core::Tensor out = core::Tensor::empty(data.shape(), data.dtype(), data.device());
+  core::Tensor out =
+      core::Tensor::empty(data.shape(), data.dtype(), data.device());
 
   const float *x = data.data<float>();
   float *y = out.data<float>();

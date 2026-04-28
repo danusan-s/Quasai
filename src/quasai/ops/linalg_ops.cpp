@@ -14,15 +14,15 @@ core::Tensor matmul(const core::Tensor &a, const core::Tensor &b) {
 
   if (a.shape().dimensions() == 1) {
     LOG_DEBUG(("matmul: treating a as row vector with shape (1, " +
-              std::to_string(a.shape()[0]) + ")")
-                .c_str());
+               std::to_string(a.shape()[0]) + ")")
+                  .c_str());
     core::Tensor a_reshaped = reshape(a, core::Shape{1, a.shape()[0]});
     return matmul(a_reshaped, b);
   }
   if (b.shape().dimensions() == 1) {
     LOG_DEBUG(("matmul: treating b as column vector with shape (" +
-              std::to_string(b.shape()[0]) + ", 1)")
-                .c_str());
+               std::to_string(b.shape()[0]) + ", 1)")
+                  .c_str());
     core::Tensor b_reshaped = reshape(b, core::Shape{b.shape()[0], 1});
     return matmul(a, b_reshaped);
   }
@@ -41,7 +41,8 @@ core::Tensor matmul(const core::Tensor &a, const core::Tensor &b) {
   const size_t N = b.shape()[1];
 
   core::Shape result_shape{M, N};
-  core::Tensor result = core::Tensor::empty(result_shape, a.dtype(), a.device());
+  core::Tensor result =
+      core::Tensor::empty(result_shape, a.dtype(), a.device());
 
   const std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
   const std::shared_ptr<autograd::AutoGradMeta> meta_b = b.autograd_meta();

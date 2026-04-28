@@ -6,8 +6,8 @@
 TEST(MakeContiguous, Float32) {
   std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
   quasai::core::Shape shape{2, 3};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT32);
 
   quasai::core::Tensor transposed = quasai::ops::transpose(tensor);
   EXPECT_FALSE(transposed.is_contiguous());
@@ -27,8 +27,8 @@ TEST(MakeContiguous, Float32) {
 TEST(MakeContiguous, Float64) {
   std::vector<double> data = {1.0, 2.0, 3.0, 4.0};
   quasai::core::Shape shape{2, 2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT64);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT64);
 
   quasai::core::Tensor transposed = quasai::ops::transpose(tensor);
   EXPECT_FALSE(transposed.is_contiguous());
@@ -46,8 +46,8 @@ TEST(MakeContiguous, Float64) {
 TEST(MakeContiguous, TransposeThenSlice) {
   std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
   quasai::core::Shape shape{4, 2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT32);
 
   quasai::core::Tensor transposed = quasai::ops::transpose(tensor);
   EXPECT_FALSE(transposed.is_contiguous());
@@ -68,8 +68,8 @@ TEST(MakeContiguous, Gradient) {
   float eps = 1e-3f;
   std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f};
   quasai::core::Shape shape{2, 2};
-  quasai::core::Tensor input =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor input = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT32);
   input.requires_grad(true);
 
   quasai::core::Tensor output = quasai::ops::make_contiguous(input);
@@ -80,8 +80,8 @@ TEST(MakeContiguous, Gradient) {
 
   std::vector<float> data_plus = {1.0f + eps, 2.0f, 3.0f, 4.0f};
   std::vector<float> data_minus = {1.0f - eps, 2.0f, 3.0f, 4.0f};
-quasai::core::Tensor input_plus = quasai::core::Tensor::from_data(data_plus.data(), shape,
-                                                         quasai::core::DType::FLOAT32);
+  quasai::core::Tensor input_plus = quasai::core::Tensor::from_data(
+      data_plus.data(), shape, quasai::core::DType::FLOAT32);
   quasai::core::Tensor input_minus = quasai::core::Tensor::from_data(
       data_minus.data(), shape, quasai::core::DType::FLOAT32);
 

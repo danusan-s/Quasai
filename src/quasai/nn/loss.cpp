@@ -3,7 +3,8 @@
 
 namespace quasai::nn {
 
-core::Tensor mse_loss(const core::Tensor &predictions, const core::Tensor &targets) {
+core::Tensor mse_loss(const core::Tensor &predictions,
+                      const core::Tensor &targets) {
   if (predictions.dtype() != targets.dtype()) {
     throw std::runtime_error(
         "Predictions and targets must have the same data type");
@@ -15,7 +16,8 @@ core::Tensor mse_loss(const core::Tensor &predictions, const core::Tensor &targe
   return mean_squared_diff;
 }
 
-core::Tensor l1_loss(const core::Tensor &predictions, const core::Tensor &targets) {
+core::Tensor l1_loss(const core::Tensor &predictions,
+                     const core::Tensor &targets) {
   if (predictions.dtype() != targets.dtype()) {
     throw std::runtime_error(
         "Predictions and targets must have the same data type");
@@ -27,12 +29,13 @@ core::Tensor l1_loss(const core::Tensor &predictions, const core::Tensor &target
   return mean_abs_diff;
 }
 
-core::Tensor cross_entropy_loss(const core::Tensor &predictions, const core::Tensor &targets) {
+core::Tensor cross_entropy_loss(const core::Tensor &predictions,
+                                const core::Tensor &targets) {
   throw std::runtime_error("Cross-entropy loss not implemented yet");
 }
 
-core::Tensor compute_loss(const core::Tensor &predictions, const core::Tensor &targets,
-                    Loss loss) {
+core::Tensor compute_loss(const core::Tensor &predictions,
+                          const core::Tensor &targets, Loss loss) {
   switch (loss) {
     case Loss::MSE:
       return mse_loss(predictions, targets);

@@ -12,11 +12,13 @@ TEST(Linear, SimpleRegression) {
 
   std::vector<float> input_data = {1.0f, 2.0f, 3.0f};
   quasai::core::Tensor input = quasai::core::Tensor::from_data(
-      input_data.data(), quasai::core::Shape{in_features}, quasai::core::DType::FLOAT32);
+      input_data.data(), quasai::core::Shape{in_features},
+      quasai::core::DType::FLOAT32);
 
   std::vector<float> target_data = {0.0f, 1.0f};
   quasai::core::Tensor target = quasai::core::Tensor::from_data(
-      target_data.data(), quasai::core::Shape{out_features}, quasai::core::DType::FLOAT32);
+      target_data.data(), quasai::core::Shape{out_features},
+      quasai::core::DType::FLOAT32);
 
   quasai::nn::Initialization init = quasai::nn::Initialization::HE_UNIFORM;
 
@@ -57,11 +59,13 @@ TEST(Linear, OneHiddenLayer) {
 
   std::vector<float> input_data = {1.0f, 2.0f, 3.0f};
   quasai::core::Tensor input = quasai::core::Tensor::from_data(
-      input_data.data(), quasai::core::Shape{in_features}, quasai::core::DType::FLOAT32);
+      input_data.data(), quasai::core::Shape{in_features},
+      quasai::core::DType::FLOAT32);
 
   std::vector<float> target_data = {0.0f, 1.0f};
   quasai::core::Tensor target = quasai::core::Tensor::from_data(
-      target_data.data(), quasai::core::Shape{out_features}, quasai::core::DType::FLOAT32);
+      target_data.data(), quasai::core::Shape{out_features},
+      quasai::core::DType::FLOAT32);
 
   quasai::nn::Initialization init = quasai::nn::Initialization::GLOROT_UNIFORM;
 
@@ -128,8 +132,9 @@ TEST(Linear, OneHiddenLayer_MultiSample) {
         x2       // second output depends on x2
     };
 
-quasai::core::Tensor input = quasai::core::Tensor::from_data(
-      input_data.data(), quasai::core::Shape{in_features}, quasai::core::DType::FLOAT32);
+    quasai::core::Tensor input = quasai::core::Tensor::from_data(
+        input_data.data(), quasai::core::Shape{in_features},
+        quasai::core::DType::FLOAT32);
 
     quasai::core::Tensor target = quasai::core::Tensor::from_data(
         target_data.data(), quasai::core::Shape{out_features},

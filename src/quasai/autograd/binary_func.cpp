@@ -54,8 +54,8 @@ DivFunction::backward(const core::Tensor &grad_output) {
              ", input2 shape = " + input2.shape().to_string())
                 .c_str());
   core::Tensor grad_input1 = ops::div(grad_output, input2);
-  core::Tensor grad_input2 =
-      ops::neg(ops::mul(grad_output, ops::div(input1, ops::mul(input2, input2))));
+  core::Tensor grad_input2 = ops::neg(
+      ops::mul(grad_output, ops::div(input1, ops::mul(input2, input2))));
   return {ops::sum_to_shape(grad_input1, input1.shape()),
           ops::sum_to_shape(grad_input2, input2.shape())};
 }

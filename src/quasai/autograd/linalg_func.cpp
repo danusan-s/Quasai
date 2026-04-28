@@ -3,7 +3,8 @@
 
 namespace quasai::autograd {
 
-std::vector<core::Tensor> MatMulFunction::backward(const core::Tensor &grad_output) {
+std::vector<core::Tensor>
+MatMulFunction::backward(const core::Tensor &grad_output) {
   const core::Tensor &input1 = inputs[0];
   const core::Tensor &input2 = inputs[1];
   LOG_DEBUG(("MatMulFunction backward: grad_output shape = " +

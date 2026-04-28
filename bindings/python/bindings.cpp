@@ -19,7 +19,8 @@ PYBIND11_MODULE(pyquasai, m) {
   // -------------------------
   // Tensor
   // -------------------------
-  py::class_<quasai::core::Tensor, std::shared_ptr<quasai::core::Tensor>>(m, "Tensor")
+  py::class_<quasai::core::Tensor, std::shared_ptr<quasai::core::Tensor>>(
+      m, "Tensor")
       .def(py::init<>())
       .def("shape", [](const quasai::core::Tensor &t) {
         const auto &s = t.shape();
@@ -40,7 +41,7 @@ PYBIND11_MODULE(pyquasai, m) {
     }
     quasai::core::Shape shape(sizes.data(), ndim);
     auto t = quasai::core::Tensor::zeros(shape, quasai::core::DType::FLOAT32,
-                                   quasai::core::Device::cpu());
+                                         quasai::core::Device::cpu());
     std::memcpy(t.data<float>(), buf.ptr, buf.size * sizeof(float));
     return t;
   });
@@ -48,21 +49,22 @@ PYBIND11_MODULE(pyquasai, m) {
   // -------------------------
   // Base Module (polymorphic)
   // -------------------------
-  py::class_<quasai::nn::Module, std::shared_ptr<quasai::nn::Module>>(m, "Module")
+  py::class_<quasai::nn::Module, std::shared_ptr<quasai::nn::Module>>(m,
+                                                                      "Module")
       .def("__call__", &quasai::nn::Module::operator());
 
   // -------------------------
   // Linear layer
   // -------------------------
-  py::class_<quasai::nn::Linear, quasai::nn::Module, std::shared_ptr<quasai::nn::Linear>>(
-      m, "Linear")
+  py::class_<quasai::nn::Linear, quasai::nn::Module,
+             std::shared_ptr<quasai::nn::Linear>>(m, "Linear")
       .def(py::init<int, int>());
 
   // -------------------------
   // ReLU activation
   // -------------------------
-  py::class_<quasai::nn::ReLU, quasai::nn::Module, std::shared_ptr<quasai::nn::ReLU>>(
-      m, "ReLU")
+  py::class_<quasai::nn::ReLU, quasai::nn::Module,
+             std::shared_ptr<quasai::nn::ReLU>>(m, "ReLU")
       .def(py::init<>());
 
   // -------------------------
@@ -72,11 +74,11 @@ PYBIND11_MODULE(pyquasai, m) {
              std::shared_ptr<quasai::nn::Sequential>>(m, "Sequential")
       .def(py::init<std::vector<std::shared_ptr<quasai::nn::Module>>>());
 
-  py::class_<quasai::optim::Optimizer, std::shared_ptr<quasai::optim::Optimizer>>(
-      m, "Optimizer");
+  py::class_<quasai::optim::Optimizer,
+             std::shared_ptr<quasai::optim::Optimizer>>(m, "Optimizer");
 
-  py::class_<quasai::optim::SGD, quasai::optim::Optimizer, std::shared_ptr<quasai::optim::SGD>>(
-      m, "SGD")
+  py::class_<quasai::optim::SGD, quasai::optim::Optimizer,
+             std::shared_ptr<quasai::optim::SGD>>(m, "SGD")
       .def(py::init<float, float>());
 
   py::enum_<quasai::nn::Loss>(m, "Loss")

@@ -44,8 +44,7 @@ TEST(ShapeTest, ZeroDimensional) {
 
 TEST(ShapeTest, ExceedMaxDimensions) {
   std::size_t dims[MAX_DIMENSIONS + 1] = {0};
-  EXPECT_THROW(Shape shape(dims, MAX_DIMENSIONS + 1),
-               std::runtime_error);
+  EXPECT_THROW(Shape shape(dims, MAX_DIMENSIONS + 1), std::runtime_error);
 }
 
 TEST(ShapeTest, OutOfRangeAccess) {

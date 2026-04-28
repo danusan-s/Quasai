@@ -28,7 +28,8 @@ void AutoGradEngine::backward(const core::Tensor &tensor) {
     }
 
     core::Tensor current_grad = meta->grad;
-    std::vector<core::Tensor> input_grads = meta->grad_fn->backward(current_grad);
+    std::vector<core::Tensor> input_grads =
+        meta->grad_fn->backward(current_grad);
 
     for (size_t i = 0; i < meta->grad_fn->inputs.size(); ++i) {
       const core::Tensor &input = meta->grad_fn->inputs[i];

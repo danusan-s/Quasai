@@ -1,6 +1,6 @@
 #include "quasai/nn/sequential.hpp"
-#include "quasai/nn/layers/activations.hpp"
 #include "quasai/nn/init.hpp"
+#include "quasai/nn/layers/activations.hpp"
 #include "quasai/nn/layers/linear.hpp"
 #include "quasai/nn/loss.hpp"
 #include "quasai/optim/sgd.hpp"
@@ -13,11 +13,13 @@ TEST(Sequential, TwoLayerRegression) {
 
   std::vector<float> input_data = {1.0f, 2.0f, 3.0f};
   quasai::core::Tensor input = quasai::core::Tensor::from_data(
-      input_data.data(), quasai::core::Shape{in_features}, quasai::core::DType::FLOAT32);
+      input_data.data(), quasai::core::Shape{in_features},
+      quasai::core::DType::FLOAT32);
 
   std::vector<float> target_data = {0.0f, 1.0f};
   quasai::core::Tensor target = quasai::core::Tensor::from_data(
-      target_data.data(), quasai::core::Shape{out_features}, quasai::core::DType::FLOAT32);
+      target_data.data(), quasai::core::Shape{out_features},
+      quasai::core::DType::FLOAT32);
 
   quasai::nn::Initialization init = quasai::nn::Initialization::GLOROT_UNIFORM;
 
@@ -80,7 +82,8 @@ TEST(Sequential, OneHiddenLayer_MultiSample) {
     };
 
     quasai::core::Tensor input = quasai::core::Tensor::from_data(
-        input_data.data(), quasai::core::Shape{in_features}, quasai::core::DType::FLOAT32);
+        input_data.data(), quasai::core::Shape{in_features},
+        quasai::core::DType::FLOAT32);
 
     quasai::core::Tensor target = quasai::core::Tensor::from_data(
         target_data.data(), quasai::core::Shape{out_features},
@@ -205,10 +208,10 @@ TEST(Sequential, RegressionWithBatching) {
 
     for (size_t i = 0; i < num_samples; i += batch_size) {
       size_t current_batch_size = std::min(batch_size, num_samples - i);
-      quasai::core::Tensor batch_input =
-          quasai::ops::slice(input_tensor, i, i + current_batch_size); // Get batch input
-      quasai::core::Tensor batch_target =
-          quasai::ops::slice(target_tensor, i, i + current_batch_size); // Get batch target
+      quasai::core::Tensor batch_input = quasai::ops::slice(
+          input_tensor, i, i + current_batch_size); // Get batch input
+      quasai::core::Tensor batch_target = quasai::ops::slice(
+          target_tensor, i, i + current_batch_size); // Get batch target
       quasai::core::Tensor output = model(batch_input);
 
       quasai::core::Tensor loss = quasai::nn::mse_loss(output, batch_target);

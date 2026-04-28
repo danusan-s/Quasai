@@ -15,8 +15,8 @@ void Model::compile(Loss loss_fn, std::shared_ptr<optim::Optimizer> optimizer) {
   optimizer_ = optimizer;
 }
 
-void Model::train(const core::Tensor &input, const core::Tensor &targets, size_t epochs,
-                  size_t batch_size) {
+void Model::train(const core::Tensor &input, const core::Tensor &targets,
+                  size_t epochs, size_t batch_size) {
   if (!optimizer_) {
     throw std::runtime_error(
         "Optimizer not set. Call compile() before training.");
@@ -44,7 +44,8 @@ void Model::train(const core::Tensor &input, const core::Tensor &targets, size_t
     for (size_t i = 0; i < num_samples; i += batch_size) {
       size_t current_batch_size = std::min(batch_size, input.shape()[0] - i);
       core::Tensor batch_input = ops::slice(input, i, i + current_batch_size);
-      core::Tensor batch_targets = ops::slice(targets, i, i + current_batch_size);
+      core::Tensor batch_targets =
+          ops::slice(targets, i, i + current_batch_size);
       core::Tensor batch_output = module_->forward(batch_input);
       core::Tensor loss = compute_loss(batch_output, batch_targets, loss_fn_);
       total_loss += loss.data<float>()[0];
@@ -72,8 +73,8 @@ core::Tensor Model::predict(const core::Tensor &input) {
   return module_->forward(input);
 }
 
-core::Tensor Model::evaluate(const core::Tensor &input, const core::Tensor &targets,
-                           Loss loss_fn) {
+core::Tensor Model::evaluate(const core::Tensor &input,
+                             const core::Tensor &targets, Loss loss_fn) {
   core::Tensor output = module_->forward(input);
   return compute_loss(output, targets, loss_fn);
 }

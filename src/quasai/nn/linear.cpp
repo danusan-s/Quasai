@@ -7,8 +7,8 @@ namespace quasai::nn {
 Linear::Linear(size_t in_features, size_t out_features, Initialization init)
     : weight_(initialize({in_features, out_features}, core::DType::FLOAT32,
                          core::Device::cpu(), init)),
-      bias_(
-          initialize({1, out_features}, core::DType::FLOAT32, core::Device::cpu(), init)) {
+      bias_(initialize({1, out_features}, core::DType::FLOAT32,
+                       core::Device::cpu(), init)) {
   params_.push_back(weight_);
   params_.push_back(bias_);
 }

@@ -3,7 +3,8 @@
 
 namespace quasai::autograd {
 
-std::vector<core::Tensor> TransposeFunction::backward(const core::Tensor &grad_output) {
+std::vector<core::Tensor>
+TransposeFunction::backward(const core::Tensor &grad_output) {
   const core::Tensor &input = inputs[0];
   LOG_DEBUG(("TransposeFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
@@ -14,7 +15,8 @@ std::vector<core::Tensor> TransposeFunction::backward(const core::Tensor &grad_o
   return {grad_input};
 }
 
-std::vector<core::Tensor> ReshapeFunction::backward(const core::Tensor &grad_output) {
+std::vector<core::Tensor>
+ReshapeFunction::backward(const core::Tensor &grad_output) {
   const core::Tensor &input = inputs[0];
   LOG_DEBUG(("ReshapeFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
@@ -25,7 +27,8 @@ std::vector<core::Tensor> ReshapeFunction::backward(const core::Tensor &grad_out
   return {grad_input};
 }
 
-std::vector<core::Tensor> ExpandFunction::backward(const core::Tensor &grad_output) {
+std::vector<core::Tensor>
+ExpandFunction::backward(const core::Tensor &grad_output) {
   const core::Tensor &input = inputs[0];
   LOG_DEBUG(("ExpandFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +

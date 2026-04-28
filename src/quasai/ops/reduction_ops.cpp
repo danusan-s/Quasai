@@ -6,7 +6,8 @@
 namespace quasai::ops {
 
 core::Tensor sum(const core::Tensor &a) {
-  core::Tensor result = core::Tensor::empty(core::Shape{}, a.dtype(), a.device());
+  core::Tensor result =
+      core::Tensor::empty(core::Shape{}, a.dtype(), a.device());
 
   const std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
   if (meta_a && meta_a->requires_grad) {
@@ -43,9 +44,9 @@ core::Tensor sum_to_shape(const core::Tensor &a, const core::Shape &target) {
 
   if (ndim_t > ndim_a) {
     throw std::runtime_error("Target shape cannot have more dimensions than "
-                        "input tensor, got input" +
-                        a_shape.to_string() + " and target " +
-                        target.to_string());
+                             "input tensor, got input" +
+                             a_shape.to_string() + " and target " +
+                             target.to_string());
   }
 
   core::Tensor out = core::Tensor::zeros(target, a.dtype(), a.device());
@@ -79,16 +80,17 @@ core::Tensor sum_to_shape(const core::Tensor &a, const core::Shape &target) {
   return out;
 }
 
-core::Tensor broadcast_to_shape(const core::Tensor &a, const core::Shape &target) {
+core::Tensor broadcast_to_shape(const core::Tensor &a,
+                                const core::Shape &target) {
   core::Shape a_shape = a.shape();
   size_t ndim_a = a_shape.dimensions();
   size_t ndim_t = target.dimensions();
 
   if (ndim_a > ndim_t) {
     throw std::runtime_error("Input shape cannot have more dimensions than "
-                        "target shape, got input" +
-                        a_shape.to_string() + " and target " +
-                        target.to_string());
+                             "target shape, got input" +
+                             a_shape.to_string() + " and target " +
+                             target.to_string());
   }
 
   core::Tensor out = core::Tensor::empty(target, a.dtype(), a.device());
@@ -128,7 +130,8 @@ core::Tensor mean(const core::Tensor &a) {
         "Mean operation requires floating point data type");
   }
 
-  core::Tensor result = core::Tensor::empty(core::Shape{}, a.dtype(), a.device());
+  core::Tensor result =
+      core::Tensor::empty(core::Shape{}, a.dtype(), a.device());
 
   const std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
   if (meta_a && meta_a->requires_grad) {
@@ -142,16 +145,15 @@ core::Tensor mean(const core::Tensor &a) {
     case core::DType::FLOAT32:
       do_sum<float>(a, result);
       do_unary_op<float>(result, result,
-                       [num_elements = core::total_size(a.shape())](float x) {
-                         return x / num_elements;
-                       });
+                         [num_elements = core::total_size(a.shape())](float x) {
+                           return x / num_elements;
+                         });
       break;
     case core::DType::FLOAT64:
       do_sum<double>(a, result);
       do_unary_op<double>(result, result,
-                        [num_elements = core::total_size(a.shape())](double x) {
-                          return x / num_elements;
-                        });
+                          [num_elements = core::total_size(a.shape())](
+                              double x) { return x / num_elements; });
       break;
     default:
       throw std::runtime_error("Unsupported data type for mean operation");

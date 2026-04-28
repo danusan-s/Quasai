@@ -3,7 +3,8 @@
 
 namespace quasai::autograd {
 
-std::vector<core::Tensor> SumFunction::backward(const core::Tensor &grad_output) {
+std::vector<core::Tensor>
+SumFunction::backward(const core::Tensor &grad_output) {
   const core::Tensor &input = inputs[0];
   LOG_DEBUG(("SumFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
@@ -13,7 +14,8 @@ std::vector<core::Tensor> SumFunction::backward(const core::Tensor &grad_output)
   return {grad_input};
 }
 
-std::vector<core::Tensor> SumToShapeFunction::backward(const core::Tensor &grad_output) {
+std::vector<core::Tensor>
+SumToShapeFunction::backward(const core::Tensor &grad_output) {
   const core::Tensor &input = inputs[0];
   LOG_DEBUG(("SumToShapeFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
@@ -34,7 +36,8 @@ BroadcastToShapeFunction::backward(const core::Tensor &grad_output) {
   return {grad_input};
 }
 
-std::vector<core::Tensor> MeanFunction::backward(const core::Tensor &grad_output) {
+std::vector<core::Tensor>
+MeanFunction::backward(const core::Tensor &grad_output) {
   const core::Tensor &input = inputs[0];
   LOG_DEBUG(
       ("MeanFunction backward: input shape = " + input.shape().to_string() +
@@ -42,7 +45,8 @@ std::vector<core::Tensor> MeanFunction::backward(const core::Tensor &grad_output
           .c_str());
   switch (input.dtype()) {
     case core::DType::FLOAT32: {
-      const float num_elements = static_cast<float>(core::total_size(input.shape()));
+      const float num_elements =
+          static_cast<float>(core::total_size(input.shape()));
       core::Tensor num_elements_tensor = core::Tensor::from_data(
           &num_elements, core::Shape{}, input.dtype(), input.device());
       core::Tensor grad_input = ops::broadcast_to_shape(

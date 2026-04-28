@@ -14,7 +14,7 @@ add_unary_gradient(const core::Tensor &a, core::Tensor &result,
     autograd::Function *grad_fn = grad_fn_constructor();
     if (!grad_fn) {
       throw std::runtime_error("Gradient function constructor returned nullptr "
-                             "or not implemented for this operation");
+                               "or not implemented for this operation");
     }
     grad_fn->inputs = {a};
 
@@ -36,7 +36,8 @@ core::Tensor transpose(const core::Tensor &a) {
 
   core::Tensor result = core::Tensor::from_impl(impl_a_copy);
 
-  add_unary_gradient(a, result, []() { return new autograd::TransposeFunction(); });
+  add_unary_gradient(a, result,
+                     []() { return new autograd::TransposeFunction(); });
 
   return result;
 }
@@ -44,8 +45,8 @@ core::Tensor transpose(const core::Tensor &a) {
 core::Tensor expand(const core::Tensor &a, const core::Shape &target) {
   if (target.dimensions() < a.shape().dimensions()) {
     throw std::runtime_error("expand requires target shape to have greater "
-                            "than or equal number of "
-                            "dimensions than input tensor");
+                             "than or equal number of "
+                             "dimensions than input tensor");
   }
 
   core::TensorImpl impl_a_copy = a.get_impl_copy();
@@ -77,7 +78,8 @@ core::Tensor expand(const core::Tensor &a, const core::Shape &target) {
 
   core::Tensor result = core::Tensor::from_impl(impl_a_copy);
 
-  add_unary_gradient(a, result, []() { return new autograd::ExpandFunction(); });
+  add_unary_gradient(a, result,
+                     []() { return new autograd::ExpandFunction(); });
   return result;
 }
 
@@ -107,7 +109,8 @@ core::Tensor make_contiguous(const core::Tensor &a) {
       throw std::runtime_error("Unsupported data type for make_contiguous.");
   }
 
-  add_unary_gradient(a, result, []() { return new autograd::MakeContiguousFunction(); });
+  add_unary_gradient(a, result,
+                     []() { return new autograd::MakeContiguousFunction(); });
 
   return result;
 }
@@ -115,9 +118,9 @@ core::Tensor make_contiguous(const core::Tensor &a) {
 core::Tensor reshape(const core::Tensor &a, const core::Shape &target) {
   if (core::total_size(a.shape()) != core::total_size(target)) {
     throw std::runtime_error("Total size of new shape must be the same as "
-                           "the original shape, got " +
-                           a.shape().to_string() + " and target " +
-                           target.to_string());
+                             "the original shape, got " +
+                             a.shape().to_string() + " and target " +
+                             target.to_string());
   }
   core::TensorImpl impl_a_copy = a.get_impl_copy();
   if (!a.is_contiguous()) {
@@ -130,7 +133,8 @@ core::Tensor reshape(const core::Tensor &a, const core::Shape &target) {
 
   core::Tensor result = core::Tensor::from_impl(impl_a_copy);
 
-  add_unary_gradient(a, result, []() { return new autograd::ReshapeFunction(); });
+  add_unary_gradient(a, result,
+                     []() { return new autograd::ReshapeFunction(); });
 
   return result;
 }
@@ -146,12 +150,12 @@ core::Tensor slice(const core::Tensor &a, size_t start, size_t end) {
 
   if (a.shape().dimensions() == 0) {
     throw std::runtime_error("Slice requires input tensor to have at least 1 "
-                         "dimension");
+                             "dimension");
   }
 
   if (start >= end || end > a.shape()[0]) {
     throw std::runtime_error("Invalid slice range: [" + std::to_string(start) +
-                         ", " + std::to_string(end) + ")");
+                             ", " + std::to_string(end) + ")");
   }
 
   impl_a_copy.shape[0] = end - start;

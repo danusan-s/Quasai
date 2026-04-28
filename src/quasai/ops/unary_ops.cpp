@@ -5,17 +5,17 @@
 
 #define DISPATCH_UNARY_OP(a, result, OP)                                       \
   switch (a.dtype()) {                                                         \
-    case core::DType::FLOAT32:                                                   \
-      do_unary_op<float>(a, result, OP);                                         \
+    case core::DType::FLOAT32:                                                 \
+      do_unary_op<float>(a, result, OP);                                       \
       break;                                                                   \
-    case core::DType::FLOAT64:                                                   \
-      do_unary_op<double>(a, result, OP);                                          \
+    case core::DType::FLOAT64:                                                 \
+      do_unary_op<double>(a, result, OP);                                      \
       break;                                                                   \
-    case core::DType::INT32:                                                    \
-      do_unary_op<int32_t>(a, result, OP);                                      \
+    case core::DType::INT32:                                                   \
+      do_unary_op<int32_t>(a, result, OP);                                     \
       break;                                                                   \
-    case core::DType::INT64:                                                      \
-      do_unary_op<int64_t>(a, result, OP);                                      \
+    case core::DType::INT64:                                                   \
+      do_unary_op<int64_t>(a, result, OP);                                     \
       break;                                                                   \
     default:                                                                   \
       throw std::runtime_error("Unsupported data type for unary operation");   \
@@ -23,15 +23,16 @@
 
 namespace quasai::ops {
 
-inline void add_unary_gradient(const core::Tensor &a, core::Tensor &result,
-                        std::function<autograd::Function *()> grad_fn_constructor) {
+inline void
+add_unary_gradient(const core::Tensor &a, core::Tensor &result,
+                   std::function<autograd::Function *()> grad_fn_constructor) {
   std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
 
   if (meta_a && meta_a->requires_grad) {
     autograd::Function *grad_fn = grad_fn_constructor();
     if (!grad_fn) {
       throw std::runtime_error("Gradient function constructor returned nullptr "
-                           "or not implemented for this operation");
+                               "or not implemented for this operation");
     }
     grad_fn->inputs = {a};
 
@@ -63,14 +64,16 @@ core::Tensor relu(const core::Tensor &a) {
 
 core::Tensor heaviside(const core::Tensor &a) {
   core::Tensor result = core::Tensor::empty(a.shape(), a.dtype(), a.device());
-  add_unary_gradient(a, result, []() { return new autograd::HeavisideFunction(); });
+  add_unary_gradient(a, result,
+                     []() { return new autograd::HeavisideFunction(); });
   DISPATCH_UNARY_OP(a, result, [](auto x) { return x > 0 ? 1 : 0; });
   return result;
 }
 
 core::Tensor signum(const core::Tensor &a) {
   core::Tensor result = core::Tensor::empty(a.shape(), a.dtype(), a.device());
-  add_unary_gradient(a, result, []() { return new autograd::SignumFunction(); });
+  add_unary_gradient(a, result,
+                     []() { return new autograd::SignumFunction(); });
   DISPATCH_UNARY_OP(a, result,
                     [](auto x) { return x > 0 ? 1 : (x < 0 ? -1 : 0); });
   return result;
@@ -78,7 +81,8 @@ core::Tensor signum(const core::Tensor &a) {
 
 core::Tensor sigmoid(const core::Tensor &a) {
   core::Tensor result = core::Tensor::empty(a.shape(), a.dtype(), a.device());
-  add_unary_gradient(a, result, []() { return new autograd::SigmoidFunction(); });
+  add_unary_gradient(a, result,
+                     []() { return new autograd::SigmoidFunction(); });
   DISPATCH_UNARY_OP(a, result,
                     [](auto x) { return 1.0 / (1.0 + std::exp(-x)); });
   return result;

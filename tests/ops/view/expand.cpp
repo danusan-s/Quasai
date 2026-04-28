@@ -6,10 +6,11 @@
 TEST(Expand, Float32) {
   std::vector<float> data = {1.0f, 2.0f, 3.0f};
   quasai::core::Shape shape{3};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT32);
 
-  quasai::core::Tensor result = quasai::ops::expand(tensor, quasai::core::Shape{2, 3});
+  quasai::core::Tensor result =
+      quasai::ops::expand(tensor, quasai::core::Shape{2, 3});
   EXPECT_EQ(result.shape()[0], 2);
   EXPECT_EQ(result.shape()[1], 3);
   EXPECT_FALSE(result.is_contiguous());
@@ -28,10 +29,11 @@ TEST(Expand, Float32) {
 TEST(Expand, Float64) {
   std::vector<double> data = {1.0, 2.0};
   quasai::core::Shape shape{2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT64);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT64);
 
-  quasai::core::Tensor result = quasai::ops::expand(tensor, quasai::core::Shape{2, 2});
+  quasai::core::Tensor result =
+      quasai::ops::expand(tensor, quasai::core::Shape{2, 2});
   EXPECT_FALSE(result.is_contiguous());
   result = quasai::ops::make_contiguous(result);
 
@@ -42,10 +44,11 @@ TEST(Expand, Float64) {
 TEST(Expand, Scalar) {
   float data = 5.0f;
   quasai::core::Shape shape{};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(&data, shape, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      &data, shape, quasai::core::DType::FLOAT32);
 
-  quasai::core::Tensor result = quasai::ops::expand(tensor, quasai::core::Shape{3});
+  quasai::core::Tensor result =
+      quasai::ops::expand(tensor, quasai::core::Shape{3});
   EXPECT_EQ(result.shape()[0], 3);
   EXPECT_FALSE(result.is_contiguous());
 

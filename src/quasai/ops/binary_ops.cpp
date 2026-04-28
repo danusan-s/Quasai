@@ -5,16 +5,16 @@
 
 #define DISPATCH_BINARY_OP(a, b, result, OP)                                   \
   switch (a.dtype()) {                                                         \
-    case core::DType::FLOAT32:                                                   \
+    case core::DType::FLOAT32:                                                 \
       do_binary_op<float>(a, b, result, OP);                                   \
       break;                                                                   \
-    case core::DType::FLOAT64:                                                   \
+    case core::DType::FLOAT64:                                                 \
       do_binary_op<double>(a, b, result, OP);                                  \
       break;                                                                   \
-    case core::DType::INT32:                                                    \
+    case core::DType::INT32:                                                   \
       do_binary_op<int32_t>(a, b, result, OP);                                 \
       break;                                                                   \
-    case core::DType::INT64:                                                      \
+    case core::DType::INT64:                                                   \
       do_binary_op<int64_t>(a, b, result, OP);                                 \
       break;                                                                   \
     default:                                                                   \
@@ -23,7 +23,8 @@
 
 namespace quasai::ops {
 
-static core::Tensor create_result_tensor(const core::Tensor &a, const core::Tensor &b) {
+static core::Tensor create_result_tensor(const core::Tensor &a,
+                                         const core::Tensor &b) {
   if (a.dtype() != b.dtype()) {
     throw std::runtime_error(
         "Data types of input tensors must match for binary operations");
@@ -33,8 +34,9 @@ static core::Tensor create_result_tensor(const core::Tensor &a, const core::Tens
   return core::Tensor::empty(result_shape, result_dtype, a.device());
 }
 
-void add_binary_gradient(const core::Tensor &a, const core::Tensor &b, core::Tensor &result,
-                         std::function<autograd::Function *()> grad_fn_constructor) {
+void add_binary_gradient(
+    const core::Tensor &a, const core::Tensor &b, core::Tensor &result,
+    std::function<autograd::Function *()> grad_fn_constructor) {
 
   std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
   std::shared_ptr<autograd::AutoGradMeta> meta_b = b.autograd_meta();
@@ -43,7 +45,7 @@ void add_binary_gradient(const core::Tensor &a, const core::Tensor &b, core::Ten
     autograd::Function *grad_fn = grad_fn_constructor();
     if (!grad_fn) {
       throw std::runtime_error("Gradient function constructor returned nullptr "
-                           "or not implemented for this operation");
+                               "or not implemented for this operation");
     }
     grad_fn->inputs = {a, b};
     result.requires_grad(true);
@@ -53,28 +55,32 @@ void add_binary_gradient(const core::Tensor &a, const core::Tensor &b, core::Ten
 
 core::Tensor add(const core::Tensor &a, const core::Tensor &b) {
   core::Tensor result = create_result_tensor(a, b);
-  add_binary_gradient(a, b, result, []() { return new autograd::AddFunction(); });
+  add_binary_gradient(a, b, result,
+                      []() { return new autograd::AddFunction(); });
   DISPATCH_BINARY_OP(a, b, result, [](auto x, auto y) { return x + y; });
   return result;
 }
 
 core::Tensor sub(const core::Tensor &a, const core::Tensor &b) {
   core::Tensor result = create_result_tensor(a, b);
-  add_binary_gradient(a, b, result, []() { return new autograd::SubFunction(); });
+  add_binary_gradient(a, b, result,
+                      []() { return new autograd::SubFunction(); });
   DISPATCH_BINARY_OP(a, b, result, [](auto x, auto y) { return x - y; });
   return result;
 }
 
 core::Tensor mul(const core::Tensor &a, const core::Tensor &b) {
   core::Tensor result = create_result_tensor(a, b);
-  add_binary_gradient(a, b, result, []() { return new autograd::MulFunction(); });
+  add_binary_gradient(a, b, result,
+                      []() { return new autograd::MulFunction(); });
   DISPATCH_BINARY_OP(a, b, result, [](auto x, auto y) { return x * y; });
   return result;
 }
 
 core::Tensor div(const core::Tensor &a, const core::Tensor &b) {
   core::Tensor result = create_result_tensor(a, b);
-  add_binary_gradient(a, b, result, []() { return new autograd::DivFunction(); });
+  add_binary_gradient(a, b, result,
+                      []() { return new autograd::DivFunction(); });
   DISPATCH_BINARY_OP(a, b, result, [](auto x, auto y) { return x / y; });
   return result;
 }
