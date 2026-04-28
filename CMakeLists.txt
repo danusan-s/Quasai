@@ -35,3 +35,9 @@ add_subdirectory(bindings)
 
 # Examples
 add_subdirectory(examples)
+
+# Benchmarks (optional)
+option(BUILD_BENCHMARKS "Build benchmarks" OFF)
+if(BUILD_BENCHMARKS)
+  add_subdirectory(benchmarks)
+endif()
