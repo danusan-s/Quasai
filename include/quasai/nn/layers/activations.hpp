@@ -10,7 +10,7 @@ public:
   ReLU() = default;
 
   core::Tensor forward(const core::Tensor &input) override {
-    return relu(input);
+    return ops::relu(input);
   }
 };
 
@@ -19,7 +19,7 @@ public:
   Sigmoid() = default;
 
   core::Tensor forward(const core::Tensor &input) override {
-    return sigmoid(input);
+    return ops::sigmoid(input);
   }
 };
 
@@ -28,7 +28,7 @@ public:
   Tanh() = default;
 
   core::Tensor forward(const core::Tensor &input) override {
-    return tanh(input);
+    return ops::tanh(input);
   }
 };
 
@@ -37,7 +37,7 @@ public:
   Heaviside() = default;
 
   core::Tensor forward(const core::Tensor &input) override {
-    return heaviside(input);
+    return ops::heaviside(input);
   }
 };
 

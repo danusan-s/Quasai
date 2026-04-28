@@ -4,7 +4,7 @@
 #include "quasai/utils/logger.hpp"
 #include <functional>
 
-namespace quasai {
+namespace quasai::ops {
 
 constexpr size_t MIN_NUM_ELEMENTS_FOR_PARALLEL = 10000;
 constexpr size_t MIN_NUM_ELEMENTS_FOR_PARALLEL_REDUCTION = 20000;
@@ -23,45 +23,49 @@ inline bool can_use_parallel_matmul(size_t M, size_t N, size_t BS) {
   return num_tiles > MIN_NUM_TILES_FOR_PARALLEL_MATMUL;
 }
 
-// Binary ops
-void add_binary_gradient(const Tensor &a, const Tensor &b, Tensor &result,
-                         std::function<Function *()> grad_fn_constructor);
-Tensor add(const Tensor &a, const Tensor &b);
-Tensor sub(const Tensor &a, const Tensor &b);
-Tensor mul(const Tensor &a, const Tensor &b);
-Tensor div(const Tensor &a, const Tensor &b);
+class Function;
 
-Tensor matmul(const Tensor &a, const Tensor &b);
+// Binary ops
+void add_binary_gradient(const core::Tensor &a, const core::Tensor &b,
+                         core::Tensor &result,
+                         std::function<Function *()> grad_fn_constructor);
+core::Tensor add(const core::Tensor &a, const core::Tensor &b);
+core::Tensor sub(const core::Tensor &a, const core::Tensor &b);
+core::Tensor mul(const core::Tensor &a, const core::Tensor &b);
+core::Tensor div(const core::Tensor &a, const core::Tensor &b);
+
+core::Tensor matmul(const core::Tensor &a, const core::Tensor &b);
 
 // Unary ops
-void add_unary_gradient(const Tensor &a, Tensor &result,
+void add_unary_gradient(const core::Tensor &a, core::Tensor &result,
                         std::function<Function *()> grad_fn_constructor);
-Tensor neg(const Tensor &a);
-Tensor abs(const Tensor &a);
-Tensor relu(const Tensor &a);
-Tensor heaviside(const Tensor &a);
-Tensor signum(const Tensor &a);
-Tensor sigmoid(const Tensor &a);
-Tensor tanh(const Tensor &a);
+core::Tensor neg(const core::Tensor &a);
+core::Tensor abs(const core::Tensor &a);
+core::Tensor relu(const core::Tensor &a);
+core::Tensor heaviside(const core::Tensor &a);
+core::Tensor signum(const core::Tensor &a);
+core::Tensor sigmoid(const core::Tensor &a);
+core::Tensor tanh(const core::Tensor &a);
 
 // Reduction ops
-Tensor sum(const Tensor &a);
-Tensor sum_to_shape(const Tensor &a, const Shape &target);
-Tensor broadcast_to_shape(const Tensor &a, const Shape &target);
-Tensor mean(const Tensor &a);
+core::Tensor sum(const core::Tensor &a);
+core::Tensor sum_to_shape(const core::Tensor &a, const core::Shape &target);
+core::Tensor broadcast_to_shape(const core::Tensor &a,
+                                const core::Shape &target);
+core::Tensor mean(const core::Tensor &a);
 
 // View ops
-Tensor transpose(const Tensor &a);
-Tensor expand(const Tensor &a,
-              const Shape &target); // broadcast_to_shape but view and no new
-                                    // buffer allocation
-Tensor reshape(const Tensor &a, const Shape &target);
-Tensor make_contiguous(const Tensor &a);
-Tensor slice(const Tensor &a, size_t start, size_t end);
+core::Tensor transpose(const core::Tensor &a);
+core::Tensor expand(const core::Tensor &a,
+                    const core::Shape &target); // broadcast_to_shape but view
+                                                // and no new buffer allocation
+core::Tensor reshape(const core::Tensor &a, const core::Shape &target);
+core::Tensor make_contiguous(const core::Tensor &a);
+core::Tensor slice(const core::Tensor &a, size_t start, size_t end);
 
 template <typename T>
-void do_binary_op(const Tensor &a, const Tensor &b, Tensor &result,
-                  std::function<T(T, T)> op) {
+void do_binary_op(const core::Tensor &a, const core::Tensor &b,
+                  core::Tensor &result, std::function<T(T, T)> op) {
   // Take when no broadcasting and both tensors are contiguous as a fast path
   bool fast_path =
       (a.shape() == b.shape()) && a.is_contiguous() && b.is_contiguous();
@@ -73,8 +77,8 @@ void do_binary_op(const Tensor &a, const Tensor &b, Tensor &result,
   }
 }
 template <typename T>
-void do_binary_fast(const Tensor &a, const Tensor &b, Tensor &result,
-                    std::function<T(T, T)> op) {
+void do_binary_fast(const core::Tensor &a, const core::Tensor &b,
+                    core::Tensor &result, std::function<T(T, T)> op) {
   const size_t num_elements = total_size(result.shape());
   const T *data_a = a.data<T>();
   const T *data_b = b.data<T>();
@@ -87,9 +91,9 @@ void do_binary_fast(const Tensor &a, const Tensor &b, Tensor &result,
 }
 
 template <typename T>
-void do_binary_slow(const Tensor &a, const Tensor &b, Tensor &result,
-                    std::function<T(T, T)> op) {
-  const Shape out_shape = result.shape();
+void do_binary_slow(const core::Tensor &a, const core::Tensor &b,
+                    core::Tensor &result, std::function<T(T, T)> op) {
+  const core::Shape out_shape = result.shape();
 
   const size_t num_elements = total_size(out_shape);
   const T *data_a = a.data<T>();
@@ -98,9 +102,9 @@ void do_binary_slow(const Tensor &a, const Tensor &b, Tensor &result,
 
 #pragma omp parallel for if (can_use_parallel(num_elements))
   for (size_t i = 0; i < num_elements; ++i) {
-    Index idx = unravel_index(i, out_shape);
-    Index idx_a = get_broadcast_index(idx, a.shape());
-    Index idx_b = get_broadcast_index(idx, b.shape());
+    core::Index idx = unravel_index(i, out_shape);
+    core::Index idx_a = get_broadcast_index(idx, a.shape());
+    core::Index idx_b = get_broadcast_index(idx, b.shape());
 
     data_result[i] = op(data_a[ravel_index(idx_a, a.strides())],
                         data_b[ravel_index(idx_b, b.strides())]);
@@ -108,8 +112,9 @@ void do_binary_slow(const Tensor &a, const Tensor &b, Tensor &result,
 }
 
 template <typename T>
-void do_unary_op(const Tensor &a, Tensor &result, std::function<T(T)> op) {
-  const Shape out_shape = result.shape();
+void do_unary_op(const core::Tensor &a, core::Tensor &result,
+                 std::function<T(T)> op) {
+  const core::Shape out_shape = result.shape();
 
   const size_t num_elements = total_size(out_shape);
   const T *data_a = a.data<T>();
@@ -121,7 +126,7 @@ void do_unary_op(const Tensor &a, Tensor &result, std::function<T(T)> op) {
   }
 }
 
-template <typename T> void do_sum(const Tensor &a, Tensor &result) {
+template <typename T> void do_sum(const core::Tensor &a, core::Tensor &result) {
   const size_t num_elements = total_size(a.shape());
   const T *data_a = a.data<T>();
   T *data_result = result.data<T>();
@@ -135,10 +140,11 @@ template <typename T> void do_sum(const Tensor &a, Tensor &result) {
   data_result[0] = sum;
 }
 
-template <typename T> void do_sum_to_shape(const Tensor &a, Tensor &result) {
-  const Shape &a_shape = a.shape();
-  const Shape &out_shape = result.shape();
-  const Strides &out_strides = result.strides();
+template <typename T>
+void do_sum_to_shape(const core::Tensor &a, core::Tensor &result) {
+  const core::Shape &a_shape = a.shape();
+  const core::Shape &out_shape = result.shape();
+  const core::Strides &out_strides = result.strides();
 
   const size_t num_elements = total_size(a_shape);
   const T *data_a = a.data<T>();
@@ -146,17 +152,17 @@ template <typename T> void do_sum_to_shape(const Tensor &a, Tensor &result) {
 
   // Dangerous to parallize since multiple threads may write to the same out ind
   for (size_t i = 0; i < num_elements; ++i) {
-    Index idx_a = unravel_index(i, a_shape);
-    Index idx_out = get_broadcast_index(idx_a, out_shape);
+    core::Index idx_a = unravel_index(i, a_shape);
+    core::Index idx_out = get_broadcast_index(idx_a, out_shape);
     data_result[ravel_index(idx_out, out_strides)] += data_a[i];
   }
 }
 
 template <typename T>
-void do_broadcast_to_shape(const Tensor &a, Tensor &result) {
-  const Shape &a_shape = a.shape();
-  const Strides &a_strides = a.strides();
-  const Shape &out_shape = result.shape();
+void do_broadcast_to_shape(const core::Tensor &a, core::Tensor &result) {
+  const core::Shape &a_shape = a.shape();
+  const core::Strides &a_strides = a.strides();
+  const core::Shape &out_shape = result.shape();
 
   const size_t num_elements = total_size(out_shape);
   const T *data_a = a.data<T>();
@@ -164,18 +170,19 @@ void do_broadcast_to_shape(const Tensor &a, Tensor &result) {
 
 #pragma omp parallel for
   for (size_t i = 0; i < num_elements; ++i) {
-    Index idx_out = unravel_index(i, out_shape);
-    Index idx_a = get_broadcast_index(idx_out, a_shape);
+    core::Index idx_out = unravel_index(i, out_shape);
+    core::Index idx_a = get_broadcast_index(idx_out, a_shape);
     data_result[i] = data_a[ravel_index(idx_a, a_strides)];
   }
 }
 
 template <typename T>
-void do_matmul(const Tensor &a, const Tensor &b, Tensor &result) {
+void do_matmul(const core::Tensor &a, const core::Tensor &b,
+               core::Tensor &result) {
   size_t M = a.shape()[0];
   size_t N = b.shape()[1];
 
-  if (result.shape() != Shape{M, N}) {
+  if (result.shape() != core::Shape{M, N}) {
     throw std::runtime_error("Result tensor has incorrect shape for matmul");
   }
 
@@ -195,7 +202,8 @@ void do_matmul(const Tensor &a, const Tensor &b, Tensor &result) {
 }
 
 template <typename T>
-void do_matmul_fast(const Tensor &a, const Tensor &b, Tensor &result) {
+void do_matmul_fast(const core::Tensor &a, const core::Tensor &b,
+                    core::Tensor &result) {
   size_t M = a.shape()[0];
   size_t K = a.shape()[1];
   size_t N = b.shape()[1];
@@ -224,7 +232,8 @@ void do_matmul_fast(const Tensor &a, const Tensor &b, Tensor &result) {
 }
 
 template <typename T>
-void do_matmul_slow(const Tensor &a, const Tensor &b, Tensor &result) {
+void do_matmul_slow(const core::Tensor &a, const core::Tensor &b,
+                    core::Tensor &result) {
   size_t M = a.shape()[0];
   size_t K = a.shape()[1];
   size_t N = b.shape()[1];
@@ -257,9 +266,10 @@ void do_matmul_slow(const Tensor &a, const Tensor &b, Tensor &result) {
   }
 }
 
-template <typename T> void do_contiguous_copy(const Tensor &a, Tensor &result) {
-  const Shape &a_shape = a.shape();
-  const Strides &a_strides = a.strides();
+template <typename T>
+void do_contiguous_copy(const core::Tensor &a, core::Tensor &result) {
+  const core::Shape &a_shape = a.shape();
+  const core::Strides &a_strides = a.strides();
 
   const size_t num_elements = total_size(a_shape);
   const T *data_a = a.data<T>();
@@ -267,10 +277,10 @@ template <typename T> void do_contiguous_copy(const Tensor &a, Tensor &result) {
 
 #pragma omp parallel for if (can_use_parallel(num_elements))
   for (size_t i = 0; i < num_elements; ++i) {
-    Index idx_a = unravel_index(i, a_shape);
+    core::Index idx_a = unravel_index(i, a_shape);
     data_result[i] = data_a[ravel_index(idx_a, a_strides)];
   }
   return;
 }
 
-} // namespace quasai
+} // namespace quasai::ops

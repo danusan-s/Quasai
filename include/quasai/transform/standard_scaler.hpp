@@ -1,18 +1,21 @@
+#pragma once
+
 #include "quasai/core/tensor.hpp"
-namespace quasai {
+
+namespace quasai::tranform {
 
 class StandardScaler {
 public:
   StandardScaler() = default;
 
-  void fit(const Tensor &data);
+  void fit(const core::Tensor &data);
 
-  Tensor transform(const Tensor &data) const;
+  core::Tensor transform(const core::Tensor &data) const;
 
-  Tensor inverse_transform(const Tensor &data) const;
+  core::Tensor inverse_transform(const core::Tensor &data) const;
 
-  Tensor mean_;
-  Tensor std_;
+  core::Tensor mean_;
+  core::Tensor std_;
 };
 
-} // namespace quasai
+} // namespace quasai::tranform

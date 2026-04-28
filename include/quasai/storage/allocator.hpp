@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <cstdlib>
 
-namespace quasai {
+namespace quasai::storage {
 
 class Allocator {
 public:
@@ -34,4 +34,4 @@ public:
   static CudaAllocator &instance();
 };
 
-} // namespace quasai
+} // namespace quasai::storage

@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 
+namespace quasai::utils {
+
 #define LOG_INFO(message)                                                      \
   Logger::log_info(message, __FILE__, __LINE__, __func__)
 
@@ -71,3 +73,5 @@ private:
     return s;
   }
 };
+
+} // namespace quasai::utils

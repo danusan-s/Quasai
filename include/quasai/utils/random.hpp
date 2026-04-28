@@ -2,7 +2,7 @@
 
 #include <random>
 
-namespace quasai {
+namespace quasai::utils {
 
 class RNG {
 public:
@@ -25,4 +25,4 @@ private:
   std::mt19937 engine_;
 };
 
-} // namespace quasai
+} // namespace quasai::utils

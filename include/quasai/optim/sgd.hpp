@@ -4,7 +4,7 @@
 #include "quasai/optim/optimizer.hpp"
 #include <vector>
 
-namespace quasai {
+namespace quasai::optim {
 
 class SGD : public Optimizer {
 public:
@@ -15,17 +15,17 @@ public:
     }
   }
 
-  void compile(const std::vector<Parameter> &parameters) override;
+  void compile(const std::vector<nn::Parameter> &parameters) override;
 
   void step() override;
 
   void zero_grad() override;
 
 private:
-  std::vector<Parameter> parameters_;
-  std::vector<Tensor> gradients_;
+  std::vector<nn::Parameter> parameters_;
+  std::vector<core::Tensor> gradients_;
   float learning_rate_;
   float momentum_;
 };
 
-} // namespace quasai
+} // namespace quasai::optim

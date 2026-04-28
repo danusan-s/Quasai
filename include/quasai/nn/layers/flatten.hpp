@@ -14,7 +14,7 @@ public:
     size_t total = core::total_size(input.shape());
     size_t feature_size = total / batch_size;
 
-    return quasai::reshape(input, core::Shape{input.shape()[0], feature_size});
+    return ops::reshape(input, core::Shape{input.shape()[0], feature_size});
   }
 };
 

@@ -15,7 +15,7 @@ class Function;
 class AutoGradMeta;
 
 struct TensorImpl {
-  std::shared_ptr<Buffer> buffer;
+  std::shared_ptr<storage::Buffer> buffer;
 
   Shape shape;
   Strides strides;
@@ -70,7 +70,7 @@ public:
     return out;
   }
 
-  static Allocator *allocator_for_device(const Device &device);
+  static storage::Allocator *allocator_for_device(const Device &device);
 
   template <typename T> void check_valid_dtype() const {
     if (impl_.dtype != DTypeTraits<T>::dtype) {
@@ -95,7 +95,7 @@ public:
     return data<T>()[flat];
   }
 
-  std::shared_ptr<Buffer> buffer() const;
+  std::shared_ptr<storage::Buffer> buffer() const;
   const Shape &shape() const;
   const Strides &strides() const;
   bool is_contiguous() const;
@@ -113,7 +113,7 @@ public:
   Tensor();
 
 private:
-  Tensor(std::shared_ptr<Buffer> buffer, const Shape &shape,
+  Tensor(std::shared_ptr<storage::Buffer> buffer, const Shape &shape,
          const Strides &strides, size_t offset, bool is_contiguous, DType dtype,
          Device device);
 

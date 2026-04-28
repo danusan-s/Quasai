@@ -2,11 +2,12 @@
 
 #include "quasai/storage/allocator.hpp"
 
-namespace quasai {
+namespace quasai::storage {
 
 class Buffer {
 public:
-  Buffer(Allocator *allocator = &CpuAllocator::instance(), std::size_t size = 0);
+  Buffer(Allocator *allocator = &CpuAllocator::instance(),
+         std::size_t size = 0);
   ~Buffer();
 
   Buffer(const Buffer &) = delete;
@@ -24,4 +25,4 @@ private:
   std::size_t size_;
 };
 
-} // namespace quasai
+} // namespace quasai::storage
