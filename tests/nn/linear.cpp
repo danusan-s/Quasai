@@ -157,6 +157,17 @@ quasai::core::Tensor input = quasai::core::Tensor::from_data(
 
   size_t epochs = 50;
 
+  // Track initial loss (before training)
+  float initial_loss = 0.0f;
+  for (size_t i = 0; i < num_samples; ++i) {
+    quasai::core::Tensor hidden = linear1.forward(inputs[i]);
+    quasai::core::Tensor activated = quasai::ops::relu(hidden);
+    quasai::core::Tensor output = linear2.forward(activated);
+    quasai::core::Tensor loss = quasai::nn::mse_loss(output, targets[i]);
+    initial_loss += loss.data<float>()[0];
+  }
+  initial_loss /= num_samples;
+
   std::cout << "Starting training on " << num_samples << " samples for "
             << epochs << " epochs." << std::endl;
 
@@ -182,6 +193,20 @@ quasai::core::Tensor input = quasai::core::Tensor::from_data(
               << ", Avg Loss: " << total_loss / num_samples << std::endl;
   }
 
+  // Track final loss (after training)
+  float final_loss = 0.0f;
+  for (size_t i = 0; i < num_samples; ++i) {
+    quasai::core::Tensor hidden = linear1.forward(inputs[i]);
+    quasai::core::Tensor activated = quasai::ops::relu(hidden);
+    quasai::core::Tensor output = linear2.forward(activated);
+    quasai::core::Tensor loss = quasai::nn::mse_loss(output, targets[i]);
+    final_loss += loss.data<float>()[0];
+  }
+  final_loss /= num_samples;
+
+  std::cout << "Initial Avg Loss: " << initial_loss << std::endl;
+  std::cout << "Final Avg Loss: " << final_loss << std::endl;
+
   std::cout << "Starting testing on training data." << std::endl;
 
   for (size_t i = 0; i < num_samples; ++i) {
@@ -197,7 +222,8 @@ quasai::core::Tensor input = quasai::core::Tensor::from_data(
               << target_data[1] << "]" << std::endl;
   }
 
-  // Basic assertion: loss should be small after training
-  EXPECT_LT((float)(1e-2),
-            1.0f); // replace with real check if you track final loss
+  // Loss should decrease significantly after training
+  EXPECT_LT(final_loss, initial_loss);
+  // Final loss should be small for this simple problem
+  EXPECT_LT(final_loss, 0.1f);
 }
