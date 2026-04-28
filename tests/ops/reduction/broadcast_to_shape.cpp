@@ -4,8 +4,8 @@
 TEST(BroadcastToShape, Float32) {
   std::vector<float> data = {1.0f, 2.0f};
   quasai::core::Shape shape{2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT32);
   quasai::core::Shape target{3, 2};
 
   quasai::core::Tensor result = quasai::ops::broadcast_to_shape(tensor, target);
@@ -21,8 +21,8 @@ TEST(BroadcastToShape, Float32) {
 TEST(BroadcastToShape, Float64) {
   std::vector<double> data = {1.0, 2.0};
   quasai::core::Shape shape{2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT64);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT64);
   quasai::core::Shape target{3, 2};
 
   quasai::core::Tensor result = quasai::ops::broadcast_to_shape(tensor, target);
@@ -38,8 +38,8 @@ TEST(BroadcastToShape, Float64) {
 TEST(BroadcastToShape, Int32) {
   std::vector<int32_t> data = {1, 2};
   quasai::core::Shape shape{2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::INT32);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::INT32);
   quasai::core::Shape target{3, 2};
 
   quasai::core::Tensor result = quasai::ops::broadcast_to_shape(tensor, target);
@@ -55,8 +55,8 @@ TEST(BroadcastToShape, Int32) {
 TEST(BroadcastToShape, Int64) {
   std::vector<int64_t> data = {1, 2};
   quasai::core::Shape shape{2};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::INT64);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::INT64);
   quasai::core::Shape target{3, 2};
 
   quasai::core::Tensor result = quasai::ops::broadcast_to_shape(tensor, target);
@@ -72,8 +72,8 @@ TEST(BroadcastToShape, Int64) {
 TEST(BroadcastToShape, ScalarToShape) {
   std::vector<float> data = {5.0f};
   quasai::core::Shape shape{};
-  quasai::core::Tensor tensor =
-      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT32);
   quasai::core::Shape target{3, 2};
 
   quasai::core::Tensor result = quasai::ops::broadcast_to_shape(tensor, target);

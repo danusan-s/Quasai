@@ -13,7 +13,8 @@ file(GLOB TEST_DIRS LIST_DIRECTORIES true *)
 
 foreach(dir ${TEST_DIRS})
     if(IS_DIRECTORY ${dir})
-        file(GLOB TEST_SOURCES CONFIGURE_DEPENDS ${dir}/*.cpp)
+        # Use GLOB_RECURSE to find all .cpp files in subdirectories
+        file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS "${dir}/*.cpp")
 
         if(TEST_SOURCES)
             get_filename_component(test_name ${dir} NAME)

@@ -6,10 +6,10 @@ TEST(BroadcastAdd, Float32) {
   std::vector<float> data_b = {10.0f, 20.0f};
   quasai::core::Shape shape_a{3, 2};
   quasai::core::Shape shape_b{2};
-  quasai::core::Tensor tensor_a =
-      quasai::core::Tensor::from_data(data_a.data(), shape_a, quasai::core::DType::FLOAT32);
-  quasai::core::Tensor tensor_b =
-      quasai::core::Tensor::from_data(data_b.data(), shape_b, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor_a = quasai::core::Tensor::from_data(
+      data_a.data(), shape_a, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor_b = quasai::core::Tensor::from_data(
+      data_b.data(), shape_b, quasai::core::DType::FLOAT32);
 
   quasai::core::Tensor result = quasai::ops::add(tensor_a, tensor_b);
   float *result_data = result.data<float>();
@@ -26,10 +26,10 @@ TEST(BroadcastAdd, Float64) {
   std::vector<double> data_b = {10.0, 20.0};
   quasai::core::Shape shape_a{3, 2};
   quasai::core::Shape shape_b{2};
-  quasai::core::Tensor tensor_a =
-      quasai::core::Tensor::from_data(data_a.data(), shape_a, quasai::core::DType::FLOAT64);
-  quasai::core::Tensor tensor_b =
-      quasai::core::Tensor::from_data(data_b.data(), shape_b, quasai::core::DType::FLOAT64);
+  quasai::core::Tensor tensor_a = quasai::core::Tensor::from_data(
+      data_a.data(), shape_a, quasai::core::DType::FLOAT64);
+  quasai::core::Tensor tensor_b = quasai::core::Tensor::from_data(
+      data_b.data(), shape_b, quasai::core::DType::FLOAT64);
 
   quasai::core::Tensor result = quasai::ops::add(tensor_a, tensor_b);
   double *result_data = result.data<double>();
@@ -46,10 +46,10 @@ TEST(BroadcastAdd, Int32) {
   std::vector<int32_t> data_b = {10, 20};
   quasai::core::Shape shape_a{3, 2};
   quasai::core::Shape shape_b{2};
-  quasai::core::Tensor tensor_a =
-      quasai::core::Tensor::from_data(data_a.data(), shape_a, quasai::core::DType::INT32);
-  quasai::core::Tensor tensor_b =
-      quasai::core::Tensor::from_data(data_b.data(), shape_b, quasai::core::DType::INT32);
+  quasai::core::Tensor tensor_a = quasai::core::Tensor::from_data(
+      data_a.data(), shape_a, quasai::core::DType::INT32);
+  quasai::core::Tensor tensor_b = quasai::core::Tensor::from_data(
+      data_b.data(), shape_b, quasai::core::DType::INT32);
 
   quasai::core::Tensor result = quasai::ops::add(tensor_a, tensor_b);
   int32_t *result_data = result.data<int32_t>();
@@ -66,10 +66,10 @@ TEST(BroadcastAdd, Int64) {
   std::vector<int64_t> data_b = {10, 20};
   quasai::core::Shape shape_a{3, 2};
   quasai::core::Shape shape_b{2};
-  quasai::core::Tensor tensor_a =
-      quasai::core::Tensor::from_data(data_a.data(), shape_a, quasai::core::DType::INT64);
-  quasai::core::Tensor tensor_b =
-      quasai::core::Tensor::from_data(data_b.data(), shape_b, quasai::core::DType::INT64);
+  quasai::core::Tensor tensor_a = quasai::core::Tensor::from_data(
+      data_a.data(), shape_a, quasai::core::DType::INT64);
+  quasai::core::Tensor tensor_b = quasai::core::Tensor::from_data(
+      data_b.data(), shape_b, quasai::core::DType::INT64);
 
   quasai::core::Tensor result = quasai::ops::add(tensor_a, tensor_b);
   int64_t *result_data = result.data<int64_t>();
@@ -86,10 +86,10 @@ TEST(BroadcastAddScalar, Float32) {
   std::vector<float> data_b = {10.0f};
   quasai::core::Shape shape_a{3};
   quasai::core::Shape shape_b{1};
-  quasai::core::Tensor tensor_a =
-      quasai::core::Tensor::from_data(data_a.data(), shape_a, quasai::core::DType::FLOAT32);
-  quasai::core::Tensor tensor_b =
-      quasai::core::Tensor::from_data(data_b.data(), shape_b, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor_a = quasai::core::Tensor::from_data(
+      data_a.data(), shape_a, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor_b = quasai::core::Tensor::from_data(
+      data_b.data(), shape_b, quasai::core::DType::FLOAT32);
 
   quasai::core::Tensor result = quasai::ops::add(tensor_a, tensor_b);
   float *result_data = result.data<float>();
@@ -103,10 +103,10 @@ TEST(BroadcastSub, Float32) {
   std::vector<float> data_b = {10.0f, 20.0f};
   quasai::core::Shape shape_a{3, 2};
   quasai::core::Shape shape_b{2};
-  quasai::core::Tensor tensor_a =
-      quasai::core::Tensor::from_data(data_a.data(), shape_a, quasai::core::DType::FLOAT32);
-  quasai::core::Tensor tensor_b =
-      quasai::core::Tensor::from_data(data_b.data(), shape_b, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor_a = quasai::core::Tensor::from_data(
+      data_a.data(), shape_a, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor_b = quasai::core::Tensor::from_data(
+      data_b.data(), shape_b, quasai::core::DType::FLOAT32);
 
   quasai::core::Tensor result = quasai::ops::sub(tensor_a, tensor_b);
   float *result_data = result.data<float>();
@@ -123,10 +123,10 @@ TEST(BroadcastMul, Float32) {
   std::vector<float> data_b = {2.0f, 3.0f};
   quasai::core::Shape shape_a{3, 2};
   quasai::core::Shape shape_b{2};
-  quasai::core::Tensor tensor_a =
-      quasai::core::Tensor::from_data(data_a.data(), shape_a, quasai::core::DType::FLOAT32);
-  quasai::core::Tensor tensor_b =
-      quasai::core::Tensor::from_data(data_b.data(), shape_b, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor_a = quasai::core::Tensor::from_data(
+      data_a.data(), shape_a, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor_b = quasai::core::Tensor::from_data(
+      data_b.data(), shape_b, quasai::core::DType::FLOAT32);
 
   quasai::core::Tensor result = quasai::ops::mul(tensor_a, tensor_b);
   float *result_data = result.data<float>();
@@ -143,10 +143,10 @@ TEST(BroadcastDiv, Float32) {
   std::vector<float> data_b = {2.0f, 5.0f};
   quasai::core::Shape shape_a{3, 2};
   quasai::core::Shape shape_b{2};
-  quasai::core::Tensor tensor_a =
-      quasai::core::Tensor::from_data(data_a.data(), shape_a, quasai::core::DType::FLOAT32);
-  quasai::core::Tensor tensor_b =
-      quasai::core::Tensor::from_data(data_b.data(), shape_b, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor_a = quasai::core::Tensor::from_data(
+      data_a.data(), shape_a, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor tensor_b = quasai::core::Tensor::from_data(
+      data_b.data(), shape_b, quasai::core::DType::FLOAT32);
 
   quasai::core::Tensor result = quasai::ops::div(tensor_a, tensor_b);
   float *result_data = result.data<float>();
