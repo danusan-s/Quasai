@@ -1,7 +1,7 @@
 #include "quasai/nn/sequential.hpp"
-#include "quasai/nn/activations.hpp"
+#include "quasai/nn/layers/activations.hpp"
 #include "quasai/nn/init.hpp"
-#include "quasai/nn/linear.hpp"
+#include "quasai/nn/layers/linear.hpp"
 #include "quasai/nn/loss.hpp"
 #include "quasai/optim/sgd.hpp"
 #include <gtest/gtest.h>
@@ -12,37 +12,37 @@ TEST(Sequential, TwoLayerRegression) {
   size_t out_features = 2;
 
   std::vector<float> input_data = {1.0f, 2.0f, 3.0f};
-  quasai::Tensor input = quasai::Tensor::from_data(
-      input_data.data(), quasai::Shape{in_features}, quasai::DType::FLOAT32);
+  quasai::core::Tensor input = quasai::core::Tensor::from_data(
+      input_data.data(), quasai::core::Shape{in_features}, quasai::core::DType::FLOAT32);
 
   std::vector<float> target_data = {0.0f, 1.0f};
-  quasai::Tensor target = quasai::Tensor::from_data(
-      target_data.data(), quasai::Shape{out_features}, quasai::DType::FLOAT32);
+  quasai::core::Tensor target = quasai::core::Tensor::from_data(
+      target_data.data(), quasai::core::Shape{out_features}, quasai::core::DType::FLOAT32);
 
-  quasai::Initialization init = quasai::Initialization::GLOROT_UNIFORM;
+  quasai::nn::Initialization init = quasai::nn::Initialization::GLOROT_UNIFORM;
 
   auto linear1 =
-      std::make_shared<quasai::Linear>(in_features, hidden_features, init);
-  auto relu = std::make_shared<quasai::ReLU>();
+      std::make_shared<quasai::nn::Linear>(in_features, hidden_features, init);
+  auto relu = std::make_shared<quasai::nn::ReLU>();
   auto linear2 =
-      std::make_shared<quasai::Linear>(hidden_features, out_features, init);
+      std::make_shared<quasai::nn::Linear>(hidden_features, out_features, init);
 
-  quasai::Sequential model({linear1, relu, linear2});
+  quasai::nn::Sequential model({linear1, relu, linear2});
 
-  std::vector<quasai::Parameter> params = model.parameters();
+  std::vector<quasai::nn::Parameter> params = model.parameters();
 
   float learning_rate = 0.001f;
   float momentum = 0.9f;
-  quasai::SGD optimizer(learning_rate, momentum);
+  quasai::optim::SGD optimizer(learning_rate, momentum);
   optimizer.compile(params);
 
   size_t epochs = 10;
 
   for (size_t epoch = 0; epoch < epochs; ++epoch) {
-    quasai::Tensor output = model.forward(input);
+    quasai::core::Tensor output = model.forward(input);
 
     const float *output_data = output.data<float>();
-    quasai::Tensor loss = quasai::mse_loss(output, target);
+    quasai::core::Tensor loss = quasai::nn::mse_loss(output, target);
 
     loss.backward();
 
@@ -64,8 +64,8 @@ TEST(Sequential, OneHiddenLayer_MultiSample) {
 
   size_t num_samples = 100;
 
-  std::vector<quasai::Tensor> inputs;
-  std::vector<quasai::Tensor> targets;
+  std::vector<quasai::core::Tensor> inputs;
+  std::vector<quasai::core::Tensor> targets;
 
   // Generate dataset
   for (size_t i = 0; i < num_samples; ++i) {
@@ -79,30 +79,30 @@ TEST(Sequential, OneHiddenLayer_MultiSample) {
         x2       // second output depends on x2
     };
 
-    quasai::Tensor input = quasai::Tensor::from_data(
-        input_data.data(), quasai::Shape{in_features}, quasai::DType::FLOAT32);
+    quasai::core::Tensor input = quasai::core::Tensor::from_data(
+        input_data.data(), quasai::core::Shape{in_features}, quasai::core::DType::FLOAT32);
 
-    quasai::Tensor target = quasai::Tensor::from_data(
-        target_data.data(), quasai::Shape{out_features},
-        quasai::DType::FLOAT32);
+    quasai::core::Tensor target = quasai::core::Tensor::from_data(
+        target_data.data(), quasai::core::Shape{out_features},
+        quasai::core::DType::FLOAT32);
 
     targets.push_back(target);
     inputs.push_back(input);
   }
 
-  quasai::Initialization init = quasai::Initialization::GLOROT_UNIFORM;
+  quasai::nn::Initialization init = quasai::nn::Initialization::GLOROT_UNIFORM;
 
   auto linear1 =
-      std::make_shared<quasai::Linear>(in_features, hidden_features, init);
-  auto relu = std::make_shared<quasai::ReLU>();
+      std::make_shared<quasai::nn::Linear>(in_features, hidden_features, init);
+  auto relu = std::make_shared<quasai::nn::ReLU>();
   auto linear2 =
-      std::make_shared<quasai::Linear>(hidden_features, out_features, init);
+      std::make_shared<quasai::nn::Linear>(hidden_features, out_features, init);
 
-  quasai::Sequential model({linear1, relu, linear2});
+  quasai::nn::Sequential model({linear1, relu, linear2});
 
   float learning_rate = 0.001f;
   float momentum = 0.9f;
-  quasai::SGD optimizer(learning_rate, momentum);
+  quasai::optim::SGD optimizer(learning_rate, momentum);
   optimizer.compile(model.parameters());
 
   size_t epochs = 50;
@@ -114,9 +114,9 @@ TEST(Sequential, OneHiddenLayer_MultiSample) {
     float total_loss = 0.0f;
 
     for (size_t i = 0; i < num_samples; ++i) {
-      quasai::Tensor output = model(inputs[i]);
+      quasai::core::Tensor output = model(inputs[i]);
 
-      quasai::Tensor loss = quasai::mse_loss(output, targets[i]);
+      quasai::core::Tensor loss = quasai::nn::mse_loss(output, targets[i]);
 
       loss.backward();
 
@@ -133,7 +133,7 @@ TEST(Sequential, OneHiddenLayer_MultiSample) {
   std::cout << "Starting testing on training data." << std::endl;
 
   for (size_t i = 0; i < num_samples; ++i) {
-    quasai::Tensor output = model.forward(inputs[i]);
+    quasai::core::Tensor output = model.forward(inputs[i]);
 
     const float *output_data = output.data<float>();
     const float *target_data = targets[i].data<float>();
@@ -172,26 +172,26 @@ TEST(Sequential, RegressionWithBatching) {
     targets.insert(targets.end(), target_data.begin(), target_data.end());
   }
 
-  quasai::Tensor input_tensor = quasai::Tensor::from_data(
-      inputs.data(), quasai::Shape{num_samples, in_features},
-      quasai::DType::FLOAT32);
-  quasai::Tensor target_tensor = quasai::Tensor::from_data(
-      targets.data(), quasai::Shape{num_samples, out_features},
-      quasai::DType::FLOAT32);
+  quasai::core::Tensor input_tensor = quasai::core::Tensor::from_data(
+      inputs.data(), quasai::core::Shape{num_samples, in_features},
+      quasai::core::DType::FLOAT32);
+  quasai::core::Tensor target_tensor = quasai::core::Tensor::from_data(
+      targets.data(), quasai::core::Shape{num_samples, out_features},
+      quasai::core::DType::FLOAT32);
 
-  quasai::Initialization init = quasai::Initialization::GLOROT_UNIFORM;
+  quasai::nn::Initialization init = quasai::nn::Initialization::GLOROT_UNIFORM;
 
   auto linear1 =
-      std::make_shared<quasai::Linear>(in_features, hidden_features, init);
-  auto relu = std::make_shared<quasai::ReLU>();
+      std::make_shared<quasai::nn::Linear>(in_features, hidden_features, init);
+  auto relu = std::make_shared<quasai::nn::ReLU>();
   auto linear2 =
-      std::make_shared<quasai::Linear>(hidden_features, out_features, init);
+      std::make_shared<quasai::nn::Linear>(hidden_features, out_features, init);
 
-  quasai::Sequential model({linear1, relu, linear2});
+  quasai::nn::Sequential model({linear1, relu, linear2});
 
   float learning_rate = 0.001f;
   float momentum = 0.9f;
-  quasai::SGD optimizer(learning_rate, momentum);
+  quasai::optim::SGD optimizer(learning_rate, momentum);
   optimizer.compile(model.parameters());
 
   size_t epochs = 50;
@@ -205,13 +205,13 @@ TEST(Sequential, RegressionWithBatching) {
 
     for (size_t i = 0; i < num_samples; i += batch_size) {
       size_t current_batch_size = std::min(batch_size, num_samples - i);
-      quasai::Tensor batch_input =
-          slice(input_tensor, i, i + current_batch_size); // Get batch input
-      quasai::Tensor batch_target =
-          slice(target_tensor, i, i + current_batch_size); // Get batch target
-      quasai::Tensor output = model(batch_input);
+      quasai::core::Tensor batch_input =
+          quasai::ops::slice(input_tensor, i, i + current_batch_size); // Get batch input
+      quasai::core::Tensor batch_target =
+          quasai::ops::slice(target_tensor, i, i + current_batch_size); // Get batch target
+      quasai::core::Tensor output = model(batch_input);
 
-      quasai::Tensor loss = quasai::mse_loss(output, batch_target);
+      quasai::core::Tensor loss = quasai::nn::mse_loss(output, batch_target);
 
       loss.backward();
 
@@ -227,11 +227,11 @@ TEST(Sequential, RegressionWithBatching) {
 
   std::cout << "Starting testing on training data." << std::endl;
 
-  quasai::Tensor output = model.forward(input_tensor);
+  quasai::core::Tensor output = model.forward(input_tensor);
   const float *output_data = output.data<float>();
   const float *target_data = target_tensor.data<float>();
 
-  quasai::Tensor final_loss = quasai::mse_loss(output, target_tensor);
+  quasai::core::Tensor final_loss = quasai::nn::mse_loss(output, target_tensor);
 
   std::cout << "Final Loss: " << final_loss.data<float>()[0] << std::endl;
 

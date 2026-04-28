@@ -1,8 +1,10 @@
 #include "quasai/core/shape.hpp"
 #include <gtest/gtest.h>
 
+using namespace quasai::core;
+
 TEST(ShapeTest, ConstructorInitializerList) {
-  quasai::Shape shape{2, 3, 4};
+  Shape shape{2, 3, 4};
 
   EXPECT_EQ(shape.dimensions(), 3);
   EXPECT_EQ(shape[0], 2);
@@ -12,7 +14,7 @@ TEST(ShapeTest, ConstructorInitializerList) {
 
 TEST(ShapeTest, ConstructorArray) {
   std::size_t dims[] = {5, 6};
-  quasai::Shape shape(dims, 2);
+  Shape shape(dims, 2);
 
   EXPECT_EQ(shape.dimensions(), 2);
   EXPECT_EQ(shape[0], 5);
@@ -20,13 +22,13 @@ TEST(ShapeTest, ConstructorArray) {
 }
 
 TEST(ShapeTest, TotalSize) {
-  quasai::Shape shape{2, 3, 4};
-  EXPECT_EQ(quasai::total_size(shape), 24);
+  Shape shape{2, 3, 4};
+  EXPECT_EQ(total_size(shape), 24);
 }
 
 TEST(ShapeTest, GetStrides) {
-  quasai::Shape shape{2, 3, 4};
-  quasai::Strides strides = quasai::get_strides(shape);
+  Shape shape{2, 3, 4};
+  Strides strides = get_strides(shape);
 
   EXPECT_EQ(strides.dimensions(), 3);
   EXPECT_EQ(strides[0], 12); // 3*4
@@ -35,19 +37,19 @@ TEST(ShapeTest, GetStrides) {
 }
 
 TEST(ShapeTest, ZeroDimensional) {
-  quasai::Shape shape{};
+  Shape shape{};
   EXPECT_EQ(shape.dimensions(), 0);
-  EXPECT_EQ(quasai::total_size(shape), 1); // Scalar tensor has size 1
+  EXPECT_EQ(total_size(shape), 1);
 }
 
 TEST(ShapeTest, ExceedMaxDimensions) {
-  std::size_t dims[quasai::MAX_DIMENSIONS + 1] = {0};
-  EXPECT_THROW(quasai::Shape shape(dims, quasai::MAX_DIMENSIONS + 1),
+  std::size_t dims[MAX_DIMENSIONS + 1] = {0};
+  EXPECT_THROW(Shape shape(dims, MAX_DIMENSIONS + 1),
                std::runtime_error);
 }
 
 TEST(ShapeTest, OutOfRangeAccess) {
-  quasai::Shape shape{2, 3};
+  Shape shape{2, 3};
   EXPECT_THROW(shape[2], std::out_of_range);
   EXPECT_THROW(shape[100], std::out_of_range);
 }

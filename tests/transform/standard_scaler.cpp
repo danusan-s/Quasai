@@ -4,11 +4,11 @@
 
 TEST(StandardScaler, FitComputesMeanAndStd) {
   std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
-  quasai::Shape shape{2, 3};
-  quasai::Tensor tensor =
-      quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
+  quasai::core::Shape shape{2, 3};
+  quasai::core::Tensor tensor =
+      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
 
-  quasai::StandardScaler scaler;
+  quasai::transform::StandardScaler scaler;
   scaler.fit(tensor);
 
   float *mean = scaler.mean_.data<float>();
@@ -25,14 +25,14 @@ TEST(StandardScaler, FitComputesMeanAndStd) {
 
 TEST(StandardScaler, Transform) {
   std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
-  quasai::Shape shape{2, 3};
-  quasai::Tensor tensor =
-      quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
+  quasai::core::Shape shape{2, 3};
+  quasai::core::Tensor tensor =
+      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
 
-  quasai::StandardScaler scaler;
+  quasai::transform::StandardScaler scaler;
   scaler.fit(tensor);
 
-  quasai::Tensor result = scaler.transform(tensor);
+  quasai::core::Tensor result = scaler.transform(tensor);
   float *result_data = result.data<float>();
 
   EXPECT_FLOAT_EQ(result_data[0], (1.0f - 2.5f) / 1.5f);
@@ -45,15 +45,15 @@ TEST(StandardScaler, Transform) {
 
 TEST(StandardScaler, InverseTransform) {
   std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
-  quasai::Shape shape{2, 3};
-  quasai::Tensor tensor =
-      quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
+  quasai::core::Shape shape{2, 3};
+  quasai::core::Tensor tensor =
+      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
 
-  quasai::StandardScaler scaler;
+  quasai::transform::StandardScaler scaler;
   scaler.fit(tensor);
 
-  quasai::Tensor transformed = scaler.transform(tensor);
-  quasai::Tensor restored = scaler.inverse_transform(transformed);
+  quasai::core::Tensor transformed = scaler.transform(tensor);
+  quasai::core::Tensor restored = scaler.inverse_transform(transformed);
   float *restored_data = restored.data<float>();
 
   for (size_t i = 0; i < 6; ++i) {
@@ -63,34 +63,34 @@ TEST(StandardScaler, InverseTransform) {
 
 TEST(StandardScaler, FitThrowsOnNot2D) {
   std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f};
-  quasai::Shape shape{4};
-  quasai::Tensor tensor =
-      quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
+  quasai::core::Shape shape{4};
+  quasai::core::Tensor tensor =
+      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
 
-  quasai::StandardScaler scaler;
+  quasai::transform::StandardScaler scaler;
   EXPECT_THROW(scaler.fit(tensor), std::runtime_error);
 }
 
 TEST(StandardScaler, TransformThrowsIfNotFitted) {
   std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f};
-  quasai::Shape shape{2, 2};
-  quasai::Tensor tensor =
-      quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
+  quasai::core::Shape shape{2, 2};
+  quasai::core::Tensor tensor =
+      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
 
-  quasai::StandardScaler scaler;
+  quasai::transform::StandardScaler scaler;
   EXPECT_THROW(scaler.transform(tensor), std::runtime_error);
 }
 
 TEST(StandardScaler, ZeroVarianceFeature) {
   std::vector<float> data = {5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f};
-  quasai::Shape shape{2, 3};
-  quasai::Tensor tensor =
-      quasai::Tensor::from_data(data.data(), shape, quasai::DType::FLOAT32);
+  quasai::core::Shape shape{2, 3};
+  quasai::core::Tensor tensor =
+      quasai::core::Tensor::from_data(data.data(), shape, quasai::core::DType::FLOAT32);
 
-  quasai::StandardScaler scaler;
+  quasai::transform::StandardScaler scaler;
   scaler.fit(tensor);
 
-  quasai::Tensor result = scaler.transform(tensor);
+  quasai::core::Tensor result = scaler.transform(tensor);
   float *result_data = result.data<float>();
 
   for (size_t i = 0; i < 6; ++i) {

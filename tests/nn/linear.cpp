@@ -1,4 +1,4 @@
-#include "quasai/nn/linear.hpp"
+#include "quasai/nn/layers/linear.hpp"
 #include "quasai/nn/init.hpp"
 #include "quasai/nn/loss.hpp"
 #include "quasai/ops/tensor_ops.hpp"
@@ -11,31 +11,31 @@ TEST(Linear, SimpleRegression) {
   size_t out_features = 2;
 
   std::vector<float> input_data = {1.0f, 2.0f, 3.0f};
-  quasai::Tensor input = quasai::Tensor::from_data(
-      input_data.data(), quasai::Shape{in_features}, quasai::DType::FLOAT32);
+  quasai::core::Tensor input = quasai::core::Tensor::from_data(
+      input_data.data(), quasai::core::Shape{in_features}, quasai::core::DType::FLOAT32);
 
   std::vector<float> target_data = {0.0f, 1.0f};
-  quasai::Tensor target = quasai::Tensor::from_data(
-      target_data.data(), quasai::Shape{out_features}, quasai::DType::FLOAT32);
+  quasai::core::Tensor target = quasai::core::Tensor::from_data(
+      target_data.data(), quasai::core::Shape{out_features}, quasai::core::DType::FLOAT32);
 
-  quasai::Initialization init = quasai::Initialization::HE_UNIFORM;
+  quasai::nn::Initialization init = quasai::nn::Initialization::HE_UNIFORM;
 
-  quasai::Linear linear(in_features, out_features, init);
+  quasai::nn::Linear linear(in_features, out_features, init);
 
   size_t epochs = 10;
 
-  std::vector<quasai::Parameter> params = linear.parameters();
+  std::vector<quasai::nn::Parameter> params = linear.parameters();
 
   float learning_rate = 0.005f;
   float momentum = 0.9f;
-  quasai::SGD optimizer(learning_rate, momentum);
+  quasai::optim::SGD optimizer(learning_rate, momentum);
   optimizer.compile(params);
 
   for (size_t epoch = 0; epoch < epochs; ++epoch) {
-    quasai::Tensor output = linear.forward(input);
+    quasai::core::Tensor output = linear.forward(input);
 
     const float *output_data = output.data<float>();
-    quasai::Tensor loss = quasai::mse_loss(output, target);
+    quasai::core::Tensor loss = quasai::nn::mse_loss(output, target);
 
     loss.backward();
 
@@ -56,39 +56,39 @@ TEST(Linear, OneHiddenLayer) {
   size_t out_features = 2;
 
   std::vector<float> input_data = {1.0f, 2.0f, 3.0f};
-  quasai::Tensor input = quasai::Tensor::from_data(
-      input_data.data(), quasai::Shape{in_features}, quasai::DType::FLOAT32);
+  quasai::core::Tensor input = quasai::core::Tensor::from_data(
+      input_data.data(), quasai::core::Shape{in_features}, quasai::core::DType::FLOAT32);
 
   std::vector<float> target_data = {0.0f, 1.0f};
-  quasai::Tensor target = quasai::Tensor::from_data(
-      target_data.data(), quasai::Shape{out_features}, quasai::DType::FLOAT32);
+  quasai::core::Tensor target = quasai::core::Tensor::from_data(
+      target_data.data(), quasai::core::Shape{out_features}, quasai::core::DType::FLOAT32);
 
-  quasai::Initialization init = quasai::Initialization::GLOROT_UNIFORM;
+  quasai::nn::Initialization init = quasai::nn::Initialization::GLOROT_UNIFORM;
 
-  quasai::Linear linear1(in_features, hidden_features, init);
-  quasai::Linear linear2(hidden_features, out_features, init);
+  quasai::nn::Linear linear1(in_features, hidden_features, init);
+  quasai::nn::Linear linear2(hidden_features, out_features, init);
 
   size_t epochs = 10;
 
-  std::vector<quasai::Parameter> params;
-  for (quasai::Parameter &p : linear1.parameters()) {
+  std::vector<quasai::nn::Parameter> params;
+  for (quasai::nn::Parameter &p : linear1.parameters()) {
     params.push_back(p);
   }
-  for (quasai::Parameter &p : linear2.parameters()) {
+  for (quasai::nn::Parameter &p : linear2.parameters()) {
     params.push_back(p);
   }
 
-  quasai::SGD optimizer(0.01f, 0.9f);
+  quasai::optim::SGD optimizer(0.01f, 0.9f);
   optimizer.compile(params);
 
   for (size_t epoch = 0; epoch < epochs; ++epoch) {
     std::cout << "Epoch " << epoch + 1 << std::endl;
-    quasai::Tensor hidden = linear1.forward(input);
-    quasai::Tensor activated = quasai::relu(hidden);
-    quasai::Tensor output = linear2.forward(activated);
+    quasai::core::Tensor hidden = linear1.forward(input);
+    quasai::core::Tensor activated = quasai::ops::relu(hidden);
+    quasai::core::Tensor output = linear2.forward(activated);
 
     const float *output_data = output.data<float>();
-    quasai::Tensor loss = quasai::mse_loss(output, target);
+    quasai::core::Tensor loss = quasai::nn::mse_loss(output, target);
 
     loss.backward();
 
@@ -113,8 +113,8 @@ TEST(Linear, OneHiddenLayer_MultiSample) {
 
   size_t num_samples = 100;
 
-  std::vector<quasai::Tensor> inputs;
-  std::vector<quasai::Tensor> targets;
+  std::vector<quasai::core::Tensor> inputs;
+  std::vector<quasai::core::Tensor> targets;
 
   // Generate dataset
   for (size_t i = 0; i < num_samples; ++i) {
@@ -128,23 +128,23 @@ TEST(Linear, OneHiddenLayer_MultiSample) {
         x2       // second output depends on x2
     };
 
-    quasai::Tensor input = quasai::Tensor::from_data(
-        input_data.data(), quasai::Shape{in_features}, quasai::DType::FLOAT32);
+quasai::core::Tensor input = quasai::core::Tensor::from_data(
+      input_data.data(), quasai::core::Shape{in_features}, quasai::core::DType::FLOAT32);
 
-    quasai::Tensor target = quasai::Tensor::from_data(
-        target_data.data(), quasai::Shape{out_features},
-        quasai::DType::FLOAT32);
+    quasai::core::Tensor target = quasai::core::Tensor::from_data(
+        target_data.data(), quasai::core::Shape{out_features},
+        quasai::core::DType::FLOAT32);
 
     targets.push_back(target);
     inputs.push_back(input);
   }
 
-  quasai::Initialization init = quasai::Initialization::GLOROT_UNIFORM;
+  quasai::nn::Initialization init = quasai::nn::Initialization::GLOROT_UNIFORM;
 
-  quasai::Linear linear1(in_features, hidden_features, init);
-  quasai::Linear linear2(hidden_features, out_features, init);
+  quasai::nn::Linear linear1(in_features, hidden_features, init);
+  quasai::nn::Linear linear2(hidden_features, out_features, init);
 
-  std::vector<quasai::Parameter> params;
+  std::vector<quasai::nn::Parameter> params;
   for (auto &p : linear1.parameters())
     params.push_back(p);
   for (auto &p : linear2.parameters())
@@ -152,7 +152,7 @@ TEST(Linear, OneHiddenLayer_MultiSample) {
 
   float learning_rate = 0.001f;
   float momentum = 0.9f;
-  quasai::SGD optimizer(learning_rate, momentum);
+  quasai::optim::SGD optimizer(learning_rate, momentum);
   optimizer.compile(params);
 
   size_t epochs = 50;
@@ -164,11 +164,11 @@ TEST(Linear, OneHiddenLayer_MultiSample) {
     float total_loss = 0.0f;
 
     for (size_t i = 0; i < num_samples; ++i) {
-      quasai::Tensor hidden = linear1.forward(inputs[i]);
-      quasai::Tensor activated = quasai::relu(hidden);
-      quasai::Tensor output = linear2.forward(activated);
+      quasai::core::Tensor hidden = linear1.forward(inputs[i]);
+      quasai::core::Tensor activated = quasai::ops::relu(hidden);
+      quasai::core::Tensor output = linear2.forward(activated);
 
-      quasai::Tensor loss = quasai::mse_loss(output, targets[i]);
+      quasai::core::Tensor loss = quasai::nn::mse_loss(output, targets[i]);
 
       loss.backward();
 
@@ -185,9 +185,9 @@ TEST(Linear, OneHiddenLayer_MultiSample) {
   std::cout << "Starting testing on training data." << std::endl;
 
   for (size_t i = 0; i < num_samples; ++i) {
-    quasai::Tensor hidden = linear1.forward(inputs[i]);
-    quasai::Tensor activated = quasai::relu(hidden);
-    quasai::Tensor output = linear2.forward(activated);
+    quasai::core::Tensor hidden = linear1.forward(inputs[i]);
+    quasai::core::Tensor activated = quasai::ops::relu(hidden);
+    quasai::core::Tensor output = linear2.forward(activated);
 
     const float *output_data = output.data<float>();
     const float *target_data = targets[i].data<float>();

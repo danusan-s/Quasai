@@ -1,8 +1,10 @@
 #include "quasai/storage/allocator.hpp"
 #include <gtest/gtest.h>
 
+using namespace quasai::storage;
+
 TEST(MemoryTest, CpuAllocator) {
-  quasai::CpuAllocator allocator;
+  CpuAllocator allocator;
 
   // Test allocation and deallocation
   void *ptr = allocator.allocate(1024);
