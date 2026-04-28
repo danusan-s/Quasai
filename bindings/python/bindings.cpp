@@ -5,8 +5,8 @@
 
 #include "quasai/core/shape.hpp"
 #include "quasai/core/tensor.hpp"
-#include "quasai/nn/activations.hpp"
-#include "quasai/nn/linear.hpp"
+#include "quasai/nn/layers/activations.hpp"
+#include "quasai/nn/layers/linear.hpp"
 #include "quasai/nn/loss.hpp"
 #include "quasai/nn/model.hpp"
 #include "quasai/nn/module.hpp"
@@ -19,9 +19,9 @@ PYBIND11_MODULE(pyquasai, m) {
   // -------------------------
   // Tensor
   // -------------------------
-  py::class_<quasai::Tensor, std::shared_ptr<quasai::Tensor>>(m, "Tensor")
+  py::class_<quasai::core::Tensor, std::shared_ptr<quasai::core::Tensor>>(m, "Tensor")
       .def(py::init<>())
-      .def("shape", [](const quasai::Tensor &t) {
+      .def("shape", [](const quasai::core::Tensor &t) {
         const auto &s = t.shape();
         std::vector<size_t> dims;
         for (size_t i = 0; i < s.dimensions(); ++i) {
@@ -38,9 +38,9 @@ PYBIND11_MODULE(pyquasai, m) {
     for (size_t i = 0; i < ndim; ++i) {
       sizes[i] = static_cast<size_t>(buf.shape[i]);
     }
-    quasai::Shape shape(sizes.data(), ndim);
-    auto t = quasai::Tensor::zeros(shape, quasai::DType::FLOAT32,
-                                   quasai::Device::cpu());
+    quasai::core::Shape shape(sizes.data(), ndim);
+    auto t = quasai::core::Tensor::zeros(shape, quasai::core::DType::FLOAT32,
+                                   quasai::core::Device::cpu());
     std::memcpy(t.data<float>(), buf.ptr, buf.size * sizeof(float));
     return t;
   });
@@ -48,50 +48,50 @@ PYBIND11_MODULE(pyquasai, m) {
   // -------------------------
   // Base Module (polymorphic)
   // -------------------------
-  py::class_<quasai::Module, std::shared_ptr<quasai::Module>>(m, "Module")
-      .def("__call__", &quasai::Module::operator());
+  py::class_<quasai::nn::Module, std::shared_ptr<quasai::nn::Module>>(m, "Module")
+      .def("__call__", &quasai::nn::Module::operator());
 
   // -------------------------
   // Linear layer
   // -------------------------
-  py::class_<quasai::Linear, quasai::Module, std::shared_ptr<quasai::Linear>>(
+  py::class_<quasai::nn::Linear, quasai::nn::Module, std::shared_ptr<quasai::nn::Linear>>(
       m, "Linear")
       .def(py::init<int, int>());
 
   // -------------------------
   // ReLU activation
   // -------------------------
-  py::class_<quasai::ReLU, quasai::Module, std::shared_ptr<quasai::ReLU>>(
+  py::class_<quasai::nn::ReLU, quasai::nn::Module, std::shared_ptr<quasai::nn::ReLU>>(
       m, "ReLU")
       .def(py::init<>());
 
   // -------------------------
   // Sequential container
   // -------------------------
-  py::class_<quasai::Sequential, quasai::Module,
-             std::shared_ptr<quasai::Sequential>>(m, "Sequential")
-      .def(py::init<std::vector<std::shared_ptr<quasai::Module>>>());
+  py::class_<quasai::nn::Sequential, quasai::nn::Module,
+             std::shared_ptr<quasai::nn::Sequential>>(m, "Sequential")
+      .def(py::init<std::vector<std::shared_ptr<quasai::nn::Module>>>());
 
-  py::class_<quasai::Optimizer, std::shared_ptr<quasai::Optimizer>>(
+  py::class_<quasai::optim::Optimizer, std::shared_ptr<quasai::optim::Optimizer>>(
       m, "Optimizer");
 
-  py::class_<quasai::SGD, quasai::Optimizer, std::shared_ptr<quasai::SGD>>(
+  py::class_<quasai::optim::SGD, quasai::optim::Optimizer, std::shared_ptr<quasai::optim::SGD>>(
       m, "SGD")
       .def(py::init<float, float>());
 
-  py::enum_<quasai::Loss>(m, "Loss")
-      .value("MSE", quasai::Loss::MSE)
-      .value("L1", quasai::Loss::L1)
+  py::enum_<quasai::nn::Loss>(m, "Loss")
+      .value("MSE", quasai::nn::Loss::MSE)
+      .value("L1", quasai::nn::Loss::L1)
       .export_values();
 
   // -------------------------
   // Model
   // -------------------------
-  py::class_<quasai::Model, std::shared_ptr<quasai::Model>>(m, "Model")
-      .def(py::init<std::shared_ptr<quasai::Module>>())
-      .def("compile", &quasai::Model::compile, py::arg("loss_fn"),
+  py::class_<quasai::nn::Model, std::shared_ptr<quasai::nn::Model>>(m, "Model")
+      .def(py::init<std::shared_ptr<quasai::nn::Module>>())
+      .def("compile", &quasai::nn::Model::compile, py::arg("loss_fn"),
            py::arg("optimizer"))
-      .def("train", &quasai::Model::train, py::arg("x"), py::arg("y"),
+      .def("train", &quasai::nn::Model::train, py::arg("x"), py::arg("y"),
            py::arg("epochs"), py::arg("batch_size") = 32)
-      .def("predict", &quasai::Model::predict, py::arg("x"));
+      .def("predict", &quasai::nn::Model::predict, py::arg("x"));
 }
