@@ -21,17 +21,10 @@ target_include_directories(quasai PUBLIC
     ${CMAKE_SOURCE_DIR}/include
 )
 
+
 if(OpenMP_CXX_FOUND)
     target_link_libraries(quasai PUBLIC OpenMP::OpenMP_CXX)
 endif()
-
-enable_language(CUDA)
-
-find_package(CUDAToolkit REQUIRED)
-
-target_link_libraries(your_target CUDA::cudart)
-
-
 
 # GoogleTest
 enable_testing()
