@@ -118,6 +118,8 @@ public:
 
   void backward();
 
+  bool is_valid() const;
+
   Tensor();
 
 private:

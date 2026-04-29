@@ -122,6 +122,10 @@ void Tensor::set_grad_fn(std::unique_ptr<autograd::Function> grad_fn) {
   impl_.autograd_meta->grad_fn = std::move(grad_fn);
 }
 
+bool Tensor::is_valid() const {
+  return impl_.buffer != nullptr;
+}
+
 TensorImpl Tensor::get_impl_copy() const {
   TensorImpl copy = impl_;
   copy.autograd_meta = nullptr;
