@@ -14,4 +14,8 @@ struct AutoGradMeta {
   }
 };
 
+inline bool tensor_requires_grad(const core::Tensor &tensor) {
+  return tensor.autograd_meta() && tensor.autograd_meta()->requires_grad;
+}
+
 } // namespace quasai::autograd

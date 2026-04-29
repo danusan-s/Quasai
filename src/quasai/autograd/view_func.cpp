@@ -1,4 +1,5 @@
 #include "quasai/autograd/view_func.hpp"
+#include "quasai/autograd/metadata.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 
 namespace quasai::autograd {
@@ -11,7 +12,10 @@ TransposeFunction::backward(const core::Tensor &grad_output) {
              ", input shape = " + input.shape().to_string())
                 .c_str());
 
-  core::Tensor grad_input = ops::transpose(grad_output);
+  core::Tensor grad_input;
+  if (tensor_requires_grad(input)) {
+    grad_input = ops::transpose(grad_output);
+  }
   return {grad_input};
 }
 
@@ -23,7 +27,10 @@ ReshapeFunction::backward(const core::Tensor &grad_output) {
              ", input shape = " + input.shape().to_string())
                 .c_str());
 
-  core::Tensor grad_input = ops::reshape(grad_output, input.shape());
+  core::Tensor grad_input;
+  if (tensor_requires_grad(input)) {
+    grad_input = ops::reshape(grad_output, input.shape());
+  }
   return {grad_input};
 }
 
@@ -35,7 +42,10 @@ ExpandFunction::backward(const core::Tensor &grad_output) {
              ", input shape = " + input.shape().to_string())
                 .c_str());
 
-  core::Tensor grad_input = ops::sum_to_shape(grad_output, input.shape());
+  core::Tensor grad_input;
+  if (tensor_requires_grad(input)) {
+    grad_input = ops::sum_to_shape(grad_output, input.shape());
+  }
   return {grad_input};
 }
 

@@ -1,14 +1,20 @@
 #include "quasai/autograd/unary_func.hpp"
+#include "quasai/autograd/metadata.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 
 namespace quasai::autograd {
 
 std::vector<core::Tensor>
 NegFunction::backward(const core::Tensor &grad_output) {
+  const core::Tensor &input = inputs[0];
   LOG_DEBUG(("NegFunction backward: grad_output shape = " +
              grad_output.shape().to_string())
                 .c_str());
-  return {ops::neg(grad_output)};
+  core::Tensor grad_input;
+  if (tensor_requires_grad(input)) {
+    grad_input = ops::neg(grad_output);
+  }
+  return {grad_input};
 }
 
 std::vector<core::Tensor>
@@ -18,7 +24,10 @@ AbsFunction::backward(const core::Tensor &grad_output) {
       ("AbsFunction backward: input shape = " + input.shape().to_string() +
        ", grad_output shape = " + grad_output.shape().to_string())
           .c_str());
-  core::Tensor grad_input = ops::mul(grad_output, ops::signum(input));
+  core::Tensor grad_input;
+  if (tensor_requires_grad(input)) {
+    grad_input = ops::mul(grad_output, ops::signum(input));
+  }
   return {grad_input};
 }
 
@@ -29,8 +38,11 @@ HeavisideFunction::backward(const core::Tensor &grad_output) {
              input.shape().to_string() +
              ", grad_output shape = " + grad_output.shape().to_string())
                 .c_str());
-  core::Tensor grad_input =
-      core::Tensor::zeros(input.shape(), input.dtype(), input.device());
+  core::Tensor grad_input;
+  if (tensor_requires_grad(input)) {
+    grad_input =
+        core::Tensor::zeros(input.shape(), input.dtype(), input.device());
+  }
   return {grad_input};
 }
 
@@ -41,8 +53,11 @@ SignumFunction::backward(const core::Tensor &grad_output) {
       ("SignumFunction backward: input shape = " + input.shape().to_string() +
        ", grad_output shape = " + grad_output.shape().to_string())
           .c_str());
-  core::Tensor grad_input =
-      core::Tensor::zeros(input.shape(), input.dtype(), input.device());
+  core::Tensor grad_input;
+  if (tensor_requires_grad(input)) {
+    grad_input =
+        core::Tensor::zeros(input.shape(), input.dtype(), input.device());
+  }
   return {grad_input};
 }
 
@@ -53,7 +68,10 @@ ReluFunction::backward(const core::Tensor &grad_output) {
       ("ReluFunction backward: input shape = " + input.shape().to_string() +
        ", grad_output shape = " + grad_output.shape().to_string())
           .c_str());
-  core::Tensor grad_input = ops::mul(grad_output, ops::heaviside(input));
+  core::Tensor grad_input;
+  if (tensor_requires_grad(input)) {
+    grad_input = ops::mul(grad_output, ops::heaviside(input));
+  }
   return {grad_input};
 }
 
@@ -64,11 +82,14 @@ SigmoidFunction::backward(const core::Tensor &grad_output) {
       ("SigmoidFunction backward: input shape = " + input.shape().to_string() +
        ", grad_output shape = " + grad_output.shape().to_string())
           .c_str());
-  core::Tensor sigmoid_input = ops::sigmoid(input);
-  core::Tensor grad_input = ops::mul(
-      grad_output,
-      ops::mul(sigmoid_input,
-               ops::sub(core::Tensor::ones(input.shape()), sigmoid_input)));
+  core::Tensor grad_input;
+  if (tensor_requires_grad(input)) {
+    core::Tensor sigmoid_input = ops::sigmoid(input);
+    grad_input = ops::mul(
+        grad_output,
+        ops::mul(sigmoid_input,
+                 ops::sub(core::Tensor::ones(input.shape()), sigmoid_input)));
+  }
   return {grad_input};
 }
 
@@ -79,10 +100,13 @@ TanhFunction::backward(const core::Tensor &grad_output) {
       ("TanhFunction backward: input shape = " + input.shape().to_string() +
        ", grad_output shape = " + grad_output.shape().to_string())
           .c_str());
-  core::Tensor tanh_input = ops::tanh(input);
-  core::Tensor grad_input =
-      ops::mul(grad_output, ops::sub(core::Tensor::ones(input.shape()),
-                                     ops::mul(tanh_input, tanh_input)));
+  core::Tensor grad_input;
+  if (tensor_requires_grad(input)) {
+    core::Tensor tanh_input = ops::tanh(input);
+    grad_input =
+        ops::mul(grad_output, ops::sub(core::Tensor::ones(input.shape()),
+                                       ops::mul(tanh_input, tanh_input)));
+  }
   return {grad_input};
 }
 
