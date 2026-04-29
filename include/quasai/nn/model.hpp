@@ -17,8 +17,7 @@ public:
 
   core::Tensor predict(const core::Tensor &input);
 
-  core::Tensor evaluate(const core::Tensor &input, const core::Tensor &targets,
-                        Loss loss_fn);
+  core::Tensor evaluate(const core::Tensor &input, const core::Tensor &targets);
 
   std::vector<Parameter> parameters() const;
 

@@ -141,8 +141,7 @@ int main() {
 
   std::cout << "Evaluating model performance on training data..." << std::endl;
 
-  quasai::core::Tensor loss =
-      model.evaluate(test_input, test_target, quasai::nn::Loss::MSE);
+  quasai::core::Tensor loss = model.evaluate(test_input, test_target);
 
   std::cout << "Final training loss: " << loss.data<float>()[0] << std::endl;
 
