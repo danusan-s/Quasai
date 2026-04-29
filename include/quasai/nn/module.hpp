@@ -30,6 +30,10 @@ public:
     return forward(input);
   }
 
+  bool is_training() const {
+    return training_;
+  }
+
   virtual ~Module() = default;
 
 protected:
