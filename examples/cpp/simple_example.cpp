@@ -1,10 +1,10 @@
 // examples/cpp/simple_example.cpp
 // Simple example demonstrating Quasai framework usage
 
-#include "quasai/nn/layers/activations.hpp"
-#include "quasai/nn/layers/linear.hpp"
 #include "quasai/nn/model.hpp"
-#include "quasai/nn/sequential.hpp"
+#include "quasai/nn/modules/activations.hpp"
+#include "quasai/nn/modules/linear.hpp"
+#include "quasai/nn/modules/sequential.hpp"
 #include "quasai/optim/sgd.hpp"
 #include <iostream>
 

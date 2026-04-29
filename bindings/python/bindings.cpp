@@ -5,12 +5,12 @@
 
 #include "quasai/core/shape.hpp"
 #include "quasai/core/tensor.hpp"
-#include "quasai/nn/layers/activations.hpp"
-#include "quasai/nn/layers/linear.hpp"
 #include "quasai/nn/loss.hpp"
 #include "quasai/nn/model.hpp"
 #include "quasai/nn/module.hpp"
-#include "quasai/nn/sequential.hpp"
+#include "quasai/nn/modules/activations.hpp"
+#include "quasai/nn/modules/linear.hpp"
+#include "quasai/nn/modules/sequential.hpp"
 #include "quasai/optim/sgd.hpp"
 
 namespace py = pybind11;

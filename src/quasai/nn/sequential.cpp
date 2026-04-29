@@ -1,4 +1,4 @@
-#include "quasai/nn/sequential.hpp"
+#include "quasai/nn/modules/sequential.hpp"
 
 namespace quasai::nn {
 

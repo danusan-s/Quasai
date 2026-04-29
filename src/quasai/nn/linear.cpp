@@ -1,4 +1,4 @@
-#include "quasai/nn/layers/linear.hpp"
+#include "quasai/nn/modules/linear.hpp"
 #include "quasai/nn/init.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 

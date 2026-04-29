@@ -2,10 +2,10 @@
 // Linear regression example
 
 #include "quasai/data/csv_parser.hpp"
-#include "quasai/nn/layers/activations.hpp"
-#include "quasai/nn/layers/linear.hpp"
 #include "quasai/nn/model.hpp"
-#include "quasai/nn/sequential.hpp"
+#include "quasai/nn/modules/activations.hpp"
+#include "quasai/nn/modules/linear.hpp"
+#include "quasai/nn/modules/sequential.hpp"
 #include "quasai/optim/sgd.hpp"
 #include "quasai/transform/standard_scaler.hpp"
 #include <iostream>
