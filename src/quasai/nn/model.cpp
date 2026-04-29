@@ -30,7 +30,17 @@ void Model::train(const core::Tensor &input, const core::Tensor &targets,
       << batch_size << "...\n";
   LOG_INFO(oss.str().c_str());
 
-  const size_t num_samples = input.shape()[0];
+  core::Tensor train_input = input;
+  if (input.shape().dimensions() < 2) {
+    train_input = ops::reshape(input, core::Shape{1, input.shape()[0]});
+  }
+
+  core::Tensor train_targets = targets;
+  if (targets.shape().dimensions() < 2) {
+    train_targets = ops::reshape(targets, core::Shape{1, targets.shape()[0]});
+  }
+
+  const size_t num_samples = train_input.shape()[0];
   const size_t num_batches = (num_samples + batch_size - 1) / batch_size;
   constexpr size_t log_interval = 10;
   const size_t batches_per_log =
@@ -45,10 +55,11 @@ void Model::train(const core::Tensor &input, const core::Tensor &targets,
                  .c_str());
 
     for (size_t i = 0; i < num_samples; i += batch_size) {
-      size_t current_batch_size = std::min(batch_size, input.shape()[0] - i);
-      core::Tensor batch_input = ops::slice(input, i, i + current_batch_size);
+      size_t current_batch_size = std::min(batch_size, num_samples - i);
+      core::Tensor batch_input =
+          ops::slice(train_input, i, i + current_batch_size);
       core::Tensor batch_targets =
-          ops::slice(targets, i, i + current_batch_size);
+          ops::slice(train_targets, i, i + current_batch_size);
       core::Tensor batch_output = module_->forward(batch_input);
       core::Tensor loss = compute_loss(batch_output, batch_targets, loss_fn_);
       total_loss += loss.data<float>()[0];
@@ -58,7 +69,7 @@ void Model::train(const core::Tensor &input, const core::Tensor &targets,
         std::ostringstream batch_oss;
         batch_oss << "Batch " << (i / batch_size) + 1 << "/" << num_batches
                   << ", Loss: " << loss.data<float>()[0] << "\n";
-        LOG_INFO(batch_oss.str().c_str());
+        LOG_DEBUG(batch_oss.str().c_str());
       }
 
       loss.backward();
@@ -78,10 +89,8 @@ core::Tensor Model::predict(const core::Tensor &input) {
 }
 
 core::Tensor Model::evaluate(const core::Tensor &input,
-                             const core::Tensor &targets, Loss loss_fn) {
-  module_->eval();
-  core::Tensor output = module_->forward(input);
-  return compute_loss(output, targets, loss_fn);
+                             const core::Tensor &targets) {
+  return compute_loss(predict(input), targets, loss_fn_);
 }
 
 std::vector<Parameter> Model::parameters() const {
