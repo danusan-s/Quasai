@@ -9,6 +9,14 @@ public:
   // Forward method to be implemented by derived classes
   virtual core::Tensor forward(const core::Tensor &input) = 0;
 
+  virtual void train() {
+    training_ = true;
+  }
+
+  virtual void eval() {
+    training_ = false;
+  }
+
   std::vector<Parameter> parameters() {
     std::vector<Parameter> params;
     for (Parameter param : params_) {
@@ -25,6 +33,7 @@ public:
   virtual ~Module() = default;
 
 protected:
+  bool training_ = true; // Flag to indicate training or evaluation mode
   // Store parameters in a vector for easy access
   std::vector<Parameter> params_;
 };

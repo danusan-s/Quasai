@@ -22,6 +22,9 @@ void Model::train(const core::Tensor &input, const core::Tensor &targets,
         "Optimizer not set. Call compile() before training.");
   }
 
+  // Set the module to training mode
+  module_->train();
+
   std::ostringstream oss;
   oss << "Starting training for " << epochs << " epochs with batch size "
       << batch_size << "...\n";
@@ -70,11 +73,13 @@ void Model::train(const core::Tensor &input, const core::Tensor &targets,
 }
 
 core::Tensor Model::predict(const core::Tensor &input) {
+  module_->eval();
   return module_->forward(input);
 }
 
 core::Tensor Model::evaluate(const core::Tensor &input,
                              const core::Tensor &targets, Loss loss_fn) {
+  module_->eval();
   core::Tensor output = module_->forward(input);
   return compute_loss(output, targets, loss_fn);
 }
