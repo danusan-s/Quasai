@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/danusan-s/Quasai/actions/workflows/ci.yml/badge.svg)](https://github.com/danusan-s/Quasai/actions/workflows/ci.yml)
 
-A from-scratch C++20 machine learning framework built to demonstrate automatic differentiation, tensor operations, neural network systems and data processing utilities.
+A from-scratch C++20 machine learning framework built with minimal external dependencies to demonstrate automatic differentiation, tensor operations, neural network systems and data processing utilities.
 
 ## Features
 
