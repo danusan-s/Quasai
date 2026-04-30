@@ -1,6 +1,7 @@
 #include "quasai/autograd/binary_func.hpp"
 #include "quasai/autograd/metadata.hpp"
 #include "quasai/core/shape.hpp"
+#include "quasai/ops/cpu_kernel.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 
 namespace quasai::ops {
