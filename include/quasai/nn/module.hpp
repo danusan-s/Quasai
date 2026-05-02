@@ -9,11 +9,11 @@ public:
   // Forward method to be implemented by derived classes
   virtual core::Tensor forward(const core::Tensor &input) = 0;
 
-  virtual void train() {
+  virtual void set_train() {
     training_ = true;
   }
 
-  virtual void eval() {
+  virtual void set_eval() {
     training_ = false;
   }
 

@@ -19,11 +19,11 @@ void Model::train(const core::Tensor &input, const core::Tensor &targets,
                   size_t epochs, size_t batch_size) {
   if (!optimizer_) {
     throw std::runtime_error(
-        "Optimizer not set. Call compile() before training.");
+        "Optimizer not set. Call set_optimizer() before training.");
   }
 
   // Set the module to training mode
-  module_->train();
+  module_->set_train();
 
   std::ostringstream oss;
   oss << "Starting training for " << epochs << " epochs with batch size "
@@ -84,7 +84,7 @@ void Model::train(const core::Tensor &input, const core::Tensor &targets,
 }
 
 core::Tensor Model::predict(const core::Tensor &input) {
-  module_->eval();
+  module_->set_eval();
   return module_->forward(input);
 }
 

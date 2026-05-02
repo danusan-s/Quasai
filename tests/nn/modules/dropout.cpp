@@ -18,7 +18,7 @@ TEST(Dropout, ValidProbabilityDoesNotThrow) {
 
 TEST(Dropout, EvalModeReturnsInputUnchanged) {
   quasai::nn::Dropout dropout(0.5f);
-  dropout.eval();
+  dropout.set_eval();
 
   std::vector<float> input_data = {1.0f, 2.0f, 3.0f, 4.0f};
   quasai::core::Tensor input = quasai::core::Tensor::from_data(
@@ -35,7 +35,7 @@ TEST(Dropout, EvalModeReturnsInputUnchanged) {
 
 TEST(Dropout, TrainingModeAppliesDropout) {
   quasai::nn::Dropout dropout(0.5f);
-  dropout.train();
+  dropout.set_train();
 
   std::vector<float> input_data(1000, 1.0f);
   quasai::core::Tensor input = quasai::core::Tensor::from_data(
@@ -65,7 +65,7 @@ TEST(Dropout, TrainingModeAppliesDropout) {
 TEST(Dropout, TrainingModeScalesOutput) {
   float p = 0.3f;
   quasai::nn::Dropout dropout(p);
-  dropout.train();
+  dropout.set_train();
 
   std::vector<float> input_data = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
                                    1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
@@ -89,10 +89,10 @@ TEST(Dropout, TrainEvalModeSwitch) {
   quasai::core::Tensor input = quasai::core::Tensor::from_data(
       input_data.data(), quasai::core::Shape{3}, quasai::core::DType::FLOAT32);
 
-  dropout.train();
+  dropout.set_train();
   quasai::core::Tensor train_output = dropout.forward(input);
 
-  dropout.eval();
+  dropout.set_eval();
   quasai::core::Tensor eval_output = dropout.forward(input);
 
   const float *eval_data = eval_output.data<float>();

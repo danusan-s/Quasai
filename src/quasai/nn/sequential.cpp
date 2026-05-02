@@ -22,15 +22,17 @@ core::Tensor Sequential::forward(const core::Tensor &input) {
   return output;
 }
 
-void Sequential::train() {
+void Sequential::set_train() {
+  training_ = true;
   for (const auto &module : modules_) {
-    module->train();
+    module->set_train();
   }
 }
 
-void Sequential::eval() {
+void Sequential::set_eval() {
+  training_ = false;
   for (const auto &module : modules_) {
-    module->eval();
+    module->set_eval();
   }
 }
 

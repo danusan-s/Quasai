@@ -50,16 +50,16 @@ TEST(Linear, TrainEvalMode) {
 
   EXPECT_TRUE(linear.is_training());
 
-  linear.eval();
+  linear.set_eval();
   EXPECT_FALSE(linear.is_training());
 
-  linear.train();
+  linear.set_train();
   EXPECT_TRUE(linear.is_training());
 }
 
 TEST(Linear, ForwardConsistency) {
   quasai::nn::Linear linear(3, 2, quasai::nn::Initialization::GLOROT_UNIFORM);
-  linear.eval();
+  linear.set_eval();
 
   std::vector<float> input_data = {1.0f, 2.0f, 3.0f};
   quasai::core::Tensor input = quasai::core::Tensor::from_data(

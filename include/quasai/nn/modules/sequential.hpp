@@ -1,5 +1,6 @@
 #include "quasai/nn/module.hpp"
 #include <memory>
+#include <vector>
 
 namespace quasai::nn {
 
@@ -11,9 +12,9 @@ public:
 
   core::Tensor forward(const core::Tensor &input) override;
 
-  void train() override;
+  void set_train() override;
 
-  void eval() override;
+  void set_eval() override;
 
 private:
   std::vector<std::unique_ptr<Module>> modules_;
