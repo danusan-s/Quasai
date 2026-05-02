@@ -2,17 +2,17 @@
 #include "quasai/ops/tensor_ops.hpp"
 #include "quasai/optim/optimizer.hpp"
 #include "quasai/utils/logger.hpp"
+#include <memory>
 #include <sstream>
 
 namespace quasai::nn {
 
-Model::Model(std::shared_ptr<Module> module) : module_(module) {
+Model::Model(std::unique_ptr<Module> module)
+    : module_(std::move(module)), loss_fn_(Loss::MSE) {
 }
 
-void Model::compile(Loss loss_fn, std::shared_ptr<optim::Optimizer> optimizer) {
+void Model::set_loss(Loss loss_fn) {
   loss_fn_ = loss_fn;
-  optimizer->compile(parameters());
-  optimizer_ = optimizer;
 }
 
 void Model::train(const core::Tensor &input, const core::Tensor &targets,

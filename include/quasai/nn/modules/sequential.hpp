@@ -1,29 +1,22 @@
 #include "quasai/nn/module.hpp"
+#include <memory>
 
 namespace quasai::nn {
 
 class Sequential : public Module {
 public:
-  Sequential(const std::vector<std::shared_ptr<Module>> &modules);
+  Sequential();
+
+  void add_module(std::unique_ptr<Module> module);
 
   core::Tensor forward(const core::Tensor &input) override;
 
-  void train() override {
-    for (const auto &module : modules_) {
-      module->train();
-    }
-    training_ = true;
-  }
+  void train() override;
 
-  void eval() override {
-    for (const auto &module : modules_) {
-      module->eval();
-    }
-    training_ = false;
-  }
+  void eval() override;
 
 private:
-  std::vector<std::shared_ptr<Module>> modules_;
+  std::vector<std::unique_ptr<Module>> modules_;
 };
 
 } // namespace quasai::nn

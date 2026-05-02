@@ -1,15 +1,13 @@
 #include "quasai/nn/modules/sequential.hpp"
+#include <memory>
 
 namespace quasai::nn {
 
-Sequential::Sequential(const std::vector<std::shared_ptr<Module>> &modules)
-    : modules_(modules) {
-  for (const auto &module : modules_) {
-    std::vector<Parameter> module_params = module->parameters();
-    for (Parameter &param : module_params) {
-      params_.push_back(param);
-    }
-  }
+Sequential::Sequential() {
+}
+
+void Sequential::add_module(std::unique_ptr<Module> module) {
+  modules_.push_back(std::move(module));
 }
 
 core::Tensor Sequential::forward(const core::Tensor &input) {
@@ -18,6 +16,18 @@ core::Tensor Sequential::forward(const core::Tensor &input) {
     output = module->forward(output);
   }
   return output;
+}
+
+void Sequential::train() {
+  for (const auto &module : modules_) {
+    module->train();
+  }
+}
+
+void Sequential::eval() {
+  for (const auto &module : modules_) {
+    module->eval();
+  }
 }
 
 } // namespace quasai::nn
