@@ -8,7 +8,9 @@ namespace quasai::nn {
 class Linear : public Module {
 public:
   Linear(size_t in_features, size_t out_features,
-         Initialization init = Initialization::GLOROT_UNIFORM);
+         Initialization init = Initialization::GLOROT_UNIFORM,
+         core::DType dtype = core::DType::FLOAT32,
+         core::Device device = core::Device::cpu());
 
   core::Tensor forward(const core::Tensor &input) override;
 
