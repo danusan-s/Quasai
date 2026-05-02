@@ -8,6 +8,10 @@ Sequential::Sequential() {
 
 void Sequential::add_module(std::unique_ptr<Module> module) {
   modules_.push_back(std::move(module));
+  auto added_module = modules_.back().get();
+  for (const auto &param : added_module->parameters()) {
+    params_.push_back(param);
+  }
 }
 
 core::Tensor Sequential::forward(const core::Tensor &input) {
