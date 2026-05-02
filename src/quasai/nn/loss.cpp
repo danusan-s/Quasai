@@ -11,7 +11,7 @@ core::Tensor mse_loss(const core::Tensor &predictions,
   }
 
   core::Tensor diff = ops::sub(predictions, targets);
-  core::Tensor squared_diff = ops::mul(diff, diff);
+  core::Tensor squared_diff = ops::pow(diff, 2);
   core::Tensor mean_squared_diff = ops::mean(squared_diff);
   return mean_squared_diff;
 }

@@ -37,7 +37,8 @@ core::Tensor tanh(const core::Tensor &a);
 core::Tensor sum(const core::Tensor &a);
 core::Tensor sum_to_shape(const core::Tensor &a, const core::Shape &target);
 core::Tensor mean(const core::Tensor &a);
-core::Tensor mean(const core::Tensor &a, int64_t dim, bool keepdim = false);
+core::Tensor mean(const core::Tensor &a, int dim, bool keepdim = false);
+core::Tensor pow(const core::Tensor &a, float exponent);
 
 // View ops
 core::Tensor transpose(const core::Tensor &a);

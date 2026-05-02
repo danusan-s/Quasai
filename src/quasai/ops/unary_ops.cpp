@@ -98,4 +98,16 @@ core::Tensor tanh(const core::Tensor &a) {
   return result;
 }
 
+core::Tensor pow(const core::Tensor &a, float exponent) {
+  core::Tensor result = core::Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(a, result, [exponent]() {
+    return std::make_unique<autograd::PowFunction>(exponent);
+  });
+  dispatch_by_dtype(a.dtype(), [&]<typename T>() {
+    do_unary_op<T>(a, result,
+                   [exponent](auto x) { return std::pow(x, exponent); });
+  });
+  return result;
+}
+
 } // namespace quasai::ops

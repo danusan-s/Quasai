@@ -70,7 +70,7 @@ core::Tensor mean(const core::Tensor &a) {
   return result;
 }
 
-core::Tensor mean(const core::Tensor &a, int64_t dim, bool keepdim) {
+core::Tensor mean(const core::Tensor &a, int dim, bool keepdim) {
   if (!core::is_floating(a.dtype())) {
     throw std::runtime_error(
         "Mean operation requires floating point data type");

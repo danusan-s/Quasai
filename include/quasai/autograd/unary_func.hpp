@@ -39,4 +39,14 @@ public:
   std::vector<core::Tensor> backward(const core::Tensor &grad_output) override;
 };
 
+class PowFunction : public Function {
+public:
+  float exponent; // Store the exponent for backward computation
+
+  PowFunction(float exp) : exponent(exp) {
+  }
+
+  std::vector<core::Tensor> backward(const core::Tensor &grad_output) override;
+};
+
 } // namespace quasai::autograd
