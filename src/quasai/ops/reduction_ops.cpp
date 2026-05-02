@@ -60,21 +60,40 @@ core::Tensor mean(const core::Tensor &a) {
   core::Tensor result =
       core::Tensor::empty(core::Shape{}, a.dtype(), a.device());
 
-  const std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
-  if (meta_a && meta_a->requires_grad) {
-    auto grad_fn = std::make_unique<autograd::MeanFunction>();
-    grad_fn->inputs = {a};
-    result.requires_grad(true);
-    result.set_grad_fn(std::move(grad_fn));
+  size_t num_elements = total_size(a.shape());
+
+  core::Tensor sum_result = sum(a);
+  core::Tensor num_elements_tensor =
+      core::Tensor::from_scalar(num_elements, a.dtype(), a.device());
+  result = div(sum_result, num_elements_tensor);
+
+  return result;
+}
+
+core::Tensor mean(const core::Tensor &a, int64_t dim, bool keepdim) {
+  if (!core::is_floating(a.dtype())) {
+    throw std::runtime_error(
+        "Mean operation requires floating point data type");
   }
 
-  dispatch_by_dtype(a.dtype(), [&]<typename T>() {
-    do_sum<T>(a, result);
-    do_unary_op<T>(result, result,
-                   [num_elements = core::total_size(a.shape())](T x) {
-                     return x / static_cast<T>(num_elements);
-                   });
-  });
+  core::Shape out_shape = a.shape();
+  if (dim < 0 || static_cast<size_t>(dim) >= out_shape.dimensions()) {
+    throw std::runtime_error("Dimension out of range for mean operation");
+  }
+  size_t num_elements = out_shape[dim];
+  out_shape[dim] = 1;
+
+  core::Tensor result = core::Tensor::empty(out_shape, a.dtype(), a.device());
+
+  core::Tensor sum_result = sum_to_shape(a, out_shape);
+
+  core::Tensor num_elements_tensor =
+      core::Tensor::from_scalar(num_elements, a.dtype(), a.device());
+  core::Tensor mean_result = div(sum_result, num_elements_tensor);
+
+  if (!keepdim) {
+    result = reshape(mean_result, squeeze_shape(result.shape(), dim));
+  }
 
   return result;
 }

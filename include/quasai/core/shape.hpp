@@ -114,6 +114,25 @@ private:
   std::size_t sizes_[MAX_DIMENSIONS];
 };
 
+inline Shape squeeze_shape(const Shape &shape, std::size_t dim) {
+  if (dim >= shape.dimensions()) {
+    throw std::out_of_range("Dimension index out of range for squeeze");
+  }
+  if (shape[dim] != 1) {
+    throw std::runtime_error("Cannot squeeze dimension " + std::to_string(dim) +
+                             " with size " + std::to_string(shape[dim]));
+  }
+
+  std::size_t new_dims[MAX_DIMENSIONS] = {0};
+  std::size_t new_dim_count = 0;
+  for (std::size_t i = 0; i < shape.dimensions(); ++i) {
+    if (i != dim) {
+      new_dims[new_dim_count++] = shape[i];
+    }
+  }
+  return Shape(new_dims, new_dim_count);
+}
+
 inline std::size_t total_size(const Shape &shape) {
   std::size_t size = 1;
   for (std::size_t i = 0; i < shape.dimensions(); ++i) {

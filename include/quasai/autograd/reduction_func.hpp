@@ -14,9 +14,4 @@ public:
   std::vector<core::Tensor> backward(const core::Tensor &grad_output) override;
 };
 
-class MeanFunction : public Function {
-public:
-  std::vector<core::Tensor> backward(const core::Tensor &grad_output) override;
-};
-
 } // namespace quasai::autograd
