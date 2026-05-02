@@ -4,27 +4,21 @@
 #include "quasai/nn/model.hpp"
 #include "quasai/nn/modules/activations.hpp"
 #include "quasai/nn/modules/linear.hpp"
-#include "quasai/nn/modules/sequential.hpp"
+#include "quasai/nn/sequential_builder.hpp"
 #include "quasai/optim/sgd.hpp"
 #include <iostream>
 
 int main() {
-  // Create a simple MLP
-  auto linear1 = std::make_shared<quasai::nn::Linear>(64, 32);
-  auto relu = std::make_shared<quasai::nn::ReLU>();
-  auto linear2 = std::make_shared<quasai::nn::Linear>(32, 10);
+  // Create a simple MLP using SequentialBuilder
+  auto network = quasai::nn::SequentialBuilder()
+                     .add<quasai::nn::Linear>(64, 32)
+                     .add<quasai::nn::ReLU>()
+                     .add<quasai::nn::Linear>(32, 10)
+                     .build_ptr();
 
-  auto model = std::make_shared<quasai::nn::Sequential>(
-      std::vector<std::shared_ptr<quasai::nn::Module>>{linear1, relu, linear2});
-
-  quasai::nn::Model ml_model(model);
-
-  float learning_rate = 0.01f;
-  float momentum = 0.9f;
-  auto optimizer =
-      std::make_shared<quasai::optim::SGD>(learning_rate, momentum);
-
-  ml_model.compile(quasai::nn::Loss::MSE, optimizer);
+  quasai::nn::Model ml_model(std::move(network));
+  ml_model.set_loss(quasai::nn::Loss::MSE);
+  ml_model.set_optimizer<quasai::optim::SGD>(0.01f, 0.9f);
 
   // Training data (batch_size, 64)
   quasai::core::Tensor X = quasai::core::Tensor::zeros({32, 64});

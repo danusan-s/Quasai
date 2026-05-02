@@ -5,7 +5,7 @@
 #include "quasai/nn/model.hpp"
 #include "quasai/nn/modules/activations.hpp"
 #include "quasai/nn/modules/linear.hpp"
-#include "quasai/nn/modules/sequential.hpp"
+#include "quasai/nn/sequential_builder.hpp"
 #include "quasai/optim/sgd.hpp"
 #include "quasai/transform/standard_scaler.hpp"
 #include <iostream>
@@ -112,28 +112,21 @@ int main() {
   train_target = target_scaler.transform(train_target);
   test_target = target_scaler.transform(test_target);
 
-  auto linear1 = std::make_shared<quasai::nn::Linear>(num_features, 64);
-  auto relu1 = std::make_shared<quasai::nn::ReLU>();
-  auto linear2 = std::make_shared<quasai::nn::Linear>(64, 32);
-  auto relu2 = std::make_shared<quasai::nn::ReLU>();
-  auto linear3 = std::make_shared<quasai::nn::Linear>(32, 1);
+  auto network = quasai::nn::SequentialBuilder()
+                     .add<quasai::nn::Linear>(num_features, 64)
+                     .add<quasai::nn::ReLU>()
+                     .add<quasai::nn::Linear>(64, 32)
+                     .add<quasai::nn::ReLU>()
+                     .add<quasai::nn::Linear>(32, 1)
+                     .build_ptr();
 
-  auto sequential = std::make_shared<quasai::nn::Sequential>(
-      std::vector<std::shared_ptr<quasai::nn::Module>>{linear1, relu1, linear2,
-                                                       relu2, linear3});
-
-  quasai::nn::Model model(sequential);
+  quasai::nn::Model model(std::move(network));
 
   size_t num_epochs = 10;
   size_t batch_size = 32;
 
-  float learning_rate = 0.01f;
-  float momentum = 0.3f;
-
-  auto optimizer =
-      std::make_shared<quasai::optim::SGD>(learning_rate, momentum);
-
-  model.compile(quasai::nn::Loss::MSE, optimizer);
+  model.set_loss(quasai::nn::Loss::MSE);
+  model.set_optimizer<quasai::optim::SGD>(0.01f, 0.3f);
 
   std::cout << "Starting training..." << std::endl;
 
