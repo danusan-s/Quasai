@@ -42,12 +42,9 @@ if(BUILD_BENCHMARKS)
   add_subdirectory(benchmarks)
 endif()
 
-# Python bindings
-add_subdirectory(bindings)
-
 # Examples
 add_subdirectory(examples)
 
 # Tests
-enable_testing()
 add_subdirectory(tests)
+enable_testing()
