@@ -2,6 +2,11 @@
 
 #include "quasai/nn/modules/sequential.hpp"
 
+#include <concepts>
+
+template <typename T>
+concept ModuleDerived = std::derived_from<T, quasai::nn::Module>;
+
 namespace quasai::nn {
 
 class SequentialBuilder {
@@ -10,7 +15,7 @@ public:
     model_ = std::make_unique<Sequential>();
   }
 
-  template <typename ModuleType, typename... Args>
+  template <ModuleDerived ModuleType, typename... Args>
   SequentialBuilder &&add(Args &&...args) && {
     auto module = std::make_unique<ModuleType>(std::forward<Args>(args)...);
     model_->add_module(std::move(module));
