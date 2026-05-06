@@ -83,6 +83,10 @@ cmake --build build
 
 # Run tests
 ctest --test-dir build --output-on-failure
+
+# Generate documentation (Doxygen and Graphviz required)
+doxygen Doxyfile
+xdg-open docs/doxygen/html/index.html
 ```
 
 See `examples/cpp/` for C++ examples 
@@ -147,6 +151,24 @@ int main() {
     return 0;
 }
 ```
+
+## Benchmarks:
+
+| Benchmark              | Quasai Time | PyTorch Time | Speedup (PyTorch)         |
+| ---------------------- | ----------- | ------------ | ------------------------- |
+| Add 2048×2048          | 4.45 ms     | 1.35 ms      | **3.29× faster**          |
+| Add 4096×4096          | 24.82 ms    | 10.43 ms     | **2.38× faster**          |
+| Matmul 2048×2048       | 692.60 ms   | 39.35 ms     | **17.6× faster**          |
+| Transpose 2048         | 0.128 µs    | 0.498 µs     | **0.26× (Quasai faster)** |
+| Transpose 4096         | 0.130 µs    | 0.498 µs     | **0.26× (Quasai faster)** |
+| Sum 2048×2048          | 0.146 ms    | 0.064 ms     | **2.28× faster**          |
+| Sum 4096×4096          | 3.25 ms     | 1.32 ms      | **2.46× faster**          |
+| Scalar Add (5M)        | 11.72 ms    | 1.01 ms      | **11.57× faster**         |
+| ReLU 2048×2048         | 0.844 ms    | 0.719 ms     | **1.17× faster**          |
+| ReLU 4096×4096         | 4.22 ms     | 7.55 ms      | **0.56× (Quasai faster)** |
+
+Matmul is way slower than PyTorch due to lack of optimized BLAS libraries which will be implemented later.
+The speedups in transpose and ReLU could simply be because Quasai is less bloated and therefore less overhead for now.
 
 ---
 
