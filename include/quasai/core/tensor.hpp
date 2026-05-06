@@ -114,6 +114,8 @@ public:
   void requires_grad(bool grad_needed);
   void set_grad_fn(std::unique_ptr<autograd::Function> grad_fn);
 
+  // Returns a copy of the TensorImpl with autograd_meta stripped (nullified).
+  // Useful for inspecting shape/strides/dtype without sharing gradient state.
   TensorImpl get_impl_copy() const;
 
   void backward();

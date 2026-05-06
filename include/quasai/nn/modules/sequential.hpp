@@ -1,3 +1,5 @@
+#pragma once
+
 #include "quasai/nn/module.hpp"
 #include <memory>
 #include <vector>

@@ -7,6 +7,9 @@ namespace quasai::autograd {
 
 class Function {
 public:
+  // Input tensors that produced this function's output. Populated by the
+  // forward pass before backward() is called. Used by the engine to traverse
+  // the compute graph and propagate gradients to these inputs.
   std::vector<core::Tensor> inputs;
 
   virtual std::vector<core::Tensor>
