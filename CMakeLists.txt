@@ -17,8 +17,31 @@ endif()
 
 find_package(OpenMP)
 
-file(GLOB_RECURSE SRC_FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+set(SRC_FILES
+    src/quasai/nn/layer_norm.cpp
+    src/quasai/nn/model.cpp
+    src/quasai/nn/sequential.cpp
+    src/quasai/nn/dropout.cpp
+    src/quasai/nn/batch_norm_1d.cpp
+    src/quasai/nn/linear.cpp
+    src/quasai/nn/loss.cpp
+    src/quasai/nn/init.cpp
+    src/quasai/ops/unary_ops.cpp
+    src/quasai/ops/reduction_ops.cpp
+    src/quasai/ops/view_ops.cpp
+    src/quasai/ops/linalg_ops.cpp
+    src/quasai/ops/binary_ops.cpp
+    src/quasai/autograd/unary_func.cpp
+    src/quasai/autograd/reduction_func.cpp
+    src/quasai/autograd/view_func.cpp
+    src/quasai/autograd/linalg_func.cpp
+    src/quasai/autograd/binary_func.cpp
+    src/quasai/autograd/engine.cpp
+    src/quasai/core/tensor.cpp
+    src/quasai/transform/standard_scaler.cpp
+    src/quasai/storage/buffer.cpp
+    src/quasai/storage/allocator.cpp
+    src/quasai/optim/sgd.cpp
 )
 
 # Library
@@ -46,5 +69,5 @@ endif()
 add_subdirectory(examples)
 
 # Tests
-add_subdirectory(tests)
 enable_testing()
+add_subdirectory(tests)

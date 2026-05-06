@@ -1,0 +1,4 @@
+Checks: '*,-llvm-*,-google-*'
+HeaderFilterRegex: '.*'
+WarningAsError: ''
+FormatStyle: LLVM

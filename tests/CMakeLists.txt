@@ -8,22 +8,27 @@ FetchContent_MakeAvailable(googletest)
 
 include(GoogleTest)
 
-# Get all subdirectories in tests/
-file(GLOB TEST_DIRS LIST_DIRECTORIES true *)
+# Explicitly list test directories to avoid globbing issues
+set(TEST_DIRS
+    ${CMAKE_CURRENT_SOURCE_DIR}/nn
+    ${CMAKE_CURRENT_SOURCE_DIR}/ops
+    ${CMAKE_CURRENT_SOURCE_DIR}/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/autograd
+    ${CMAKE_CURRENT_SOURCE_DIR}/storage
+    ${CMAKE_CURRENT_SOURCE_DIR}/transform
+)
 
 foreach(dir ${TEST_DIRS})
-    if(IS_DIRECTORY ${dir})
-        # Use GLOB_RECURSE to find all .cpp files in subdirectories
-        file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS "${dir}/*.cpp")
+    # Use GLOB_RECURSE to find all .cpp files in subdirectories
+    file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS "${dir}/*.cpp")
 
-        if(TEST_SOURCES)
-            get_filename_component(test_name ${dir} NAME)
+    if(TEST_SOURCES)
+        get_filename_component(test_name ${dir} NAME)
 
-            add_executable(${test_name}_tests ${TEST_SOURCES})
-            target_link_libraries(${test_name}_tests PRIVATE quasai GTest::gtest_main)
+        add_executable(${test_name}_tests ${TEST_SOURCES})
+        target_link_libraries(${test_name}_tests PRIVATE quasai GTest::gtest_main)
 
-            gtest_discover_tests(${test_name}_tests)
-        endif()
+        gtest_discover_tests(${test_name}_tests)
     endif()
 endforeach()
 
