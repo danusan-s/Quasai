@@ -75,18 +75,14 @@ This project prioritizes demonstrating systems ML concepts over production readi
 git clone https://github.com/danusan-s/Quasai.git
 cd Quasai
 
-# Create build directory and configure
-cmake -S . -B build
-
 # Build the library
-cmake --build build
+make build
 
 # Run tests
-ctest --test-dir build --output-on-failure
+make run_tests
 
-# Generate documentation (Doxygen and Graphviz required)
-doxygen Doxyfile
-xdg-open docs/doxygen/html/index.html
+# Open documentation
+make open_docs
 ```
 
 See `examples/cpp/` for C++ examples 
@@ -98,32 +94,27 @@ See `examples/cpp/` for C++ examples
 Quasai includes benchmarks for large tensor operations that trigger OpenMP parallelization (tested with up to 64M element tensors):
 
 ```bash
-# Configure with benchmarks enabled
-cmake -S . -B build -DBUILD_BENCHMARKS=ON -DCMAKE_BUILD_TYPE=Release
-
-# Build benchmarks
-cmake --build build --target quasai_benchmarks
-
-# Run benchmarks (large tensors will use OpenMP)
-./build/benchmarks/quasai_benchmarks --benchmark_min_time=1.0
+# Build with benchmarks and run them
+make run_benchmarks
 ```
 
 **OpenMP Speedup**: Benchmarks show ~5x speedup on 16-core systems for large tensor operations (8192x8192 float32 addition: 125ms vs 624ms single-threaded).
 
-| Benchmark              | Quasai Time | PyTorch Time | Speedup (PyTorch)         |
-| ---------------------- | ----------- | ------------ | ------------------------- |
-| Add 2048×2048          | 4.45 ms     | 1.35 ms      | **3.29× faster**          |
-| Add 4096×4096          | 24.82 ms    | 10.43 ms     | **2.38× faster**          |
-| Matmul 2048×2048       | 692.60 ms   | 39.35 ms     | **17.6× faster**          |
-| Transpose 2048         | 0.128 µs    | 0.498 µs     | **0.26× (Quasai faster)** |
-| Transpose 4096         | 0.130 µs    | 0.498 µs     | **0.26× (Quasai faster)** |
-| Sum 2048×2048          | 0.146 ms    | 0.064 ms     | **2.28× faster**          |
-| Sum 4096×4096          | 3.25 ms     | 1.32 ms      | **2.46× faster**          |
-| Scalar Add (5M)        | 11.72 ms    | 1.01 ms      | **11.57× faster**         |
-| ReLU 2048×2048         | 0.844 ms    | 0.719 ms     | **1.17× faster**          |
-| ReLU 4096×4096         | 4.22 ms     | 7.55 ms      | **0.56× (Quasai faster)** |
+| Op         | Size      | Quasai (ns) | PyTorch (ns) | Speedup (PT / Q) |
+| ---------- | --------- | ----------- | ------------ | ---------------- |
+| Add        | 2048      | 1,459,870   | 1,237,418    | 0.85×            |
+| Add        | 4096      | 7,479,059   | 10,355,398   | 1.38×            |
+| Matmul     | 2048      | 26,882,458  | 24,090,533   | 0.90×            |
+| Transpose  | 2048      | 59.6        | 503          | 8.44×            |
+| Transpose  | 4096      | 59.6        | 501          | 8.41×            |
+| Sum        | 2048      | 47,794      | 57,489       | 1.20×            |
+| Sum        | 4096      | 1,299,329   | 1,216,361    | 0.94×            |
+| Scalar Add | 5,000,000 | 7,439,729   | 1,043,395    | 0.14×            |
+| ReLU       | 2048      | 1,613,666   | 752,993      | 0.47×            |
+| ReLU       | 4096      | 6,943,953   | 7,809,385    | 1.12×            |
 
-Matmul is way slower than PyTorch due to lack of optimized BLAS libraries which will be implemented later.
+Note: The speedup column <1 means PyTorch is faster, >1 means Quasai is faster.
+Some timings may vary due to system load and other factors, but the general trends hold.
 The speedups in transpose and ReLU could simply be because Quasai is less bloated and therefore less overhead for now.
 
 ---
