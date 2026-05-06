@@ -1,4 +1,5 @@
 #include "quasai/storage/allocator.hpp"
+
 #ifdef QUASAI_CUDA
 #include <cuda_runtime.h>
 #endif

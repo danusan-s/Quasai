@@ -1,4 +1,5 @@
 #include "quasai/nn/init.hpp"
+
 #include "quasai/utils/logger.hpp"
 
 namespace quasai::nn {

@@ -1,5 +1,6 @@
-#include "quasai/autograd/metadata.hpp"
 #include "quasai/ops/tensor_ops.hpp"
+
+#include "quasai/autograd/metadata.hpp"
 
 namespace quasai::autograd {
 

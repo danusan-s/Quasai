@@ -1,6 +1,8 @@
 #include "quasai/transform/standard_scaler.hpp"
+
 #include "quasai/ops/core_ops.hpp"
 #include "quasai/ops/tensor_ops.hpp"
+
 #include <cmath>
 
 namespace quasai::transform {

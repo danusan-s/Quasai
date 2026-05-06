@@ -1,7 +1,9 @@
 #include "quasai/core/tensor.hpp"
+
 #include "quasai/autograd/engine.hpp"
 #include "quasai/autograd/metadata.hpp"
 #include "quasai/storage/allocator.hpp"
+
 #include <memory>
 
 namespace quasai::core {
@@ -35,17 +37,29 @@ Tensor Tensor::ones(const Shape &shape, DType dtype, Device device) {
   size_t count = total_size(shape);
 
   switch (dtype) {
-    case DType::FLOAT32:
-    case DType::FLOAT64: {
+    case DType::FLOAT32: {
       float *data = static_cast<float *>(buffer.raw_data());
       for (size_t i = 0; i < count; ++i) {
         data[i] = 1.0f;
       }
       break;
     }
-    case DType::INT32:
+    case DType::FLOAT64: {
+      double *data = static_cast<double *>(buffer.raw_data());
+      for (size_t i = 0; i < count; ++i) {
+        data[i] = 1.0;
+      }
+      break;
+    }
+    case DType::INT32: {
+      int32_t *data = static_cast<int32_t *>(buffer.raw_data());
+      for (size_t i = 0; i < count; ++i) {
+        data[i] = 1;
+      }
+      break;
+    }
     case DType::INT64: {
-      int *data = static_cast<int *>(buffer.raw_data());
+      int64_t *data = static_cast<int64_t *>(buffer.raw_data());
       for (size_t i = 0; i < count; ++i) {
         data[i] = 1;
       }

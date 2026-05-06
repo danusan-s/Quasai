@@ -1,7 +1,8 @@
+#include "quasai/ops/tensor_ops.hpp"
+
 #include "quasai/autograd/metadata.hpp"
 #include "quasai/autograd/view_func.hpp"
 #include "quasai/ops/cpu_kernel.hpp"
-#include "quasai/ops/tensor_ops.hpp"
 #include "quasai/utils/logger.hpp"
 
 namespace quasai::ops {

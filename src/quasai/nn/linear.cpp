@@ -1,4 +1,5 @@
 #include "quasai/nn/modules/linear.hpp"
+
 #include "quasai/core/dtype.hpp"
 #include "quasai/nn/init.hpp"
 #include "quasai/ops/tensor_ops.hpp"

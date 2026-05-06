@@ -1,4 +1,5 @@
 #include "quasai/nn/loss.hpp"
+
 #include "quasai/ops/tensor_ops.hpp"
 
 namespace quasai::nn {

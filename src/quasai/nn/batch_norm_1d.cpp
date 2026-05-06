@@ -1,4 +1,5 @@
 #include "quasai/nn/modules/batch_norm_1d.hpp"
+
 #include "quasai/nn/init.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 

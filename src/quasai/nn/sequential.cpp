@@ -1,4 +1,5 @@
 #include "quasai/nn/modules/sequential.hpp"
+
 #include <memory>
 
 namespace quasai::nn {

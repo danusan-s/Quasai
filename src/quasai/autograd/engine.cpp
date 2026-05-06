@@ -1,10 +1,16 @@
 #include "quasai/autograd/engine.hpp"
+
 #include "quasai/autograd/function.hpp"
 #include "quasai/autograd/metadata.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 
 namespace quasai::autograd {
 
+// Performs backward pass starting from `tensor`.
+// Initializes the output gradient to ones, then traverses the compute graph
+// using a stack-based DFS. For each node with a grad_fn, calls backward()
+// to get input gradients, accumulates them on input tensors that require grad,
+// and continues traversal until all leaf nodes are reached.
 void AutoGradEngine::backward(const core::Tensor &tensor) {
   if (!tensor.autograd_meta() || !tensor.autograd_meta()->requires_grad) {
     LOG_DEBUG("No gradients to compute since requires_grad is false");

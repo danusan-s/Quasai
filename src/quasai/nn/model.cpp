@@ -1,7 +1,9 @@
 #include "quasai/nn/model.hpp"
+
 #include "quasai/ops/tensor_ops.hpp"
 #include "quasai/optim/optimizer.hpp"
 #include "quasai/utils/logger.hpp"
+
 #include <memory>
 #include <sstream>
 

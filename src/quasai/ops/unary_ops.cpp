@@ -1,7 +1,9 @@
+#include "quasai/ops/tensor_ops.hpp"
+
 #include "quasai/autograd/metadata.hpp"
 #include "quasai/autograd/unary_func.hpp"
 #include "quasai/ops/cpu_kernel.hpp"
-#include "quasai/ops/tensor_ops.hpp"
+
 #include <cmath>
 
 namespace quasai::ops {
