@@ -4,23 +4,39 @@
 #include "quasai/ops/core_ops.hpp"
 namespace quasai::ops {
 
+/// @brief Minimum elements for enabling OpenMP parallelization.
 constexpr size_t MIN_NUM_ELEMENTS_FOR_PARALLEL = 10000;
+/// @brief Minimum elements for parallel reduction.
 constexpr size_t MIN_NUM_ELEMENTS_FOR_PARALLEL_REDUCTION = 20000;
+/// @brief Minimum tiles for parallel matrix multiplication.
 constexpr size_t MIN_NUM_TILES_FOR_PARALLEL_MATMUL = 64;
 
+/// @brief Check if parallelization should be used based on element count.
 inline bool can_use_parallel(size_t num_elements) {
   return num_elements > MIN_NUM_ELEMENTS_FOR_PARALLEL;
 }
 
+/// @brief Check if parallel reduction should be used.
 inline bool can_use_parallel_reduction(size_t num_elements) {
   return num_elements > MIN_NUM_ELEMENTS_FOR_PARALLEL_REDUCTION;
 }
 
+/// @brief Check if parallel matmul should be used.
 inline bool can_use_parallel_matmul(size_t M, size_t N, size_t BS) {
   size_t num_tiles = (M + BS - 1) / BS * (N + BS - 1) / BS;
   return num_tiles > MIN_NUM_TILES_FOR_PARALLEL_MATMUL;
 }
 
+/**
+ * @brief Execute a binary operation with optional OpenMP parallelization.
+ * @tparam T Data type of the tensors.
+ * @param a First input tensor.
+ * @param b Second input tensor.
+ * @param result Output tensor.
+ * @param op Binary operation to apply.
+ * @note Uses fast path for contiguous same-shape tensors, slow path with
+ * broadcasting.
+ */
 template <typename T>
 void do_binary_op(const core::Tensor &a, const core::Tensor &b,
                   core::Tensor &result, std::function<T(T, T)> op) {
@@ -65,6 +81,13 @@ void do_binary_op(const core::Tensor &a, const core::Tensor &b,
   }
 }
 
+/**
+ * @brief Execute a unary operation with optional OpenMP parallelization.
+ * @tparam T Data type of the tensor.
+ * @param a Input tensor.
+ * @param result Output tensor.
+ * @param op Unary operation to apply.
+ */
 template <typename T>
 void do_unary_op(const core::Tensor &a, core::Tensor &result,
                  std::function<T(T)> op) {
@@ -80,6 +103,12 @@ void do_unary_op(const core::Tensor &a, core::Tensor &result,
   }
 }
 
+/**
+ * @brief Compute sum of all elements with OpenMP parallel reduction.
+ * @tparam T Data type of the tensor.
+ * @param a Input tensor.
+ * @param result Output tensor (scalar).
+ */
 template <typename T> void do_sum(const core::Tensor &a, core::Tensor &result) {
   const size_t num_elements = total_size(a.shape());
   const T *data_a = a.data<T>();
@@ -94,6 +123,13 @@ template <typename T> void do_sum(const core::Tensor &a, core::Tensor &result) {
   data_result[0] = sum;
 }
 
+/**
+ * @brief Sum elements and broadcast result to a target shape.
+ * @tparam T Data type of the tensor.
+ * @param a Input tensor.
+ * @param result Output tensor (target shape).
+ * @note Not parallelized (may have write conflicts).
+ */
 template <typename T>
 void do_sum_to_shape(const core::Tensor &a, core::Tensor &result) {
   const core::Shape &a_shape = a.shape();
@@ -112,6 +148,14 @@ void do_sum_to_shape(const core::Tensor &a, core::Tensor &result) {
   }
 }
 
+/**
+ * @brief Fast matrix multiplication for contiguous tensors.
+ * @tparam T Data type.
+ * @param a First tensor (M x K, contiguous).
+ * @param b Second tensor (K x N, contiguous).
+ * @param result Output tensor (M x N).
+ * @note Uses cache-aware blocking for performance.
+ */
 template <typename T>
 void do_matmul_fast(const core::Tensor &a, const core::Tensor &b,
                     core::Tensor &result) {
@@ -152,6 +196,13 @@ void do_matmul_fast(const core::Tensor &a, const core::Tensor &b,
   }
 }
 
+/**
+ * @brief Matrix multiplication for non-contiguous tensors (uses strides).
+ * @tparam T Data type.
+ * @param a First tensor (M x K).
+ * @param b Second tensor (K x N).
+ * @param result Output tensor (M x N).
+ */
 template <typename T>
 void do_matmul_slow(const core::Tensor &a, const core::Tensor &b,
                     core::Tensor &result) {
@@ -197,6 +248,14 @@ void do_matmul_slow(const core::Tensor &a, const core::Tensor &b,
   }
 }
 
+/**
+ * @brief Matrix multiplication dispatcher (fast or slow path).
+ * @tparam T Data type.
+ * @param a First tensor (M x K).
+ * @param b Second tensor (K x N).
+ * @param result Output tensor (M x N).
+ * @note Chooses fast path (contiguous) or slow path (strided) automatically.
+ */
 template <typename T>
 void do_matmul(const core::Tensor &a, const core::Tensor &b,
                core::Tensor &result) {
@@ -222,6 +281,12 @@ void do_matmul(const core::Tensor &a, const core::Tensor &b,
   }
 }
 
+/**
+ * @brief Copy a tensor to contiguous memory layout.
+ * @tparam T Data type.
+ * @param a Input tensor (may be non-contiguous).
+ * @param result Output tensor (will be contiguous).
+ */
 template <typename T>
 void do_contiguous_copy(const core::Tensor &a, core::Tensor &result) {
   const core::Shape &a_shape = a.shape();
