@@ -4,9 +4,6 @@ project(Quasai LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Compiler warnings
-add_compile_options(-Wall -Wextra -Wpedantic)
-
 # Sanitizers
 option(ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 if(ENABLE_SANITIZERS)
@@ -48,7 +45,7 @@ add_library(quasai STATIC
 )
 set_target_properties(quasai PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-target_compile_options(quasai PRIVATE -march=native)
+target_compile_options(quasai PRIVATE -march=native -Wall -Wextra -Wpedantic)
 
 target_include_directories(quasai PUBLIC
     ${CMAKE_SOURCE_DIR}/include
