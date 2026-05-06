@@ -6,8 +6,17 @@
 
 namespace quasai::optim {
 
+/**
+ * @brief Stochastic Gradient Descent optimizer.
+ */
 class SGD : public Optimizer {
 public:
+  /**
+   * @brief Construct an SGD optimizer.
+   * @param learning_rate Learning rate for parameter updates.
+   * @param momentum Momentum factor in [0, 1) (default: 0.0f).
+   * @throws std::invalid_argument if momentum is not in [0, 1).
+   */
   SGD(float learning_rate, float momentum = 0.0f)
       : learning_rate_(learning_rate), momentum_(momentum) {
     if (momentum >= 1.0f || momentum < 0.0f) {
@@ -15,10 +24,13 @@ public:
     }
   }
 
+  /// @brief Compile the optimizer with the given parameters.
   void compile(const std::vector<nn::Parameter> &parameters) override;
 
+  /// @brief Perform a single optimization step.
   void step() override;
 
+  /// @brief Zero out all parameter gradients.
   void zero_grad() override;
 
 private:
