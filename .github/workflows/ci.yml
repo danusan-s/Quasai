@@ -61,7 +61,7 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    needs: build-test
+    needs: build-and-test
 
     steps:
       - uses: actions/checkout@v4
