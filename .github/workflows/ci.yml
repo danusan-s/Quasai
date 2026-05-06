@@ -1,8 +1,5 @@
 name: Quasai CI
 
-permissions:
-  contents: write
-
 on:
   push:
     branches: [ main ]
@@ -61,22 +58,3 @@ jobs:
         find include src tests examples benchmarks \
           -name "*.hpp" -o -name "*.cpp" | \
           xargs clang-format --dry-run --Werror
-  docs:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    needs: build-and-test
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
-
-      - name: Generate docs
-        run: doxygen Doxyfile
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/doxygen/html
