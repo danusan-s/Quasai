@@ -5,21 +5,24 @@
 namespace quasai::nn {
 
 /**
- * Dropout layer for regularization. Takes in a dropout probability 'p' on
- * construction.
- * During training, it randomly zeroes out elements of the input tensor with
- * probability 'p' or effectively keep elements with a (1-p) probability and
- * scales the remaining elements by 1/(1-p) to maintain the expected value.
- * During evaluation, it returns the input tensor unchanged.
+ * @brief Dropout layer for regularization.
+ * @details During training, randomly zeroes elements with probability p and
+ *          scales remaining elements by 1/(1-p) to maintain expected value.
+ *          During evaluation, returns input unchanged.
  */
 class Dropout : public Module {
 public:
+  /**
+   * @brief Construct a Dropout layer.
+   * @param p Dropout probability (default: 0.5f).
+   */
   Dropout(float p = 0.5f);
 
+  /// @brief Forward pass (applies dropout in training mode).
   core::Tensor forward(const core::Tensor &input) override;
 
 private:
-  float p_; // Dropout probability
+  float p_; ///< Dropout probability
 };
 
 } // namespace quasai::nn

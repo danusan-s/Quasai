@@ -6,14 +6,15 @@
 namespace quasai::nn {
 
 /**
- * Flatten layer that reshapes the input tensor to have a shape of
- * (batch_size, feature_size). The feature_size is calculated as the total
- * number of elements in the input tensor divided by the batch size.
+ * @brief Flatten layer: reshapes (batch, ...) to (batch, features).
+ * @details Computes feature_size = total_elements / batch_size.
  */
 class Flatten : public Module {
 public:
+  /// @brief Construct a Flatten layer.
   Flatten() = default;
 
+  /// @brief Forward pass: flattens all but the first dimension.
   core::Tensor forward(const core::Tensor &input) override {
     if (input.shape().dimensions() < 2) {
       throw std::invalid_argument(
