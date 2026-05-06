@@ -8,6 +8,12 @@
 
 namespace quasai::data {
 
+/**
+ * @brief Parse a CSV file into a column-name to values map.
+ * @param filename Path to the CSV file.
+ * @return Map from column header to list of string values.
+ * @throws std::runtime_error if file cannot be opened.
+ */
 inline std::unordered_map<std::string, std::vector<std::string>>
 parse_csv(const std::string &filename) {
   std::unordered_map<std::string, std::vector<std::string>> data;
@@ -66,6 +72,11 @@ parse_csv(const std::string &filename) {
   return data;
 }
 
+/**
+ * @brief Check if all values in a column can be parsed as floats.
+ * @param values Column values (empty strings are treated as "0.0").
+ * @return true if all values are valid floats.
+ */
 inline bool clean_is_float(std::vector<std::string> &values) {
   bool is_float = true;
   for (std::string &value : values) {
