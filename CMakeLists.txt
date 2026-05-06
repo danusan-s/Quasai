@@ -35,7 +35,8 @@ set(SRC_FILES
     src/quasai/core/tensor.cpp
     src/quasai/transform/standard_scaler.cpp
     src/quasai/storage/buffer.cpp
-    src/quasai/storage/allocator.cpp
+    src/quasai/storage/cpu_allocator.cpp
+    src/quasai/storage/gpu_allocator.cpp
     src/quasai/optim/sgd.cpp
 )
 
