@@ -39,9 +39,23 @@ jobs:
       run: cmake --build build --parallel $(nproc)
 
     - name: Run tests
+      env:
+        OMP_NUM_THREADS: 4
+        OPENBLAS_NUM_THREADS: 4
       run: ctest --test-dir build/tests --output-on-failure --parallel $(nproc)
 
     - name: Run benchmarks
+      env:
+        # unify threading behavior
+        OMP_NUM_THREADS: 4
+        OPENBLAS_NUM_THREADS: 4
+
+        # improve OpenMP scheduling consistency
+        OMP_PROC_BIND: true
+        OMP_PLACES: cores
+
+        # optional: prevent OpenBLAS from dynamic thread changes
+        OPENBLAS_DYNAMIC: 0
       run: |
         echo "Running benchmarks with ${{ matrix.compiler }} (${{ matrix.build-type }})"
         ./build/benchmarks/quasai_benchmarks --benchmark_min_time=1.0
