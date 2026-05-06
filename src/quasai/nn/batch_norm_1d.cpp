@@ -27,16 +27,14 @@ core::Tensor BatchNorm1D::forward(const core::Tensor &input) {
                                0); // Variance across batch dimension
 
   // Update running statistics
-  running_mean_ = ops::add(
-      ops::mul(running_mean_, core::Tensor::from_scalar(1 - momentum_)),
-      ops::mul(mean, core::Tensor::from_scalar(momentum_)));
+  float coeff = 1.0f - momentum_;
+  running_mean_ =
+      ops::add(ops::mul(running_mean_, coeff), ops::mul(mean, momentum_));
   running_var_ =
-      ops::add(ops::mul(running_var_, core::Tensor::from_scalar(1 - momentum_)),
-               ops::mul(var, core::Tensor::from_scalar(momentum_)));
+      ops::add(ops::mul(running_var_, coeff), ops::mul(var, momentum_));
 
   core::Tensor normalized =
-      ops::div(ops::sub(input, mean),
-               ops::pow(ops::add(var, core::Tensor::from_scalar(eps_)), 0.5f));
+      ops::div(ops::sub(input, mean), ops::pow(ops::add(var, eps_), 0.5f));
 
   core::Tensor output = ops::add(ops::mul(normalized, scale_), shift_);
 

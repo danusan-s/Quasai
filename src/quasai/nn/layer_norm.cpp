@@ -33,8 +33,7 @@ core::Tensor LayerNorm::forward(const core::Tensor &input) {
                                0); // Variance across feature dimension
 
   core::Tensor normalized =
-      ops::div(ops::sub(input, mean),
-               ops::pow(ops::add(var, core::Tensor::from_scalar(eps_)), 0.5f));
+      ops::div(ops::sub(input, mean), ops::pow(ops::add(var, eps_), 0.5f));
 
   core::Tensor output = ops::add(ops::mul(normalized, scale_), shift_);
 

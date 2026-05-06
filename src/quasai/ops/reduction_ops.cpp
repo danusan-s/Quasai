@@ -64,9 +64,7 @@ core::Tensor mean(const core::Tensor &a) {
   size_t num_elements = total_size(a.shape());
 
   core::Tensor sum_result = sum(a);
-  core::Tensor num_elements_tensor =
-      core::Tensor::from_scalar(num_elements, a.dtype(), a.device());
-  result = div(sum_result, num_elements_tensor);
+  result = div(sum_result, num_elements);
 
   return result;
 }
@@ -88,9 +86,7 @@ core::Tensor mean(const core::Tensor &a, int dim, bool keepdim) {
 
   core::Tensor sum_result = sum_to_shape(a, out_shape);
 
-  core::Tensor num_elements_tensor =
-      core::Tensor::from_scalar(num_elements, a.dtype(), a.device());
-  core::Tensor mean_result = div(sum_result, num_elements_tensor);
+  core::Tensor mean_result = div(sum_result, num_elements);
 
   if (!keepdim) {
     result = reshape(mean_result, squeeze_shape(result.shape(), dim));

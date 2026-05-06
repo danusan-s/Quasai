@@ -130,11 +130,8 @@ PowFunction::backward(const core::Tensor &grad_output) {
       // w.r.t input is just grad_output
       grad_input = grad_output;
     } else {
-      core::Tensor exponent_tensor =
-          core::Tensor::from_scalar(exponent, input.dtype(), input.device());
-      grad_input =
-          ops::mul(grad_output,
-                   ops::mul(exponent_tensor, ops::pow(input, exponent - 1)));
+      grad_input = ops::mul(grad_output,
+                            ops::mul(exponent, ops::pow(input, exponent - 1)));
     }
   }
   return {grad_input};
