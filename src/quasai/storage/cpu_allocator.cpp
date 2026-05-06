@@ -28,6 +28,10 @@ void CpuAllocator::split_block(Block *block, std::size_t size) {
 }
 
 void *CpuAllocator::allocate(std::size_t size) {
+  if (size == 0) {
+    size = 1; // Allocate at least 1 byte to ensure unique pointer
+  }
+
   size = align(size);
 
   // Fast path: check tail first for a large enough free block
