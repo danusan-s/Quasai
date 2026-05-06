@@ -100,18 +100,18 @@ make run_benchmarks
 
 **OpenMP Speedup**: Benchmarks show ~5x speedup on 16-core systems for large tensor operations (8192x8192 float32 addition: 125ms vs 624ms single-threaded).
 
-| Op         | Size      | Quasai (ns) | PyTorch (ns) | Speedup (PT / Q) |
-| ---------- | --------- | ----------- | ------------ | ---------------- |
-| Add        | 2048      | 1,459,870   | 1,237,418    | 0.85×            |
-| Add        | 4096      | 7,479,059   | 10,355,398   | 1.38×            |
-| Matmul     | 2048      | 26,882,458  | 24,090,533   | 0.90×            |
-| Transpose  | 2048      | 59.6        | 503          | 8.44×            |
-| Transpose  | 4096      | 59.6        | 501          | 8.41×            |
-| Sum        | 2048      | 47,794      | 57,489       | 1.20×            |
-| Sum        | 4096      | 1,299,329   | 1,216,361    | 0.94×            |
-| Scalar Add | 5,000,000 | 7,439,729   | 1,043,395    | 0.14×            |
-| ReLU       | 2048      | 1,613,666   | 752,993      | 0.47×            |
-| ReLU       | 4096      | 6,943,953   | 7,809,385    | 1.12×            |
+| Benchmark        | Quasai Time | PyTorch Time | Speedup (Quasai) |
+| ---------------- | ----------- | ------------ | ---------------- |
+| Add 2048×2048    | 4.25 ms     | 1.28 ms      | **0.30×**        |
+| Add 4096×4096    | 10.78 ms    | 10.33 ms     | **0.96×**        |
+| Matmul 2048×2048 | 32.26 ms    | 24.67 ms     | **0.76×**        |
+| Transpose 2048   | 67.6 ns     | 501 ns       | **7.41×**        |
+| Transpose 4096   | 67.0 ns     | 500 ns       | **7.46×**        |
+| Sum 2048×2048    | 0.191 ms    | 0.062 ms     | **0.32×**        |
+| Sum 4096×4096    | 1.34 ms     | 1.20 ms      | **0.90×**        |
+| Scalar Add (5M)  | 1.18 ms     | 1.05 ms      | **0.89×**        |
+| ReLU 2048×2048   | 0.842 ms    | 0.824 ms     | **0.98×**        |
+| ReLU 4096×4096   | 5.17 ms     | 7.83 ms      | **1.51×**        |
 
 Note: The speedup column <1 means PyTorch is faster, >1 means Quasai is faster.
 Some timings may vary due to system load and other factors, but the general trends hold.

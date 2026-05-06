@@ -34,6 +34,12 @@ inline bool can_use_parallel_matmul(size_t M, size_t N, size_t BS) {
   return num_tiles > MIN_NUM_TILES_FOR_PARALLEL_MATMUL;
 }
 
+inline bool can_fast_path(const core::Tensor &a, const core::Tensor &b) {
+  return (a.shape().dimensions() == 0 || b.shape().dimensions() == 0 ||
+          a.shape() == b.shape()) &&
+         a.is_contiguous() && b.is_contiguous();
+}
+
 /**
  * @brief Execute a binary operation with optional OpenMP parallelization.
  * @tparam T Data type of the tensors.
@@ -50,12 +56,33 @@ void do_binary_op(const core::Tensor &a, const core::Tensor &b,
   const core::Shape &out_shape = result.shape();
 
   // Fast path: no broadcasting, both contiguous -> flat access
-  if (a.shape() == b.shape() && a.is_contiguous() && b.is_contiguous()) {
+  if (can_fast_path(a, b)) {
     const size_t num_elements = total_size(out_shape);
     const T *data_a = a.data<T>();
     const T *data_b = b.data<T>();
     T *data_result = result.data<T>();
 
+    bool a_is_scalar = (a.shape().dimensions() == 0);
+    bool b_is_scalar = (b.shape().dimensions() == 0);
+
+    if (a_is_scalar && b_is_scalar) {
+      data_result[0] = op(data_a[0], data_b[0]);
+      return;
+    } else if (a_is_scalar) {
+      T a_val = data_a[0];
+#pragma omp parallel for simd if (can_use_parallel(num_elements))
+      for (size_t i = 0; i < num_elements; ++i) {
+        data_result[i] = op(a_val, data_b[i]);
+      }
+      return;
+    } else if (b_is_scalar) {
+      T b_val = data_b[0];
+#pragma omp parallel for simd if (can_use_parallel(num_elements))
+      for (size_t i = 0; i < num_elements; ++i) {
+        data_result[i] = op(data_a[i], b_val);
+      }
+      return;
+    }
 #pragma omp parallel for simd if (can_use_parallel(num_elements))
     for (size_t i = 0; i < num_elements; ++i) {
       data_result[i] = op(data_a[i], data_b[i]);
