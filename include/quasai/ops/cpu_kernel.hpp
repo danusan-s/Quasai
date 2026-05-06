@@ -2,6 +2,13 @@
 
 #include "quasai/core/tensor.hpp"
 #include "quasai/ops/core_ops.hpp"
+
+#ifndef QUASAI_DISABLE_OPENBLAS
+extern "C" {
+#include <cblas.h>
+}
+#endif
+
 namespace quasai::ops {
 
 /// @brief Minimum elements for enabling OpenMP parallelization.
@@ -148,6 +155,44 @@ void do_sum_to_shape(const core::Tensor &a, core::Tensor &result) {
   }
 }
 
+#ifndef QUASAI_DISABLE_OPENBLAS
+/**
+ * @brief OpenBLAS matrix multiplication for float (contiguous, row-major).
+ */
+inline void do_matmul_openblas_float(const core::Tensor &a,
+                                     const core::Tensor &b,
+                                     core::Tensor &result) {
+  size_t M = a.shape()[0];
+  size_t K = a.shape()[1];
+  size_t N = b.shape()[1];
+
+  const float *A = a.data<float>();
+  const float *B = b.data<float>();
+  float *C = result.data<float>();
+
+  cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, (int)M, (int)N, (int)K,
+              1.0f, A, (int)K, B, (int)N, 0.0f, C, (int)N);
+}
+
+/**
+ * @brief OpenBLAS matrix multiplication for double (contiguous, row-major).
+ */
+inline void do_matmul_openblas_double(const core::Tensor &a,
+                                      const core::Tensor &b,
+                                      core::Tensor &result) {
+  size_t M = a.shape()[0];
+  size_t K = a.shape()[1];
+  size_t N = b.shape()[1];
+
+  const double *A = a.data<double>();
+  const double *B = b.data<double>();
+  double *C = result.data<double>();
+
+  cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, (int)M, (int)N, (int)K,
+              1.0, A, (int)K, B, (int)N, 0.0, C, (int)N);
+}
+#endif
+
 /**
  * @brief Fast matrix multiplication for contiguous tensors.
  * @tparam T Data type.
@@ -159,6 +204,17 @@ void do_sum_to_shape(const core::Tensor &a, core::Tensor &result) {
 template <typename T>
 void do_matmul_fast(const core::Tensor &a, const core::Tensor &b,
                     core::Tensor &result) {
+#ifndef QUASAI_DISABLE_OPENBLAS
+  if constexpr (std::is_same_v<T, float>) {
+    do_matmul_openblas_float(a, b, result);
+    return;
+  }
+  if constexpr (std::is_same_v<T, double>) {
+    do_matmul_openblas_double(a, b, result);
+    return;
+  }
+#endif
+
   size_t M = a.shape()[0];
   size_t K = a.shape()[1];
   size_t N = b.shape()[1];

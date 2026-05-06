@@ -15,8 +15,6 @@ if(ENABLE_SANITIZERS)
   add_link_options(${SANITIZER_FLAGS})
 endif()
 
-find_package(OpenMP)
-
 set(SRC_FILES
     src/quasai/nn/layer_norm.cpp
     src/quasai/nn/model.cpp
@@ -50,13 +48,40 @@ add_library(quasai STATIC
 )
 set_target_properties(quasai PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+target_compile_options(quasai PRIVATE -march=native)
+
 target_include_directories(quasai PUBLIC
     ${CMAKE_SOURCE_DIR}/include
 )
 
+include(FetchContent)
 
-if(OpenMP_CXX_FOUND)
+find_package(OpenMP QUIET)
+
+if(OpenMP_FOUND AND TARGET OpenMP::OpenMP_CXX)
     target_link_libraries(quasai PUBLIC OpenMP::OpenMP_CXX)
+else()
+  message(STATUS "OpenMP not found - building without OpenMP support, Large operations may be slower")
+endif()
+
+
+find_package(BLAS QUIET)
+
+if(BLAS_FOUND AND TARGET BLAS::BLAS)
+    target_link_libraries(quasai PUBLIC BLAS::BLAS)
+else()
+    message(STATUS "BLAS not found - fetching OpenBLAS")
+
+    FetchContent_Declare(
+        openblas
+        GIT_REPOSITORY https://github.com/OpenMathLib/OpenBLAS.git
+        GIT_TAG v0.3.28
+    )
+
+    FetchContent_MakeAvailable(openblas)
+
+    # OpenBLAS target name depends on build, this is typical:
+    target_link_libraries(quasai PUBLIC openblas)
 endif()
 
 # Benchmarks (optional)
