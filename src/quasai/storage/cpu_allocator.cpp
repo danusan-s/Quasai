@@ -10,30 +10,9 @@ namespace quasai::storage {
 static constexpr size_t POOL_SIZE = 1024 * 1024 * 1024; // 1 GB
 static constexpr size_t ALIGNMENT = 64;                 // Cache line size
 
-size_t CpuAllocator::align(std::size_t size) {
+static size_t align(std::size_t size) {
   const size_t alignment = ALIGNMENT;
   return (size + (alignment - 1)) & ~(alignment - 1);
-}
-
-Block *CpuAllocator::split_block(Block *block, std::size_t size) {
-  if (block->size == size) {
-    block->allocated = true;
-    allocations_[block->ptr] = block; // Track allocation for deallocation
-    return nullptr;                   // No split needed
-  }
-
-  Block *new_block = new Block{static_cast<char *>(block->ptr) + size,
-                               block->size - size, false, block, block->next};
-  if (new_block->next) {
-    new_block->next->prev = new_block;
-  } else {
-    tail_ = new_block; // Update tail if this is the last block
-  }
-  block->next = new_block;
-  block->size = size;
-  block->allocated = true;
-  allocations_[block->ptr] = block; // Track allocation for deallocation
-  return new_block;
 }
 
 static void add_to_bin(std::array<std::vector<Block *>, NUM_BINS> &bins,
@@ -43,6 +22,27 @@ static void add_to_bin(std::array<std::vector<Block *>, NUM_BINS> &bins,
   if (ind < NUM_BINS) {
     bins[ind].push_back(block);
   }
+}
+
+void CpuAllocator::split_allocate(Block *block, std::size_t size) {
+  if (block->size == size) {
+    block->allocated = true;
+    allocations_[block->ptr] = block; // Track allocation for deallocation
+    return;
+  }
+
+  Block *new_block = new Block{static_cast<char *>(block->ptr) + size,
+                               block->size - size, false, block, block->next};
+  if (new_block->next) {
+    new_block->next->prev = new_block;
+  } else {
+    tail_ = new_block; // Update tail if this is the last block
+  }
+  add_to_bin(free_bins_, new_block); // Add the new free block to bins
+  block->next = new_block;
+  block->size = size;
+  block->allocated = true;
+  allocations_[block->ptr] = block; // Track allocation for deallocation
 }
 
 static void remove_from_bin(std::array<std::vector<Block *>, NUM_BINS> &bins,
@@ -73,20 +73,46 @@ void *CpuAllocator::allocate(std::size_t size) {
     for (size_t ind = bin_ind; ind < NUM_BINS; ++ind) {
       if (!free_bins_[ind].empty()) {
         Block *b = free_bins_[ind].back();
-        Block *new_block = split_block(b, size);
         free_bins_[ind].pop_back();
-        if (new_block) {
-          add_to_bin(free_bins_, new_block);
-        }
+        split_allocate(b, size);
         return b->ptr;
       }
     }
   }
 
+  // Fast path: check tail block for a large enough free block
   if (!tail_->allocated && tail_->size >= size) {
     Block *b = tail_;
-    tail_ = split_block(tail_, size);
+    split_allocate(b, size);
     return b->ptr;
+  }
+
+  // Slow path: scan from head and coalesce on the fly
+  for (Block *b = head_; b; b = b->next) {
+    if (!b->allocated) {
+      remove_from_bin(free_bins_, b);
+
+      while (b->next && !b->next->allocated) {
+        Block *next = b->next;
+        remove_from_bin(free_bins_,
+                        next); // Remove free block from bins before merging
+        b->size += next->size;
+        b->next = next->next;
+        if (b->next) {
+          b->next->prev = b; // FIX linkage
+        }
+        delete next;
+      }
+
+      if (!b->next) {
+        tail_ = b; // Update tail if we merged to the end
+      }
+
+      if (b->size >= size) {
+        split_allocate(b, size);
+        return b->ptr;
+      }
+    }
   }
 
   throw std::bad_alloc();
@@ -102,35 +128,7 @@ void CpuAllocator::deallocate(void *ptr) {
   b->allocated = false;
   allocations_.erase(ptr); // Remove from tracking
 
-  while (b->next && !b->next->allocated) {
-    Block *next = b->next;
-    remove_from_bin(free_bins_,
-                    next); // Remove free block from bins before merging
-    b->size += next->size;
-    b->next = next->next;
-    if (b->next) {
-      b->next->prev = b; // FIX linkage
-    }
-    delete next;
-  }
-
-  while (b->prev && !b->prev->allocated) {
-    Block *prev = b->prev;
-    remove_from_bin(free_bins_,
-                    prev); // Remove free block from bins before merging
-    prev->size += b->size;
-    prev->next = b->next;
-    if (b->next) {
-      b->next->prev = prev; // FIX linkage
-    }
-    delete b;
-    b = prev; // continue merging from the combined block
-  }
-
-  if (!b->next) {
-    tail_ = b; // Update tail if we merged to the end
-  }
-  add_to_bin(free_bins_, b); // Add the (possibly coalesced) block back to bins
+  add_to_bin(free_bins_, b);
 }
 
 CpuAllocator &CpuAllocator::instance() {

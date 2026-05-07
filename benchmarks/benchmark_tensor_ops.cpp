@@ -23,14 +23,10 @@ static void BM_TensorAdd_Large2D(benchmark::State &state) {
       data1.data(), quasai::core::Shape{N, N}, quasai::core::DType::FLOAT32);
   quasai::core::Tensor b = quasai::core::Tensor::from_data(
       data2.data(), quasai::core::Shape{N, N}, quasai::core::DType::FLOAT32);
-  quasai::core::Tensor c = quasai::core::Tensor::empty(
-      quasai::core::Shape{N, N}, quasai::core::DType::FLOAT32);
 
   for (auto _ : state) {
-    quasai::core::dispatch_by_dtype(a.dtype(), [&]<typename T>() {
-      quasai::ops::do_binary_op<T>(a, b, c,
-                                   [](auto x, auto y) { return x + y; });
-    });
+    auto c = quasai::ops::add(a, b);
+    benchmark::DoNotOptimize(c);
   }
 
   state.SetItemsProcessed(state.iterations() * N * N);
@@ -47,13 +43,10 @@ static void BM_TensorMatmul_Large2D(benchmark::State &state) {
       data1.data(), quasai::core::Shape{N, N}, quasai::core::DType::FLOAT32);
   quasai::core::Tensor b = quasai::core::Tensor::from_data(
       data2.data(), quasai::core::Shape{N, N}, quasai::core::DType::FLOAT32);
-  quasai::core::Tensor c = quasai::core::Tensor::empty(
-      quasai::core::Shape{N, N}, quasai::core::DType::FLOAT32);
 
   for (auto _ : state) {
-    quasai::core::dispatch_by_dtype(a.dtype(), [&]<typename T>() {
-      quasai::ops::do_matmul_fast<T>(a, b, c);
-    });
+    auto c = quasai::ops::matmul(a, b);
+    benchmark::DoNotOptimize(c);
   }
 
   state.SetItemsProcessed(state.iterations() * N * N * N); // O(N^3)
@@ -104,14 +97,10 @@ static void BM_TensorScalarAdd_Large1D(benchmark::State &state) {
       data.data(), quasai::core::Shape{N}, quasai::core::DType::FLOAT32);
   quasai::core::Tensor b = quasai::core::Tensor::from_scalar(
       scalar_val, quasai::core::DType::FLOAT32);
-  quasai::core::Tensor c = quasai::core::Tensor::empty(
-      quasai::core::Shape{N}, quasai::core::DType::FLOAT32);
 
   for (auto _ : state) {
-    quasai::core::dispatch_by_dtype(a.dtype(), [&]<typename T>() {
-      quasai::ops::do_binary_op<T>(a, b, c,
-                                   [](auto x, auto y) { return x + y; });
-    });
+    auto c = quasai::ops::add(a, b);
+    benchmark::DoNotOptimize(c);
   }
 
   state.SetItemsProcessed(state.iterations() * N);
@@ -125,13 +114,10 @@ static void BM_ReLU_Large2D(benchmark::State &state) {
 
   quasai::core::Tensor a = quasai::core::Tensor::from_data(
       data.data(), quasai::core::Shape{N, N}, quasai::core::DType::FLOAT32);
-  quasai::core::Tensor b = quasai::core::Tensor::empty(
-      quasai::core::Shape{N, N}, quasai::core::DType::FLOAT32);
 
   for (auto _ : state) {
-    quasai::core::dispatch_by_dtype(a.dtype(), [&]<typename T>() {
-      quasai::ops::do_unary_op<T>(a, b, [](auto x) { return x > 0 ? x : 0; });
-    });
+    auto r = quasai::ops::relu(a);
+    benchmark::DoNotOptimize(r);
   }
 
   state.SetItemsProcessed(state.iterations() * N * N);
