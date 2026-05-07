@@ -1,8 +1,10 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <cstdlib>
 #include <unordered_map>
+#include <vector>
 
 namespace quasai::storage {
 
@@ -14,6 +16,8 @@ struct Block {
   Block *prev; // physically adjacent
   Block *next;
 };
+
+static constexpr size_t NUM_BINS = 32;
 
 /**
  * @brief Abstract base class for memory allocators.
@@ -43,11 +47,15 @@ public:
   static CpuAllocator &instance();
 
   size_t align(std::size_t size);
-  void split_block(Block *block, std::size_t size);
+  Block *split_block(Block *block, std::size_t size);
 
 private:
   std::unordered_map<void *, Block *>
-      allocations_;       // Map from ptr to block for deallocation
+      allocations_; // Map from ptr to block for deallocation
+  std::array<std::vector<Block *>, NUM_BINS>
+      free_bins_; // Free lists for different size classes
+  std::array<std::vector<Block *>, NUM_BINS>
+      free_log_bins_;     // Free lists for different size classes
   Block *head_ = nullptr; // Start of the memory pool
   Block *tail_ = nullptr; // End of the memory pool
   CpuAllocator();

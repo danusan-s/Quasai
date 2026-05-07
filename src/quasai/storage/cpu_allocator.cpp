@@ -1,18 +1,23 @@
 #include "quasai/storage/allocator.hpp"
+#include <algorithm>
+#include <cassert>
 #include <iostream>
 #include <new>
 #include <stdexcept>
 
 namespace quasai::storage {
 
+static constexpr size_t POOL_SIZE = 1024 * 1024 * 1024; // 1 GB
+static constexpr size_t ALIGNMENT = 64;                 // Cache line size
+
 size_t CpuAllocator::align(std::size_t size) {
-  const size_t alignment = 64; // Cache line size
+  const size_t alignment = ALIGNMENT;
   return (size + (alignment - 1)) & ~(alignment - 1);
 }
 
-void CpuAllocator::split_block(Block *block, std::size_t size) {
-  if (block->size < size) {
-    throw std::bad_alloc();
+Block *CpuAllocator::split_block(Block *block, std::size_t size) {
+  if (block->size == size) {
+    return nullptr; // No split needed
   }
 
   Block *new_block = new Block{static_cast<char *>(block->ptr) + size,
@@ -25,6 +30,30 @@ void CpuAllocator::split_block(Block *block, std::size_t size) {
   block->next = new_block;
   block->size = size;
   block->allocated = true;
+  return new_block;
+}
+
+static void add_to_bin(std::array<std::vector<Block *>, NUM_BINS> &bins,
+                       Block *block) {
+  assert(block->allocated == false);
+  size_t ind = block->size / ALIGNMENT;
+  if (ind < NUM_BINS) {
+    bins[ind].push_back(block);
+  }
+}
+
+static void remove_from_bin(std::array<std::vector<Block *>, NUM_BINS> &bins,
+                            Block *block) {
+  assert(block->allocated == false);
+  size_t ind = block->size / ALIGNMENT;
+  if (ind < NUM_BINS) {
+    auto &bin = bins[ind];
+    auto it = std::find(bin.begin(), bin.end(), block);
+    if (it != bin.end()) {
+      *it = bin.back();
+      bin.pop_back();
+    }
+  }
 }
 
 void *CpuAllocator::allocate(std::size_t size) {
@@ -33,21 +62,30 @@ void *CpuAllocator::allocate(std::size_t size) {
   }
 
   size = align(size);
+  size_t bin_ind = size / ALIGNMENT;
 
-  // Fast path: check tail first for a large enough free block
-  if (!tail_->allocated && tail_->size >= size) {
-    Block *b = tail_;
-    split_block(b, size);
-    allocations_[b->ptr] = b; // Track allocation for deallocation
-    return b->ptr;
+  // Fast path: check free bins for a suitable block
+  // If really large, take last big block. Dont put tail in bins
+  if (bin_ind < NUM_BINS) {
+    for (size_t ind = bin_ind; ind < NUM_BINS; ++ind) {
+      if (!free_bins_[ind].empty()) {
+        Block *b = free_bins_[ind].back();
+        Block *new_block = split_block(b, size);
+        allocations_[b->ptr] = b; // Track allocation for deallocation
+        free_bins_[ind].pop_back();
+        if (new_block) {
+          add_to_bin(free_bins_, new_block);
+        }
+        return b->ptr;
+      }
+    }
   }
 
-  for (Block *b = head_; b != nullptr; b = b->next) {
-    if (!b->allocated && b->size >= size) {
-      split_block(b, size);
-      allocations_[b->ptr] = b; // Track allocation for deallocation
-      return b->ptr;
-    }
+  if (!tail_->allocated && tail_->size >= size) {
+    Block *b = tail_;
+    tail_ = split_block(tail_, size);
+    allocations_[b->ptr] = b; // Track allocation for deallocation
+    return b->ptr;
   }
 
   throw std::bad_alloc();
@@ -64,6 +102,8 @@ void CpuAllocator::deallocate(void *ptr) {
 
   while (b->next && !b->next->allocated) {
     Block *next = b->next;
+    remove_from_bin(free_bins_,
+                    next); // Remove free block from bins before merging
     b->size += next->size;
     b->next = next->next;
     if (b->next) {
@@ -74,6 +114,8 @@ void CpuAllocator::deallocate(void *ptr) {
 
   while (b->prev && !b->prev->allocated) {
     Block *prev = b->prev;
+    remove_from_bin(free_bins_,
+                    prev); // Remove free block from bins before merging
     prev->size += b->size;
     prev->next = b->next;
     if (b->next) {
@@ -86,6 +128,7 @@ void CpuAllocator::deallocate(void *ptr) {
   if (!b->next) {
     tail_ = b; // Update tail if we merged to the end
   }
+  add_to_bin(free_bins_, b); // Add the (possibly coalesced) block back to bins
 }
 
 CpuAllocator &CpuAllocator::instance() {
@@ -95,10 +138,10 @@ CpuAllocator &CpuAllocator::instance() {
 
 CpuAllocator::CpuAllocator() {
   // Create a memory pool for allocations
-  size_t pool_size = 1024 * 1024 * 1024; // 1 GB
+  size_t pool_size = POOL_SIZE;
   Block *head = new Block{nullptr, pool_size, false, nullptr, nullptr};
 
-  head->ptr = std::aligned_alloc(64, pool_size);
+  head->ptr = std::aligned_alloc(ALIGNMENT, pool_size);
 
   if (!head->ptr) {
     throw std::bad_alloc();
