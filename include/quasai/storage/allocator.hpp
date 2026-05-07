@@ -49,6 +49,8 @@ public:
   size_t align(std::size_t size);
   Block *split_block(Block *block, std::size_t size);
 
+  ~CpuAllocator();
+
 private:
   std::unordered_map<void *, Block *>
       allocations_; // Map from ptr to block for deallocation

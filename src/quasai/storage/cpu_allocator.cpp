@@ -17,7 +17,9 @@ size_t CpuAllocator::align(std::size_t size) {
 
 Block *CpuAllocator::split_block(Block *block, std::size_t size) {
   if (block->size == size) {
-    return nullptr; // No split needed
+    block->allocated = true;
+    allocations_[block->ptr] = block; // Track allocation for deallocation
+    return nullptr;                   // No split needed
   }
 
   Block *new_block = new Block{static_cast<char *>(block->ptr) + size,
@@ -30,6 +32,7 @@ Block *CpuAllocator::split_block(Block *block, std::size_t size) {
   block->next = new_block;
   block->size = size;
   block->allocated = true;
+  allocations_[block->ptr] = block; // Track allocation for deallocation
   return new_block;
 }
 
@@ -71,7 +74,6 @@ void *CpuAllocator::allocate(std::size_t size) {
       if (!free_bins_[ind].empty()) {
         Block *b = free_bins_[ind].back();
         Block *new_block = split_block(b, size);
-        allocations_[b->ptr] = b; // Track allocation for deallocation
         free_bins_[ind].pop_back();
         if (new_block) {
           add_to_bin(free_bins_, new_block);
@@ -84,7 +86,6 @@ void *CpuAllocator::allocate(std::size_t size) {
   if (!tail_->allocated && tail_->size >= size) {
     Block *b = tail_;
     tail_ = split_block(tail_, size);
-    allocations_[b->ptr] = b; // Track allocation for deallocation
     return b->ptr;
   }
 
@@ -96,6 +97,7 @@ void CpuAllocator::deallocate(void *ptr) {
   if (it == allocations_.end()) {
     throw std::invalid_argument("Invalid pointer deallocation");
   }
+
   Block *b = it->second;
   b->allocated = false;
   allocations_.erase(ptr); // Remove from tracking
@@ -149,6 +151,17 @@ CpuAllocator::CpuAllocator() {
 
   head_ = head;
   tail_ = head;
+}
+
+CpuAllocator::~CpuAllocator() {
+  // Free the entire memory pool
+  free(head_->ptr);
+  Block *current = head_;
+  while (current) {
+    Block *next = current->next;
+    delete current;
+    current = next;
+  }
 }
 
 } // namespace quasai::storage
