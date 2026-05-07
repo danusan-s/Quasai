@@ -34,12 +34,6 @@ inline bool can_use_parallel_matmul(size_t M, size_t N, size_t BS) {
   return num_tiles > MIN_NUM_TILES_FOR_PARALLEL_MATMUL;
 }
 
-inline bool can_fast_path(const core::Tensor &a, const core::Tensor &b) {
-  return (a.shape().dimensions() == 0 || b.shape().dimensions() == 0 ||
-          a.shape() == b.shape()) &&
-         a.is_contiguous() && b.is_contiguous();
-}
-
 /**
  * @brief Execute a binary operation with optional OpenMP parallelization.
  * @tparam T Data type of the tensors.
@@ -55,35 +49,38 @@ void do_binary_op(const core::Tensor &a, const core::Tensor &b,
                   core::Tensor &result, std::function<T(T, T)> op) {
   const core::Shape &out_shape = result.shape();
 
+  bool a_is_scalar = (a.shape().dimensions() == 0);
+  bool b_is_scalar = (b.shape().dimensions() == 0);
   // Fast path: no broadcasting, both contiguous -> flat access
-  if (can_fast_path(a, b)) {
+  if (a_is_scalar || b_is_scalar ||
+      (a.shape() == b.shape() && a.is_contiguous() && b.is_contiguous())) {
     const size_t num_elements = total_size(out_shape);
     const T *data_a = a.data<T>();
     const T *data_b = b.data<T>();
     T *data_result = result.data<T>();
-
-    bool a_is_scalar = (a.shape().dimensions() == 0);
-    bool b_is_scalar = (b.shape().dimensions() == 0);
 
     if (a_is_scalar && b_is_scalar) {
       data_result[0] = op(data_a[0], data_b[0]);
       return;
     } else if (a_is_scalar) {
       T a_val = data_a[0];
-#pragma omp parallel for simd if (can_use_parallel(num_elements))
+#pragma omp parallel for simd schedule(                                        \
+        static) if (can_use_parallel(num_elements))
       for (size_t i = 0; i < num_elements; ++i) {
         data_result[i] = op(a_val, data_b[i]);
       }
       return;
     } else if (b_is_scalar) {
       T b_val = data_b[0];
-#pragma omp parallel for simd if (can_use_parallel(num_elements))
+#pragma omp parallel for simd schedule(                                        \
+        static) if (can_use_parallel(num_elements))
       for (size_t i = 0; i < num_elements; ++i) {
         data_result[i] = op(data_a[i], b_val);
       }
       return;
     }
-#pragma omp parallel for simd if (can_use_parallel(num_elements))
+#pragma omp parallel for simd schedule(                                        \
+        static) if (can_use_parallel(num_elements))
     for (size_t i = 0; i < num_elements; ++i) {
       data_result[i] = op(data_a[i], data_b[i]);
     }
@@ -103,7 +100,8 @@ void do_binary_op(const core::Tensor &a, const core::Tensor &b,
   const core::Strides &strides_b = b_exp.strides();
   const size_t ndim = out_shape.dimensions();
 
-#pragma omp parallel for if (can_use_parallel(num_elements))
+#pragma omp parallel for simd schedule(                                        \
+        static) if (can_use_parallel(num_elements))
   for (size_t i = 0; i < num_elements; ++i) {
     core::Index idx = unravel_index(i, out_shape);
     size_t linear_a = 0, linear_b = 0;
@@ -131,7 +129,8 @@ void do_unary_op(const core::Tensor &a, core::Tensor &result,
   const T *data_a = a.data<T>();
   T *data_result = result.data<T>();
 
-#pragma omp parallel for simd if (can_use_parallel(num_elements))
+#pragma omp parallel for simd schedule(                                        \
+        static) if (can_use_parallel(num_elements))
   for (size_t i = 0; i < num_elements; ++i) {
     data_result[i] = op(data_a[i]);
   }
@@ -149,8 +148,8 @@ template <typename T> void do_sum(const core::Tensor &a, core::Tensor &result) {
   T *data_result = result.data<T>();
 
   T sum = 0;
-#pragma omp parallel for simd reduction(                                       \
-        + : sum) if (can_use_parallel_reduction(num_elements))
+#pragma omp parallel for simd schedule(static)                                 \
+    reduction(+ : sum) if (can_use_parallel_reduction(num_elements))
   for (size_t i = 0; i < num_elements; ++i) {
     sum += data_a[i];
   }
@@ -222,6 +221,7 @@ inline void do_matmul_openblas_double(const core::Tensor &a,
 
 /**
  * @brief Fast matrix multiplication for contiguous tensors.
+ * @detail use OpenBLAS is available and data type is float/double
  * @tparam T Data type.
  * @param a First tensor (M x K, contiguous).
  * @param b Second tensor (K x N, contiguous).
@@ -256,7 +256,8 @@ void do_matmul_fast(const core::Tensor &a, const core::Tensor &b,
   const size_t BK = 256; // Block cols of A / rows of B (L1 cache)
   const size_t BN = 64;  // Block cols of B/C
 
-#pragma omp parallel for collapse(2) if (can_use_parallel_matmul(M, N, BN))
+#pragma omp parallel for schedule(static)                                      \
+    collapse(2) if (can_use_parallel_matmul(M, N, BN))
   for (size_t ii = 0; ii < M; ii += BM) {
     for (size_t jj = 0; jj < N; jj += BN) {
       // Micro-panel: accumulate in registers
@@ -305,7 +306,8 @@ void do_matmul_slow(const core::Tensor &a, const core::Tensor &b,
   const size_t BK = 256;
   const size_t BN = 64;
 
-#pragma omp parallel for collapse(2) if (can_use_parallel_matmul(M, N, BN))
+#pragma omp parallel for schedule(static)                                      \
+    collapse(2) if (can_use_parallel_matmul(M, N, BN))
   for (size_t ii = 0; ii < M; ii += BM) {
     for (size_t jj = 0; jj < N; jj += BN) {
       for (size_t kk = 0; kk < K; kk += BK) {
@@ -379,7 +381,7 @@ void do_contiguous_copy(const core::Tensor &a, core::Tensor &result) {
   const T *data_a = a.data<T>();
   T *data_result = result.data<T>();
 
-#pragma omp parallel for if (can_use_parallel(num_elements))
+#pragma omp parallel for schedule(static) if (can_use_parallel(num_elements))
   for (size_t i = 0; i < num_elements; ++i) {
     core::Index idx_a = unravel_index(i, a_shape);
     data_result[i] = data_a[ravel_index(idx_a, a_strides)];
