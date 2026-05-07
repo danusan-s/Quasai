@@ -161,7 +161,7 @@ int main() {
 
 ---
 
-**Disclaimer:** This is **not** a production-ready framework and is intended as a skills demonstration. The API is subject to change as the project evolves. Feedback is welcome.
+**Disclaimer:** This is **not** a production-ready framework and is intended as a skills demonstration. The API is subject to change as the project evolves. Feedback is welcome. Changes made in other branches are experimental and may be broken. Please refer to the main branch for the most stable version.
 
 ---
 
