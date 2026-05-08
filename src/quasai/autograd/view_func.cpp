@@ -52,10 +52,9 @@ ExpandFunction::backward(const core::Tensor &grad_output) {
 
 std::vector<core::Tensor>
 MakeContiguousFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input = inputs[0];
   LOG_DEBUG(("MakeContiguousFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
-             ", input shape = " + input.shape().to_string())
+             ", input shape = " + inputs[0].shape().to_string())
                 .c_str());
 
   return {grad_output};

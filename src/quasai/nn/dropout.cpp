@@ -1,5 +1,6 @@
 #include "quasai/nn/modules/dropout.hpp"
 
+#include "quasai/core/shape.hpp"
 #include "quasai/ops/cpu_kernel.hpp"
 #include "quasai/utils/random.hpp"
 
@@ -21,10 +22,11 @@ core::Tensor Dropout::forward(const core::Tensor &input) {
     auto &engine = utils::RNG::instance().engine();
 
     dispatch_by_dtype(input.dtype(), [&]<typename T>() {
-      ops::do_unary_op<T>(input, mask, [&dist, &engine, this](T x) {
-        return dist(engine) ? static_cast<T>(1.0f / (1.0f - p_))
-                            : static_cast<T>(0);
-      });
+      T *mask_data = mask.data<T>();
+      for (size_t i = 0; i < core::total_size(mask.shape()); ++i) {
+        mask_data[i] = dist(engine) ? static_cast<T>(1.0f / (1.0f - p_))
+                                    : static_cast<T>(0);
+      }
     });
 
     return ops::mul(input, mask);

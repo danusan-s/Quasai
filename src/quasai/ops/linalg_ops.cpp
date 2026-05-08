@@ -39,7 +39,6 @@ core::Tensor matmul(const core::Tensor &a, const core::Tensor &b) {
   }
 
   const size_t M = a.shape()[0];
-  const size_t K = a.shape()[1];
   const size_t N = b.shape()[1];
 
   core::Shape result_shape{M, N};

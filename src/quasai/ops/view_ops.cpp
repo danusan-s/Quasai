@@ -93,8 +93,6 @@ core::Tensor make_contiguous(const core::Tensor &a) {
 
   core::Tensor result = core::Tensor::empty(a.shape(), a.dtype(), a.device());
 
-  size_t num_elements = core::total_size(a.shape());
-
   dispatch_by_dtype(a.dtype(),
                     [&]<typename T>() { do_contiguous_copy<T>(a, result); });
 
