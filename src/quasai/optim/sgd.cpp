@@ -19,10 +19,10 @@ void SGD::step() {
   const size_t num_params = parameters_.size();
   for (size_t i = 0; i < num_params; ++i) {
     nn::Parameter &param = parameters_[i];
-    if (!param.autograd_meta() || !param.autograd_meta()->requires_grad) {
+    if (!autograd::tensor_requires_grad(param)) {
       continue;
     }
-    core::Tensor grad = param.autograd_meta()->grad;
+    core::Tensor grad = param.autograd_meta()->grad_;
 
     core::Tensor &velocity = gradients_[i];
 
@@ -50,8 +50,8 @@ void SGD::zero_grad() {
   }
 
   for (nn::Parameter &param : parameters_) {
-    if (param.autograd_meta() && param.autograd_meta()->requires_grad) {
-      core::Tensor grad = param.autograd_meta()->grad;
+    if (autograd::tensor_requires_grad(param)) {
+      core::Tensor grad = param.autograd_meta()->grad_;
       std::memset(grad.buffer()->raw_data(), 0, grad.buffer()->size());
     }
   }

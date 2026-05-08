@@ -20,7 +20,7 @@ public:
    *  Used by the engine to traverse the compute graph and propagate
    *  gradients to these inputs.
    */
-  std::vector<core::Tensor> inputs;
+  std::vector<core::Tensor> inputs_;
 };
 
 /**

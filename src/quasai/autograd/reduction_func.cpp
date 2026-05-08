@@ -8,7 +8,7 @@ namespace quasai::autograd {
 
 std::vector<core::Tensor>
 SumFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input = inputs[0];
+  const core::Tensor &input = inputs_[0];
   LOG_DEBUG(("SumFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
              ", input shape = " + input.shape().to_string())
@@ -22,7 +22,7 @@ SumFunction::backward(const core::Tensor &grad_output) {
 
 std::vector<core::Tensor>
 SumToShapeFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input = inputs[0];
+  const core::Tensor &input = inputs_[0];
   LOG_DEBUG(("SumToShapeFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
              ", input shape = " + input.shape().to_string())

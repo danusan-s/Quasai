@@ -84,7 +84,7 @@ TEST(Add, GradientA) {
   quasai::core::Tensor output = quasai::ops::add(input_a, input_b);
   output.backward();
 
-  quasai::core::Tensor grad_a = input_a.autograd_meta()->grad;
+  quasai::core::Tensor grad_a = input_a.autograd_meta()->grad_;
   float computed_grad_a = grad_a.data<float>()[0];
 
   float f_plus = (val_a + eps) + val_b;
@@ -110,7 +110,7 @@ TEST(Add, GradientB) {
   quasai::core::Tensor output = quasai::ops::add(input_a, input_b);
   output.backward();
 
-  quasai::core::Tensor grad_b = input_b.autograd_meta()->grad;
+  quasai::core::Tensor grad_b = input_b.autograd_meta()->grad_;
   float computed_grad_b = grad_b.data<float>()[0];
 
   float f_plus = val_a + (val_b + eps);

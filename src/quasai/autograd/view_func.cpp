@@ -7,7 +7,7 @@ namespace quasai::autograd {
 
 std::vector<core::Tensor>
 TransposeFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input = inputs[0];
+  const core::Tensor &input = inputs_[0];
   LOG_DEBUG(("TransposeFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
              ", input shape = " + input.shape().to_string())
@@ -22,7 +22,7 @@ TransposeFunction::backward(const core::Tensor &grad_output) {
 
 std::vector<core::Tensor>
 ReshapeFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input = inputs[0];
+  const core::Tensor &input = inputs_[0];
   LOG_DEBUG(("ReshapeFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
              ", input shape = " + input.shape().to_string())
@@ -37,7 +37,7 @@ ReshapeFunction::backward(const core::Tensor &grad_output) {
 
 std::vector<core::Tensor>
 ExpandFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input = inputs[0];
+  const core::Tensor &input = inputs_[0];
   LOG_DEBUG(("ExpandFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
              ", input shape = " + input.shape().to_string())
@@ -54,7 +54,7 @@ std::vector<core::Tensor>
 MakeContiguousFunction::backward(const core::Tensor &grad_output) {
   LOG_DEBUG(("MakeContiguousFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
-             ", input shape = " + inputs[0].shape().to_string())
+             ", input shape = " + inputs_[0].shape().to_string())
                 .c_str());
 
   return {grad_output};

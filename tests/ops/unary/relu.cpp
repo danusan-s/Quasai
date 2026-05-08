@@ -55,7 +55,7 @@ TEST(Relu, GradientPositive) {
   quasai::core::Tensor output = quasai::ops::relu(input);
   output.backward();
 
-  quasai::core::Tensor grad = input.autograd_meta()->grad;
+  quasai::core::Tensor grad = input.autograd_meta()->grad_;
   float computed_grad = grad.data<float>()[0];
 
   float f_plus = (val + eps > 0) ? (val + eps) : 0.0f;
@@ -77,7 +77,7 @@ TEST(Relu, GradientNegative) {
   quasai::core::Tensor output = quasai::ops::relu(input);
   output.backward();
 
-  quasai::core::Tensor grad = input.autograd_meta()->grad;
+  quasai::core::Tensor grad = input.autograd_meta()->grad_;
   float computed_grad = grad.data<float>()[0];
 
   float f_plus = (val + eps > 0) ? (val + eps) : 0.0f;

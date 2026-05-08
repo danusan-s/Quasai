@@ -69,7 +69,7 @@ TEST(Sum, Gradient) {
   quasai::core::Tensor output = quasai::ops::sum(input);
   output.backward();
 
-  quasai::core::Tensor grad = input.autograd_meta()->grad;
+  quasai::core::Tensor grad = input.autograd_meta()->grad_;
   float computed_grad_00 = grad.data<float>()[0];
 
   float f_plus = (1.0f + eps) + 2.0f + 3.0f + 4.0f;

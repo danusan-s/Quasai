@@ -13,12 +13,12 @@ TEST(Transpose, Float32) {
   const auto impl = result.get_impl_copy();
   const auto ref_impl = tensor.get_impl_copy();
 
-  EXPECT_EQ(impl.shape[0], ref_impl.shape[1]);
-  EXPECT_EQ(impl.shape[1], ref_impl.shape[0]);
-  EXPECT_EQ(impl.strides[0], ref_impl.strides[1]);
-  EXPECT_EQ(impl.strides[1], ref_impl.strides[0]);
-  EXPECT_EQ(impl.dtype, ref_impl.dtype);
-  EXPECT_EQ(impl.device.type, ref_impl.device.type);
+  EXPECT_EQ(impl.shape_[0], ref_impl.shape_[1]);
+  EXPECT_EQ(impl.shape_[1], ref_impl.shape_[0]);
+  EXPECT_EQ(impl.strides_[0], ref_impl.strides_[1]);
+  EXPECT_EQ(impl.strides_[1], ref_impl.strides_[0]);
+  EXPECT_EQ(impl.dtype_, ref_impl.dtype_);
+  EXPECT_EQ(impl.device_.type_, ref_impl.device_.type_);
 }
 
 TEST(Transpose, Float64) {
@@ -31,12 +31,12 @@ TEST(Transpose, Float64) {
   const auto impl = result.get_impl_copy();
   const auto ref_impl = tensor.get_impl_copy();
 
-  EXPECT_EQ(impl.shape[0], ref_impl.shape[1]);
-  EXPECT_EQ(impl.shape[1], ref_impl.shape[0]);
-  EXPECT_EQ(impl.strides[0], ref_impl.strides[1]);
-  EXPECT_EQ(impl.strides[1], ref_impl.strides[0]);
-  EXPECT_EQ(impl.dtype, ref_impl.dtype);
-  EXPECT_EQ(impl.device.type, ref_impl.device.type);
+  EXPECT_EQ(impl.shape_[0], ref_impl.shape_[1]);
+  EXPECT_EQ(impl.shape_[1], ref_impl.shape_[0]);
+  EXPECT_EQ(impl.strides_[0], ref_impl.strides_[1]);
+  EXPECT_EQ(impl.strides_[1], ref_impl.strides_[0]);
+  EXPECT_EQ(impl.dtype_, ref_impl.dtype_);
+  EXPECT_EQ(impl.device_.type_, ref_impl.device_.type_);
 }
 
 TEST(Transpose, AddWithTranspose) {
@@ -71,7 +71,7 @@ TEST(Transpose, Gradient) {
   quasai::core::Tensor output = quasai::ops::transpose(input);
   output.backward();
 
-  quasai::core::Tensor grad = input.autograd_meta()->grad;
+  quasai::core::Tensor grad = input.autograd_meta()->grad_;
   float computed_grad_00 = grad.data<float>()[0];
 
   std::vector<float> data_plus = {1.0f + eps, 2.0f, 3.0f, 4.0f};

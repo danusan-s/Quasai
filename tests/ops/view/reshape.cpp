@@ -69,7 +69,7 @@ TEST(Reshape, Gradient) {
       quasai::ops::reshape(input, quasai::core::Shape{4});
   output.backward();
 
-  quasai::core::Tensor grad = input.autograd_meta()->grad;
+  quasai::core::Tensor grad = input.autograd_meta()->grad_;
   float computed_grad_00 = grad.data<float>()[0];
 
   std::vector<float> data_plus = {1.0f + eps, 2.0f, 3.0f, 4.0f};

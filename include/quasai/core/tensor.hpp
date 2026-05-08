@@ -22,17 +22,17 @@ namespace quasai::core {
  *       (shape(), dtype(), etc.) instead of accessing this struct directly.
  */
 struct TensorImpl {
-  std::shared_ptr<storage::Buffer> buffer;
+  std::shared_ptr<storage::Buffer> buffer_;
 
-  Shape shape;
-  Strides strides;
-  size_t offset;
-  bool is_contiguous;
+  Shape shape_;
+  Strides strides_;
+  size_t offset_;
+  bool is_contiguous_;
 
-  DType dtype;
-  Device device;
+  DType dtype_;
+  Device device_;
 
-  std::shared_ptr<autograd::AutoGradMeta> autograd_meta;
+  std::shared_ptr<autograd::AutoGradMeta> autograd_meta_;
 };
 
 class Tensor {
@@ -134,7 +134,7 @@ public:
   static storage::Allocator *allocator_for_device(const Device &device);
 
   template <typename T> void check_valid_dtype() const {
-    if (impl_.dtype != DTypeTraits<T>::dtype) {
+    if (impl_.dtype_ != DTypeTraits<T>::dtype) {
       throw std::runtime_error(
           "Requested data type does not match tensor dtype");
     }
@@ -148,7 +148,7 @@ public:
    */
   template <typename T> T *data() {
     check_valid_dtype<T>();
-    return static_cast<T *>(impl_.buffer->raw_data()) + impl_.offset;
+    return static_cast<T *>(impl_.buffer_->raw_data()) + impl_.offset_;
   }
 
   /**
@@ -159,7 +159,7 @@ public:
    */
   template <typename T> const T *data() const {
     check_valid_dtype<T>();
-    return static_cast<const T *>(impl_.buffer->raw_data()) + impl_.offset;
+    return static_cast<const T *>(impl_.buffer_->raw_data()) + impl_.offset_;
   }
 
   /**
@@ -171,7 +171,7 @@ public:
    */
   template <typename T> T &at(Index index) {
     check_valid_dtype<T>();
-    size_t flat = ravel_index(index, impl_.strides);
+    size_t flat = ravel_index(index, impl_.strides_);
     return data<T>()[flat];
   }
 

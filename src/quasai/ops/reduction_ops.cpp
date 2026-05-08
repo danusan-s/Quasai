@@ -11,10 +11,9 @@ core::Tensor sum(const core::Tensor &a) {
   core::Tensor result =
       core::Tensor::empty(core::Shape{}, a.dtype(), a.device());
 
-  const std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
-  if (meta_a && meta_a->requires_grad) {
+  if (autograd::tensor_requires_grad(a)) {
     auto grad_fn = std::make_unique<autograd::SumFunction>();
-    grad_fn->inputs = {a};
+    grad_fn->inputs_ = {a};
     result.requires_grad(true);
     result.set_grad_fn(std::move(grad_fn));
   }
@@ -38,10 +37,9 @@ core::Tensor sum_to_shape(const core::Tensor &a, const core::Shape &target) {
 
   core::Tensor out = core::Tensor::zeros(target, a.dtype(), a.device());
 
-  const std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
-  if (meta_a && meta_a->requires_grad) {
+  if (autograd::tensor_requires_grad(a)) {
     auto grad_fn = std::make_unique<autograd::SumToShapeFunction>();
-    grad_fn->inputs = {a};
+    grad_fn->inputs_ = {a};
     out.requires_grad(true);
     out.set_grad_fn(std::move(grad_fn));
   }

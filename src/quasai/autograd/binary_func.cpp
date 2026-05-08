@@ -7,8 +7,8 @@ namespace quasai::autograd {
 
 std::vector<core::Tensor>
 AddFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input1 = inputs[0];
-  const core::Tensor &input2 = inputs[1];
+  const core::Tensor &input1 = inputs_[0];
+  const core::Tensor &input2 = inputs_[1];
   LOG_DEBUG(("AddFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
              ", input1 shape = " + input1.shape().to_string() +
@@ -30,8 +30,8 @@ AddFunction::backward(const core::Tensor &grad_output) {
 
 std::vector<core::Tensor>
 SubFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input1 = inputs[0];
-  const core::Tensor &input2 = inputs[1];
+  const core::Tensor &input1 = inputs_[0];
+  const core::Tensor &input2 = inputs_[1];
   LOG_DEBUG(("SubFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
              ", input1 shape = " + input1.shape().to_string() +
@@ -53,8 +53,8 @@ SubFunction::backward(const core::Tensor &grad_output) {
 
 std::vector<core::Tensor>
 MulFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input1 = inputs[0];
-  const core::Tensor &input2 = inputs[1];
+  const core::Tensor &input1 = inputs_[0];
+  const core::Tensor &input2 = inputs_[1];
   LOG_DEBUG(("MulFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
              ", input1 shape = " + input1.shape().to_string() +
@@ -77,8 +77,8 @@ MulFunction::backward(const core::Tensor &grad_output) {
 
 std::vector<core::Tensor>
 DivFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input1 = inputs[0];
-  const core::Tensor &input2 = inputs[1];
+  const core::Tensor &input1 = inputs_[0];
+  const core::Tensor &input2 = inputs_[1];
   LOG_DEBUG(("DivFunction backward: grad_output shape = " +
              grad_output.shape().to_string() +
              ", input1 shape = " + input1.shape().to_string() +

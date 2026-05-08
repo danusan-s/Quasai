@@ -10,15 +10,14 @@ namespace quasai::ops {
 inline void add_unary_gradient(
     const core::Tensor &a, core::Tensor &result,
     std::function<std::unique_ptr<autograd::Function>()> grad_fn_constructor) {
-  std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
 
-  if (meta_a && meta_a->requires_grad) {
+  if (autograd::tensor_requires_grad(a)) {
     auto grad_fn = grad_fn_constructor();
     if (!grad_fn) {
       throw std::runtime_error("Gradient function constructor returned nullptr "
                                "or not implemented for this operation");
     }
-    grad_fn->inputs = {a};
+    grad_fn->inputs_ = {a};
 
     result.requires_grad(true);
     result.set_grad_fn(std::move(grad_fn));
@@ -32,9 +31,9 @@ core::Tensor transpose(const core::Tensor &a) {
 
   core::TensorImpl impl_a_copy = a.get_impl_copy();
 
-  impl_a_copy.shape = core::Shape{a.shape()[1], a.shape()[0]};
-  impl_a_copy.strides = core::Strides{a.strides()[1], a.strides()[0]};
-  impl_a_copy.is_contiguous = false;
+  impl_a_copy.shape_ = core::Shape{a.shape()[1], a.shape()[0]};
+  impl_a_copy.strides_ = core::Strides{a.strides()[1], a.strides()[0]};
+  impl_a_copy.is_contiguous_ = false;
 
   core::Tensor result = core::Tensor::from_impl(impl_a_copy);
 
@@ -62,7 +61,7 @@ core::Tensor expand(const core::Tensor &a, const core::Shape &target) {
     if (i < a_dims && a_shape[a_dims - 1 - i] != 1) {
       if (a_shape[a_dims - 1 - i] == target[target.dimensions() - 1 - i]) {
         new_strides[target.dimensions() - 1 - i] =
-            impl_a_copy.strides[a_dims - 1 - i];
+            impl_a_copy.strides_[a_dims - 1 - i];
       } else {
         throw std::runtime_error(
             "Cannot expand dimension " + std::to_string(a_dims - i) +
@@ -75,9 +74,9 @@ core::Tensor expand(const core::Tensor &a, const core::Shape &target) {
     }
   }
 
-  impl_a_copy.shape = target;
-  impl_a_copy.strides = new_strides;
-  impl_a_copy.is_contiguous = false;
+  impl_a_copy.shape_ = target;
+  impl_a_copy.strides_ = new_strides;
+  impl_a_copy.is_contiguous_ = false;
 
   core::Tensor result = core::Tensor::from_impl(impl_a_copy);
 
@@ -116,8 +115,8 @@ core::Tensor reshape(const core::Tensor &a, const core::Shape &target) {
                 "reshaping");
     impl_a_copy = make_contiguous(a).get_impl_copy();
   }
-  impl_a_copy.shape = target;
-  impl_a_copy.strides = core::get_strides(target);
+  impl_a_copy.shape_ = target;
+  impl_a_copy.strides_ = core::get_strides(target);
 
   core::Tensor result = core::Tensor::from_impl(impl_a_copy);
 
@@ -147,8 +146,8 @@ core::Tensor slice(const core::Tensor &a, size_t start, size_t end) {
                              ", " + std::to_string(end) + ")");
   }
 
-  impl_a_copy.shape[0] = end - start;
-  impl_a_copy.offset += start * impl_a_copy.strides[0];
+  impl_a_copy.shape_[0] = end - start;
+  impl_a_copy.offset_ += start * impl_a_copy.strides_[0];
 
   return core::Tensor::from_impl(impl_a_copy);
 }

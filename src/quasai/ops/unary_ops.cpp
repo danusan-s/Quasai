@@ -11,15 +11,14 @@ namespace quasai::ops {
 inline void add_unary_gradient(
     const core::Tensor &a, core::Tensor &result,
     std::function<std::unique_ptr<autograd::Function>()> grad_fn_constructor) {
-  std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
 
-  if (meta_a && meta_a->requires_grad) {
+  if (autograd::tensor_requires_grad(a)) {
     auto grad_fn = grad_fn_constructor();
     if (!grad_fn) {
       throw std::runtime_error("Gradient function constructor returned nullptr "
                                "or not implemented for this operation");
     }
-    grad_fn->inputs = {a};
+    grad_fn->inputs_ = {a};
 
     result.requires_grad(true);
     result.set_grad_fn(std::move(grad_fn));

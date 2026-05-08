@@ -75,7 +75,7 @@ TEST(MakeContiguous, Gradient) {
   quasai::core::Tensor output = quasai::ops::make_contiguous(input);
   output.backward();
 
-  quasai::core::Tensor grad = input.autograd_meta()->grad;
+  quasai::core::Tensor grad = input.autograd_meta()->grad_;
   float computed_grad_00 = grad.data<float>()[0];
 
   std::vector<float> data_plus = {1.0f + eps, 2.0f, 3.0f, 4.0f};

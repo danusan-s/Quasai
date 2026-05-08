@@ -9,11 +9,11 @@ namespace quasai::autograd {
  * @brief Metadata attached to tensors that require gradient tracking.
  */
 struct AutoGradMeta {
-  core::Tensor grad;                 ///< Accumulated gradient.
-  std::unique_ptr<Function> grad_fn; ///< Function that produced this tensor.
-  bool requires_grad;                ///< Whether to track gradients.
+  core::Tensor grad_;                 ///< Accumulated gradient.
+  std::unique_ptr<Function> grad_fn_; ///< Function that produced this tensor.
+  bool requires_grad_;                ///< Whether to track gradients.
 
-  AutoGradMeta() : grad_fn(nullptr), requires_grad(false) {
+  AutoGradMeta() : grad_fn_(nullptr), requires_grad_(false) {
   }
 };
 
@@ -23,7 +23,7 @@ struct AutoGradMeta {
  * @return true if tensor has autograd_meta and requires_grad is set.
  */
 inline bool tensor_requires_grad(const core::Tensor &tensor) {
-  return tensor.autograd_meta() && tensor.autograd_meta()->requires_grad;
+  return tensor.autograd_meta() && tensor.autograd_meta()->requires_grad_;
 }
 
 } // namespace quasai::autograd

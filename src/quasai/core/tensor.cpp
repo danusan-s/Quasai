@@ -11,7 +11,7 @@ namespace quasai::core {
 using storage::Allocator;
 
 Allocator *Tensor::allocator_for_device(const Device &device) {
-  switch (device.type) {
+  switch (device.type_) {
     case DeviceType::CPU:
       return &storage::CpuAllocator::instance();
     case DeviceType::GPU_CUDA:
@@ -90,59 +90,59 @@ Tensor Tensor::from_data(const void *data, const Shape &shape, DType dtype,
 }
 
 Tensor Tensor::from_impl(const TensorImpl &impl) {
-  return Tensor(impl.buffer, impl.shape, impl.strides, impl.offset,
-                impl.is_contiguous, impl.dtype, impl.device);
+  return Tensor(impl.buffer_, impl.shape_, impl.strides_, impl.offset_,
+                impl.is_contiguous_, impl.dtype_, impl.device_);
 }
 
 std::shared_ptr<storage::Buffer> Tensor::buffer() const {
-  return impl_.buffer;
+  return impl_.buffer_;
 }
 
 const Shape &Tensor::shape() const {
-  return impl_.shape;
+  return impl_.shape_;
 }
 
 const Strides &Tensor::strides() const {
-  return impl_.strides;
+  return impl_.strides_;
 }
 
 bool Tensor::is_contiguous() const {
-  return impl_.is_contiguous;
+  return impl_.is_contiguous_;
 }
 
 DType Tensor::dtype() const {
-  return impl_.dtype;
+  return impl_.dtype_;
 }
 
 Device Tensor::device() const {
-  return impl_.device;
+  return impl_.device_;
 }
 
 std::shared_ptr<autograd::AutoGradMeta> Tensor::autograd_meta() const {
-  return impl_.autograd_meta;
+  return impl_.autograd_meta_;
 }
 
 void Tensor::requires_grad(bool grad_needed) {
-  if (!impl_.autograd_meta) {
-    impl_.autograd_meta = std::make_shared<autograd::AutoGradMeta>();
+  if (!impl_.autograd_meta_) {
+    impl_.autograd_meta_ = std::make_shared<autograd::AutoGradMeta>();
   }
-  impl_.autograd_meta->requires_grad = grad_needed;
+  impl_.autograd_meta_->requires_grad_ = grad_needed;
 }
 
 void Tensor::set_grad_fn(std::unique_ptr<autograd::Function> grad_fn) {
-  if (!impl_.autograd_meta) {
-    impl_.autograd_meta = std::make_shared<autograd::AutoGradMeta>();
+  if (!impl_.autograd_meta_) {
+    impl_.autograd_meta_ = std::make_shared<autograd::AutoGradMeta>();
   }
-  impl_.autograd_meta->grad_fn = std::move(grad_fn);
+  impl_.autograd_meta_->grad_fn_ = std::move(grad_fn);
 }
 
 bool Tensor::is_valid() const {
-  return impl_.buffer != nullptr;
+  return impl_.buffer_ != nullptr;
 }
 
 TensorImpl Tensor::get_impl_copy() const {
   TensorImpl copy = impl_;
-  copy.autograd_meta = nullptr;
+  copy.autograd_meta_ = nullptr;
   return copy;
 }
 

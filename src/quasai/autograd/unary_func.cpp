@@ -7,7 +7,7 @@ namespace quasai::autograd {
 
 std::vector<core::Tensor>
 NegFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input = inputs[0];
+  const core::Tensor &input = inputs_[0];
   LOG_DEBUG(("NegFunction backward: grad_output shape = " +
              grad_output.shape().to_string())
                 .c_str());
@@ -20,7 +20,7 @@ NegFunction::backward(const core::Tensor &grad_output) {
 
 std::vector<core::Tensor>
 AbsFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input = inputs[0];
+  const core::Tensor &input = inputs_[0];
   LOG_DEBUG(
       ("AbsFunction backward: input shape = " + input.shape().to_string() +
        ", grad_output shape = " + grad_output.shape().to_string())
@@ -34,7 +34,7 @@ AbsFunction::backward(const core::Tensor &grad_output) {
 
 std::vector<core::Tensor>
 HeavisideFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input = inputs[0];
+  const core::Tensor &input = inputs_[0];
   LOG_DEBUG(("HeavisideFunction backward: input shape = " +
              input.shape().to_string() +
              ", grad_output shape = " + grad_output.shape().to_string())
@@ -49,7 +49,7 @@ HeavisideFunction::backward(const core::Tensor &grad_output) {
 
 std::vector<core::Tensor>
 SignumFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input = inputs[0];
+  const core::Tensor &input = inputs_[0];
   LOG_DEBUG(
       ("SignumFunction backward: input shape = " + input.shape().to_string() +
        ", grad_output shape = " + grad_output.shape().to_string())
@@ -64,7 +64,7 @@ SignumFunction::backward(const core::Tensor &grad_output) {
 
 std::vector<core::Tensor>
 ReluFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input = inputs[0];
+  const core::Tensor &input = inputs_[0];
   LOG_DEBUG(
       ("ReluFunction backward: input shape = " + input.shape().to_string() +
        ", grad_output shape = " + grad_output.shape().to_string())
@@ -78,7 +78,7 @@ ReluFunction::backward(const core::Tensor &grad_output) {
 
 std::vector<core::Tensor>
 SigmoidFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input = inputs[0];
+  const core::Tensor &input = inputs_[0];
   LOG_DEBUG(
       ("SigmoidFunction backward: input shape = " + input.shape().to_string() +
        ", grad_output shape = " + grad_output.shape().to_string())
@@ -96,7 +96,7 @@ SigmoidFunction::backward(const core::Tensor &grad_output) {
 
 std::vector<core::Tensor>
 TanhFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input = inputs[0];
+  const core::Tensor &input = inputs_[0];
   LOG_DEBUG(
       ("TanhFunction backward: input shape = " + input.shape().to_string() +
        ", grad_output shape = " + grad_output.shape().to_string())
@@ -113,7 +113,7 @@ TanhFunction::backward(const core::Tensor &grad_output) {
 
 std::vector<core::Tensor>
 PowFunction::backward(const core::Tensor &grad_output) {
-  const core::Tensor &input = inputs[0];
+  const core::Tensor &input = inputs_[0];
   LOG_DEBUG(
       ("PowFunction backward: input shape = " + input.shape().to_string() +
        ", grad_output shape = " + grad_output.shape().to_string())

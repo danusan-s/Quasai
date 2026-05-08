@@ -22,16 +22,13 @@ void add_binary_gradient(
     const core::Tensor &a, const core::Tensor &b, core::Tensor &result,
     std::function<std::unique_ptr<autograd::Function>()> grad_fn_constructor) {
 
-  std::shared_ptr<autograd::AutoGradMeta> meta_a = a.autograd_meta();
-  std::shared_ptr<autograd::AutoGradMeta> meta_b = b.autograd_meta();
-
-  if ((meta_a && meta_a->requires_grad) || (meta_b && meta_b->requires_grad)) {
+  if (autograd::tensor_requires_grad(a) || autograd::tensor_requires_grad(b)) {
     auto grad_fn = grad_fn_constructor();
     if (!grad_fn) {
       throw std::runtime_error("Gradient function constructor returned nullptr "
                                "or not implemented for this operation");
     }
-    grad_fn->inputs = {a, b};
+    grad_fn->inputs_ = {a, b};
     result.requires_grad(true);
     result.set_grad_fn(std::move(grad_fn));
   }

@@ -31,11 +31,11 @@ TEST(AutoGradEngineTest, BackwardSimpleGraph) {
   std::shared_ptr<quasai::autograd::AutoGradMeta> meta_a = a.autograd_meta();
   std::shared_ptr<quasai::autograd::AutoGradMeta> meta_b = b.autograd_meta();
 
-  EXPECT_TRUE(meta_a->grad.buffer());
-  EXPECT_TRUE(meta_b->grad.buffer());
+  EXPECT_TRUE(meta_a->grad_.buffer());
+  EXPECT_TRUE(meta_b->grad_.buffer());
 
-  float *grad_a = meta_a->grad.data<float>();
-  float *grad_b = meta_b->grad.data<float>();
+  float *grad_a = meta_a->grad_.data<float>();
+  float *grad_b = meta_b->grad_.data<float>();
 
   // Since c = a + b, the gradient for both a and b should be ones
   for (size_t i = 0; i < quasai::core::total_size(a.shape()); ++i) {
@@ -66,11 +66,11 @@ TEST(AutoGradEngineTest, BackwardAccumulateGrad) {
 
   EXPECT_TRUE(meta_a);
   EXPECT_TRUE(meta_b);
-  EXPECT_TRUE(meta_a->grad.buffer());
-  EXPECT_TRUE(meta_b->grad.buffer());
+  EXPECT_TRUE(meta_a->grad_.buffer());
+  EXPECT_TRUE(meta_b->grad_.buffer());
 
-  float *grad_a = meta_a->grad.data<float>();
-  float *grad_b = meta_b->grad.data<float>();
+  float *grad_a = meta_a->grad_.data<float>();
+  float *grad_b = meta_b->grad_.data<float>();
 
   // Since c and d both depend on a and b, the gradients should accumulate to 2
   for (size_t i = 0; i < quasai::core::total_size(a.shape()); ++i) {
@@ -99,11 +99,11 @@ TEST(AutoGradEngineTest, SubtractionBackward) {
 
   EXPECT_TRUE(meta_a);
   EXPECT_TRUE(meta_b);
-  EXPECT_TRUE(meta_a->grad.buffer());
-  EXPECT_TRUE(meta_b->grad.buffer());
+  EXPECT_TRUE(meta_a->grad_.buffer());
+  EXPECT_TRUE(meta_b->grad_.buffer());
 
-  float *grad_a = meta_a->grad.data<float>();
-  float *grad_b = meta_b->grad.data<float>();
+  float *grad_a = meta_a->grad_.data<float>();
+  float *grad_b = meta_b->grad_.data<float>();
 
   // Since c = a - b, the gradient for a should be ones and for b should be
   // -ones

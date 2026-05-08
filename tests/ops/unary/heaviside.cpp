@@ -40,7 +40,7 @@ TEST(Heaviside, Gradient) {
   quasai::core::Tensor output = quasai::ops::heaviside(input);
   output.backward();
 
-  quasai::core::Tensor grad = input.autograd_meta()->grad;
+  quasai::core::Tensor grad = input.autograd_meta()->grad_;
   float computed_grad = grad.data<float>()[0];
 
   EXPECT_FLOAT_EQ(computed_grad, 0.0f);

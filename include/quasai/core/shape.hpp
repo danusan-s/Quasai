@@ -28,9 +28,9 @@ public:
    * @param dims Initializer list of dimension sizes.
    * @throws std::runtime_error if dims exceed MAX_DIMENSIONS.
    */
-  Shape(std::initializer_list<size_t> dims) : dimensions_(dims.size()) {
-    size_t i = 0;
-    for (size_t dim : dims) {
+  Shape(std::initializer_list<std::size_t> dims) : dimensions_(dims.size()) {
+    std::size_t i = 0;
+    for (std::size_t dim : dims) {
       if (i < MAX_DIMENSIONS) {
         sizes_[i++] = dim;
       } else {
@@ -247,9 +247,9 @@ using Index = std::vector<std::size_t>;
  * @param strides Strides for each dimension.
  * @return Flat (1D) index.
  */
-inline size_t ravel_index(const Index &indices, const Strides &strides) {
-  size_t flat_index = 0;
-  for (size_t i = 0; i < indices.size(); ++i) {
+inline std::size_t ravel_index(const Index &indices, const Strides &strides) {
+  std::size_t flat_index = 0;
+  for (std::size_t i = 0; i < indices.size(); ++i) {
     flat_index += indices[i] * strides[i];
   }
   return flat_index;
@@ -265,7 +265,7 @@ inline size_t ravel_index(const Index &indices, const Strides &strides) {
 inline Index get_broadcast_index(const Index &indices, const Shape &shape) {
   std::size_t ndim = shape.dimensions();
   Index broadcast_index(ndim);
-  for (size_t i = 0; i < ndim; ++i) {
+  for (std::size_t i = 0; i < ndim; ++i) {
     broadcast_index[ndim - 1 - i] =
         shape[ndim - 1 - i] == 1 ? 0 : indices[indices.size() - 1 - i];
   }
@@ -278,7 +278,7 @@ inline Index get_broadcast_index(const Index &indices, const Shape &shape) {
  * @param shape Shape of the tensor.
  * @return Multi-dimensional index.
  */
-inline Index unravel_index(size_t flat_idx, const Shape &shape) {
+inline Index unravel_index(std::size_t flat_idx, const Shape &shape) {
   Index idx(shape.dimensions());
 
   for (int i = shape.dimensions() - 1; i >= 0; --i) {

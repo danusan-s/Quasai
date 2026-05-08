@@ -41,7 +41,7 @@ TEST(Sigmoid, Gradient) {
   quasai::core::Tensor output = quasai::ops::sigmoid(input);
   output.backward();
 
-  quasai::core::Tensor grad = input.autograd_meta()->grad;
+  quasai::core::Tensor grad = input.autograd_meta()->grad_;
   float computed_grad = grad.data<float>()[0];
 
   auto sigmoid = [](float x) { return 1.0f / (1.0f + std::exp(-x)); };

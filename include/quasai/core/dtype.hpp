@@ -9,12 +9,12 @@ namespace quasai::core {
 /**
  * @brief Supported data types for tensors.
  */
-typedef enum {
+enum class DType {
   FLOAT32, ///< 32-bit floating point
   FLOAT64, ///< 64-bit floating point
   INT32,   ///< 32-bit signed integer
   INT64,   ///< 64-bit signed integer
-} DType;
+};
 
 /**
  * @brief Dispatch a callable based on the tensor's data type.

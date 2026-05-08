@@ -37,7 +37,7 @@ TEST(Matmul, GradientA) {
   quasai::core::Tensor output = quasai::ops::matmul(input_a, input_b);
   output.backward();
 
-  quasai::core::Tensor grad_a = input_a.autograd_meta()->grad;
+  quasai::core::Tensor grad_a = input_a.autograd_meta()->grad_;
   float computed_grad_00 = grad_a.data<float>()[0];
 
   std::vector<float> data_a_plus = {1.0f + eps, 2.0f, 3.0f};
