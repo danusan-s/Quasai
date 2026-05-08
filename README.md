@@ -3,6 +3,7 @@
 [![CI](https://github.com/danusan-s/Quasai/actions/workflows/ci.yml/badge.svg)](https://github.com/danusan-s/Quasai/actions/workflows/ci.yml)
 
 A from-scratch C++20 machine learning framework built with minimal external dependencies to demonstrate automatic differentiation, tensor operations, neural network systems and data processing utilities.
+This framework is on par with PyTorch in terms of tensor operations performance. The project will get more features to make it a fully fledged ML framework in the future.
 
 ## Features
 
@@ -100,22 +101,27 @@ make run_benchmarks
 
 **OpenMP Speedup**: Benchmarks show ~5x speedup on 16-core systems for large tensor operations (8192x8192 float32 addition: 125ms vs 624ms single-threaded).
 
-| Benchmark        | Quasai Time | PyTorch Time | Speedup (Quasai) |
-| ---------------- | ----------- | ------------ | ---------------- |
-| Add 2048×2048    | 4.25 ms     | 1.28 ms      | **0.30×**        |
-| Add 4096×4096    | 10.78 ms    | 10.33 ms     | **0.96×**        |
-| Matmul 2048×2048 | 32.26 ms    | 24.67 ms     | **0.76×**        |
-| Transpose 2048   | 67.6 ns     | 501 ns       | **7.41×**        |
-| Transpose 4096   | 67.0 ns     | 500 ns       | **7.46×**        |
-| Sum 2048×2048    | 0.191 ms    | 0.062 ms     | **0.32×**        |
-| Sum 4096×4096    | 1.34 ms     | 1.20 ms      | **0.90×**        |
-| Scalar Add (5M)  | 1.18 ms     | 1.05 ms      | **0.89×**        |
-| ReLU 2048×2048   | 0.842 ms    | 0.824 ms     | **0.98×**        |
-| ReLU 4096×4096   | 5.17 ms     | 7.83 ms      | **1.51×**        |
+| Operation           | Quasai (ms) | PyTorch (ms) | Speedup (Q/P) |
+| ------------------- | ----------: | -----------: | ------------: |
+| Add 2048×2048       |       1.299 |        1.266 |         1.03× |
+| Add 4096×4096       |       7.076 |       10.196 |         1.44× |
+| Matmul 2048×2048    |      24.267 |       21.744 |         0.90× |
+| Transpose 2048×2048 |    0.000041 |     0.000354 |         8.70× |
+| Transpose 4096×4096 |    0.000040 |     0.000348 |         8.75× |
+| Sum 2048×2048       |      0.0450 |       0.0577 |         1.28× |
+| Sum 4096×4096       |       1.304 |        1.300 |         1.00× |
+| ScalarAdd 5,000,000 |       1.202 |        1.134 |         0.94× |
+| ReLU 2048×2048      |       0.893 |        0.785 |         0.88× |
+| ReLU 4096×4096      |       5.169 |        7.922 |         1.53× |
 
 Note: The speedup column <1 means PyTorch is faster, >1 means Quasai is faster.
 Some timings may vary due to system load and other factors, but the general trends hold.
-The speedups in transpose and ReLU could simply be because Quasai is less bloated and therefore less overhead for now.
+The speedups in transpose could simply be because Quasai is less bloated and therefore less overhead for now.
+
+### Does this mean Quasai is better than PyTorch?
+
+Not necessarily. PyTorch is a mature, highly optimized framework with CUDA support, a large ecosystem, and many features. Quasai is a demonstration of core ML concepts in C++.
+Another tradeoff is that Quasai relies on compiler optimizations for native architectures so it has to be built from source.  This means it is not really portable as compared to pytorch's hand optimized kernels for different platforms which are dispatched at runtime.
 
 ---
 

@@ -45,7 +45,7 @@ add_library(quasai STATIC
 )
 set_target_properties(quasai PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-target_compile_options(quasai PRIVATE -march=native -Wall -Wextra -Wpedantic)
+target_compile_options(quasai PRIVATE -O3 -march=native -Wall -Wextra -Wpedantic)
 
 target_include_directories(quasai PUBLIC
     ${CMAKE_SOURCE_DIR}/include
