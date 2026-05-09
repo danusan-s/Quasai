@@ -1,0 +1,54 @@
+# ===== Configuration =====
+BUILD_DIR := build
+CMAKE := cmake
+CTEST := ctest
+
+BUILD_TYPE ?= Release
+
+# ===== Default =====
+.PHONY: all
+all: build
+
+# ===== Clean =====
+.PHONY: clean
+clean:
+	@if exist $(BUILD_DIR) rmdir /s /q $(BUILD_DIR)
+
+# ===== Build (normal) =====
+.PHONY: build
+build:
+	@if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+	@cd $(BUILD_DIR) && $(CMAKE) .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
+	@$(CMAKE) --build $(BUILD_DIR) -- /parallel
+
+# ===== Rebuild (clean + build) =====
+.PHONY: rebuild
+rebuild: clean build
+
+# ===== Build with benchmarks enabled =====
+.PHONY: build_with_benchmark
+build_with_benchmark:
+	@if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+	@cd $(BUILD_DIR) && $(CMAKE) .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DBUILD_BENCHMARKS=ON -DBUILD_TORCH_BENCHMARKS=ON
+	@$(CMAKE) --build $(BUILD_DIR) -- /parallel
+
+# ===== Run tests =====
+.PHONY: run_tests
+run_tests: build
+	@cd $(BUILD_DIR) && $(CTEST) --output-on-failure
+
+# ===== Run benchmarks (build + execute benchmark binary) =====
+.PHONY: run_benchmark
+run_benchmark: build_with_benchmark
+	@echo Running benchmarks...
+	@$(BUILD_DIR)\benchmarks\quasai_benchmarks.exe
+
+# ==== Generate documentation (using Doxygen) ====
+.PHONY: docs
+docs:
+	@doxygen Doxyfile
+
+# ==== Open documentation in browser ====
+.PHONY: open_docs
+open_docs: docs
+	@start docs\doxygen\html\index.html

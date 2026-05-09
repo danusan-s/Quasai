@@ -68,8 +68,10 @@ This project prioritizes demonstrating systems ML concepts over production readi
 
 ### Prerequisites
 - CMake >= 3.16
-- C++20 compatible compiler (GCC, Clang)
+- C++20 compatible compiler (GCC, Clang on Linux; MSVC on Windows)
 - OpenMP (optional, for parallel operations on large tensors)
+
+### Linux / macOS
 
 ```bash
 # Clone the repository
@@ -86,6 +88,44 @@ make run_tests
 make open_docs
 ```
 
+### Windows
+
+**Using NMake:**
+```cmd
+:: Clone the repository
+git clone https://github.com/danusan-s/Quasai.git
+cd Quasai
+
+:: Build the library
+make -f Makefile.win build
+
+:: Run tests
+make -f Makefile.win run_tests
+
+:: Open documentation
+make -f Makefile.win open_docs
+```
+
+**Using PowerShell:**
+```powershell
+# Clone the repository
+git clone https://github.com/danusan-s/Quasai.git
+cd Quasai
+
+# Create build directory
+mkdir build
+cd build
+
+# Configure with CMake (use -G "MinGW Makefiles" for MinGW or -G "Visual Studio 17 2022" for MSVC)
+cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release
+
+# Build
+cmake --build . -- /parallel
+
+# Run tests
+ctest --output-on-failure
+```
+
 See `examples/cpp/` for C++ examples 
 
 ---
@@ -95,8 +135,11 @@ See `examples/cpp/` for C++ examples
 Quasai includes benchmarks for large tensor operations that trigger OpenMP parallelization (tested with up to 64M element tensors):
 
 ```bash
-# Build with benchmarks and run them
-make run_benchmarks
+# Linux
+make run_benchmark
+
+# Windows
+make -f Makefile.win run_benchmark
 ```
 
 **OpenMP Speedup**: Benchmarks show ~5x speedup on 16-core systems for large tensor operations (8192x8192 float32 addition: 125ms vs 624ms single-threaded).
