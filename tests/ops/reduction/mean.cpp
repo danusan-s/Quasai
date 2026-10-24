@@ -25,6 +25,20 @@ TEST(Mean, Float64) {
   EXPECT_DOUBLE_EQ(result_data[0], 2.5);
 }
 
+TEST(Mean, KeepDimReturnsReducedValues) {
+  std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f};
+  quasai::core::Shape shape{2, 2};
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), shape, quasai::core::DType::FLOAT32);
+
+  quasai::core::Tensor result = quasai::ops::mean(tensor, 1, true);
+  ASSERT_EQ(result.shape(), quasai::core::Shape({2, 1}));
+
+  const float *result_data = result.data<float>();
+  EXPECT_FLOAT_EQ(result_data[0], 1.5f);
+  EXPECT_FLOAT_EQ(result_data[1], 3.5f);
+}
+
 TEST(Mean, Int32ShouldThrow) {
   std::vector<int32_t> data = {1, 2, 3, 4};
   quasai::core::Shape shape{2, 2};

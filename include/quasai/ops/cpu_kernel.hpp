@@ -167,17 +167,23 @@ template <typename T>
 void do_sum_to_shape(const core::Tensor &a, core::Tensor &result) {
   const core::Shape &a_shape = a.shape();
   const core::Shape &out_shape = result.shape();
+  const core::Strides &a_strides = a.strides();
   const core::Strides &out_strides = result.strides();
 
   const size_t num_elements = total_size(a_shape);
+  const size_t ndim = a_shape.dimensions();
   const T *data_a = a.data<T>();
   T *data_result = result.data<T>();
 
-  // Dangerous to parallize since multiple threads may write to the same out ind
+  // Not parallelized: multiple input indices may map to the same output index.
   for (size_t i = 0; i < num_elements; ++i) {
     core::Index idx_a = unravel_index(i, a_shape);
     core::Index idx_out = get_broadcast_index(idx_a, out_shape);
-    data_result[ravel_index(idx_out, out_strides)] += data_a[i];
+    size_t linear_a = 0;
+    for (size_t d = 0; d < ndim; ++d) {
+      linear_a += idx_a[d] * a_strides[d];
+    }
+    data_result[ravel_index(idx_out, out_strides)] += data_a[linear_a];
   }
 }
 

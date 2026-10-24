@@ -112,3 +112,58 @@ TEST(AutoGradEngineTest, SubtractionBackward) {
     EXPECT_FLOAT_EQ(grad_b[i], -1.0f);
   }
 }
+
+TEST(AutoGradEngineTest, SharedIntermediateVisitedOnce) {
+  // y = (x^2)^2 = x^4, so dy/dx = 4x^3. The intermediate x^2 is used by both
+  // inputs of the outer multiplication and must only be backpropagated once.
+  std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f};
+  quasai::core::Tensor x = quasai::core::Tensor::from_data(
+      data.data(), quasai::core::Shape{2, 2}, quasai::core::DType::FLOAT32);
+  x.requires_grad(true);
+
+  quasai::core::Tensor x_squared = quasai::ops::mul(x, x);
+  quasai::core::Tensor y = quasai::ops::mul(x_squared, x_squared);
+  y.backward();
+
+  const float *grad = x.autograd_meta()->grad_.data<float>();
+  for (size_t i = 0; i < data.size(); ++i) {
+    float expected = 4.0f * data[i] * data[i] * data[i];
+    EXPECT_FLOAT_EQ(grad[i], expected);
+  }
+}
+
+TEST(AutoGradEngineTest, BroadcastReductionGradient) {
+  // L = sum(X + b) with b broadcast over the batch. dL/db must sum over rows.
+  std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f};
+  quasai::core::Tensor x = quasai::core::Tensor::from_data(
+      data.data(), quasai::core::Shape{2, 2}, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor b = quasai::core::Tensor::zeros(
+      quasai::core::Shape{1, 2}, quasai::core::DType::FLOAT32);
+  b.requires_grad(true);
+
+  quasai::core::Tensor loss = quasai::ops::sum(quasai::ops::add(x, b));
+  loss.backward();
+
+  const float *grad_b = b.autograd_meta()->grad_.data<float>();
+  EXPECT_FLOAT_EQ(grad_b[0], 2.0f);
+  EXPECT_FLOAT_EQ(grad_b[1], 2.0f);
+}
+
+TEST(AutoGradEngineTest, MeanDimBroadcastGradient) {
+  // L = sum(mean(X + b, dim=1)) with 2 rows: each element contributes 1/2, so
+  // dL/db = [1, 1].
+  std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f};
+  quasai::core::Tensor x = quasai::core::Tensor::from_data(
+      data.data(), quasai::core::Shape{2, 2}, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor b = quasai::core::Tensor::zeros(
+      quasai::core::Shape{1, 2}, quasai::core::DType::FLOAT32);
+  b.requires_grad(true);
+
+  quasai::core::Tensor loss =
+      quasai::ops::sum(quasai::ops::mean(quasai::ops::add(x, b), 1));
+  loss.backward();
+
+  const float *grad_b = b.autograd_meta()->grad_.data<float>();
+  EXPECT_FLOAT_EQ(grad_b[0], 1.0f);
+  EXPECT_FLOAT_EQ(grad_b[1], 1.0f);
+}

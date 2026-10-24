@@ -80,17 +80,14 @@ core::Tensor mean(const core::Tensor &a, int dim, bool keepdim) {
   size_t num_elements = out_shape[dim];
   out_shape[dim] = 1;
 
-  core::Tensor result = core::Tensor::empty(out_shape, a.dtype(), a.device());
-
   core::Tensor sum_result = sum_to_shape(a, out_shape);
-
   core::Tensor mean_result = div(sum_result, num_elements);
 
   if (!keepdim) {
-    result = reshape(mean_result, squeeze_shape(result.shape(), dim));
+    return reshape(mean_result, squeeze_shape(out_shape, dim));
   }
 
-  return result;
+  return mean_result;
 }
 
 } // namespace quasai::ops

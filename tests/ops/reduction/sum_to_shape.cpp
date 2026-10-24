@@ -57,6 +57,31 @@ TEST(SumToShape, Int64) {
   EXPECT_EQ(result_data[2], 9);
 }
 
+TEST(SumToShape, NonContiguousTranspose) {
+  std::vector<float> data = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), quasai::core::Shape{2, 3}, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor transposed = quasai::ops::transpose(tensor);
+
+  quasai::core::Tensor result = quasai::ops::sum_to_shape(transposed, {2});
+  const float *result_data = result.data<float>();
+  EXPECT_FLOAT_EQ(result_data[0], 6.0f);
+  EXPECT_FLOAT_EQ(result_data[1], 15.0f);
+}
+
+TEST(SumToShape, ExpandedBroadcastView) {
+  std::vector<float> data = {1.0f, 2.0f, 3.0f};
+  quasai::core::Tensor tensor = quasai::core::Tensor::from_data(
+      data.data(), quasai::core::Shape{3}, quasai::core::DType::FLOAT32);
+  quasai::core::Tensor expanded = quasai::ops::expand(tensor, {2, 3});
+
+  quasai::core::Tensor result = quasai::ops::sum_to_shape(expanded, {3});
+  const float *result_data = result.data<float>();
+  EXPECT_FLOAT_EQ(result_data[0], 2.0f);
+  EXPECT_FLOAT_EQ(result_data[1], 4.0f);
+  EXPECT_FLOAT_EQ(result_data[2], 6.0f);
+}
+
 TEST(SumToShape, Broadcast) {
   std::vector<float> data = {1.0f, 2.0f};
   quasai::core::Shape shape{2};

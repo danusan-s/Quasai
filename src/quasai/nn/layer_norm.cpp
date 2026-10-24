@@ -28,16 +28,14 @@ core::Tensor LayerNorm::forward(const core::Tensor &input) {
         "LayerNorm expects input of shape (batch_size, num_features)");
   }
 
-  core::Tensor mean = ops::mean(input, 1); // Mean across feature dimension
-  core::Tensor var = ops::mean(ops::pow(ops::sub(input, mean), 2),
-                               0); // Variance across feature dimension
+  core::Tensor mean = ops::mean(input, 1, true); // (batch, 1)
+  core::Tensor centered = ops::sub(input, mean);
+  core::Tensor var = ops::mean(ops::pow(centered, 2), 1, true); // (batch, 1)
 
   core::Tensor normalized =
-      ops::div(ops::sub(input, mean), ops::pow(ops::add(var, eps_), 0.5f));
+      ops::div(centered, ops::pow(ops::add(var, eps_), 0.5f));
 
-  core::Tensor output = ops::add(ops::mul(normalized, scale_), shift_);
-
-  return core::Tensor();
+  return ops::add(ops::mul(normalized, scale_), shift_);
 }
 
 } // namespace quasai::nn
