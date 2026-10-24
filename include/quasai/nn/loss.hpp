@@ -21,6 +21,15 @@ core::Tensor mse_loss(const core::Tensor &predictions,
                       const core::Tensor &targets);
 
 /**
+ * @brief Compute cross-entropy loss.
+ * @param predictions Predicted probabilities.
+ * @param targets Ground truth values (e.g. one-hot encoded).
+ * @return Tensor containing the mean cross-entropy loss.
+ */
+core::Tensor cross_entropy_loss(const core::Tensor &predictions,
+                                const core::Tensor &targets);
+
+/**
  * @brief Compute loss based on the given Loss type.
  * @param predictions Model predictions.
  * @param targets Ground truth values.

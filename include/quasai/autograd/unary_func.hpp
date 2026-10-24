@@ -46,6 +46,12 @@ public:
   std::vector<core::Tensor> backward(const core::Tensor &grad_output) override;
 };
 
+/// @brief Function node for GELU activation (tanh approximation).
+class GeluFunction : public Function {
+public:
+  std::vector<core::Tensor> backward(const core::Tensor &grad_output) override;
+};
+
 /// @brief Function node for element-wise power.
 class PowFunction : public Function {
 public:
@@ -53,6 +59,24 @@ public:
 
   /// @brief Construct with the given exponent.
   PowFunction(float exp) : exponent(exp) {
+  }
+
+  std::vector<core::Tensor> backward(const core::Tensor &grad_output) override;
+};
+
+/// @brief Function node for element-wise exponential.
+class ExpFunction : public Function {
+public:
+  std::vector<core::Tensor> backward(const core::Tensor &grad_output) override;
+};
+
+/// @brief Function node for element-wise logarithm.
+class LogFunction : public Function {
+public:
+  float base; ///< Base of the logarithm used in the forward pass.
+
+  /// @brief Construct with the given base.
+  LogFunction(float base) : base(base) {
   }
 
   std::vector<core::Tensor> backward(const core::Tensor &grad_output) override;

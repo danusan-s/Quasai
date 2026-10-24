@@ -1,5 +1,6 @@
 #pragma once
 
+#include "quasai/core/constants.hpp"
 #include "quasai/core/tensor.hpp"
 #include "quasai/utils/logger.hpp"
 #include <functional>
@@ -45,6 +46,12 @@ core::Tensor signum(const core::Tensor &a);
 core::Tensor sigmoid(const core::Tensor &a);
 /// @brief Hyperbolic tangent activation.
 core::Tensor tanh(const core::Tensor &a);
+/// @brief Exponential function (e^x).
+core::Tensor exp(const core::Tensor &a);
+/// @brief Logarithm function, default base is e.
+core::Tensor log(const core::Tensor &a, float base = core::EULER);
+/// @brief GELU activation (tanh approximation).
+core::Tensor gelu(const core::Tensor &a);
 
 /// @brief Sum all elements of a tensor.
 core::Tensor sum(const core::Tensor &a);

@@ -22,10 +22,9 @@ enum class DType {
  * etc.)
  * @param dtype Data type to dispatch on.
  * @param f Callable to invoke with the appropriate type.
- * @return Result of calling f with the matching type.
  * @throws std::runtime_error if dtype is not supported.
  */
-template <typename F> constexpr auto dispatch_by_dtype(DType dtype, F &&f) {
+template <typename F> constexpr void dispatch_by_dtype(DType dtype, F &&f) {
   switch (dtype) {
     case DType::FLOAT32:
       return std::forward<F>(f).template operator()<float>();

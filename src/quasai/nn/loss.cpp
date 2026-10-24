@@ -1,5 +1,7 @@
 #include "quasai/nn/loss.hpp"
 
+#include "quasai/core/dtype.hpp"
+#include "quasai/core/shape.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 
 namespace quasai::nn {
@@ -32,7 +34,19 @@ core::Tensor l1_loss(const core::Tensor &predictions,
 
 core::Tensor cross_entropy_loss(const core::Tensor &predictions,
                                 const core::Tensor &targets) {
-  throw std::runtime_error("Cross-entropy loss not implemented yet");
+  if (predictions.dtype() != targets.dtype()) {
+    throw std::runtime_error(
+        "Predictions and targets must have the same data type");
+  }
+  if (predictions.shape() != targets.shape()) {
+    throw std::runtime_error(
+        "Predictions and targets must have the same shape");
+  }
+
+  core::Tensor log_predictions = ops::log(predictions);
+  core::Tensor product = ops::mul(targets, log_predictions);
+
+  return ops::neg(ops::mean(product));
 }
 
 core::Tensor compute_loss(const core::Tensor &predictions,
@@ -42,6 +56,8 @@ core::Tensor compute_loss(const core::Tensor &predictions,
       return mse_loss(predictions, targets);
     case Loss::L1:
       return l1_loss(predictions, targets);
+    case Loss::CROSS_ENTROPY:
+      return cross_entropy_loss(predictions, targets);
     default:
       throw std::runtime_error("Unsupported loss type");
   }
