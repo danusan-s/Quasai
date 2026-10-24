@@ -46,12 +46,6 @@ public:
   std::vector<core::Tensor> backward(const core::Tensor &grad_output) override;
 };
 
-/// @brief Function node for GELU activation (tanh approximation).
-class GeluFunction : public Function {
-public:
-  std::vector<core::Tensor> backward(const core::Tensor &grad_output) override;
-};
-
 /// @brief Function node for element-wise power.
 class PowFunction : public Function {
 public:

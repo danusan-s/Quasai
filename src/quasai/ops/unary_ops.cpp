@@ -4,6 +4,7 @@
 #include "quasai/autograd/unary_func.hpp"
 #include "quasai/ops/cpu_kernel.hpp"
 
+#include <cassert>
 #include <cmath>
 
 namespace quasai::ops {
@@ -142,16 +143,14 @@ core::Tensor tanh(const core::Tensor &a) {
 }
 
 core::Tensor gelu(const core::Tensor &a) {
-  core::Tensor result = core::Tensor::empty(a.shape(), a.dtype(), a.device());
-  add_unary_gradient(
-      a, result, []() { return std::make_unique<autograd::GeluFunction>(); });
-  dispatch_by_dtype(a.dtype(), [&]<typename T>() {
-    do_unary_op<T>(a, result, [](auto x) {
-      return 0.5 * x *
-             (1.0 + std::tanh(std::sqrt(2.0 / core::PI) *
-                              (x + 0.044715 * std::pow(x, 3))));
-    });
-  });
+
+  core::Tensor u = ops::mul(std::sqrt(2.0 / core::PI),
+                            ops::add(a, ops::mul(0.044715, ops::pow(a, 3))));
+
+  core::Tensor result = ops::mul(0.5, ops::mul(a, ops::add(1.0, ops::tanh(u))));
+
+  assert(result.shape() == a.shape());
+
   return result;
 }
 
