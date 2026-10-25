@@ -1,99 +1,140 @@
 cmake_minimum_required(VERSION 3.16)
-project(Quasai LANGUAGES CXX)
+project(Quasai LANGUAGES CXX VERSION 0.1.0)
 
+# C++ Standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Sanitizers
-option(ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
-if(ENABLE_SANITIZERS)
-  set(SANITIZER_FLAGS -fsanitize=address,undefined -fno-omit-frame-pointer)
-  add_compile_options(${SANITIZER_FLAGS})
-  add_link_options(${SANITIZER_FLAGS})
+# Build type
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(SRC_FILES
-    src/quasai/nn/layer_norm.cpp
-    src/quasai/nn/model.cpp
-    src/quasai/nn/sequential.cpp
-    src/quasai/nn/dropout.cpp
-    src/quasai/nn/batch_norm_1d.cpp
-    src/quasai/nn/linear.cpp
-    src/quasai/nn/loss.cpp
-    src/quasai/nn/init.cpp
-    src/quasai/ops/unary_ops.cpp
-    src/quasai/ops/reduction_ops.cpp
-    src/quasai/ops/view_ops.cpp
-    src/quasai/ops/linalg_ops.cpp
-    src/quasai/ops/binary_ops.cpp
-    src/quasai/autograd/unary_func.cpp
-    src/quasai/autograd/reduction_func.cpp
-    src/quasai/autograd/view_func.cpp
-    src/quasai/autograd/linalg_func.cpp
-    src/quasai/autograd/binary_func.cpp
-    src/quasai/autograd/engine.cpp
-    src/quasai/core/tensor.cpp
-    src/quasai/transform/standard_scaler.cpp
-    src/quasai/storage/buffer.cpp
-    src/quasai/storage/allocator.cpp
-    src/quasai/optim/sgd.cpp
-    src/quasai/optim/adam.cpp
+# Compiler warnings
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-unused-parameter")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -march=native")
+
+# Options
+option(QUASAI_BUILD_SHARED      "Build shared library" OFF)
+option(BUILD_BENCHMARKS         "Build benchmarks" OFF)
+option(BUILD_EXAMPLES           "Build examples" ON)
+option(BUILD_TESTS              "Build tests" ON)
+option(ENABLE_SANITIZERS        "Enable AddressSanitizer + UndefinedBehaviorSanitizer" OFF)
+option(QUASAI_DEBUG             "Enable debug logging" OFF)
+option(QUASAI_OPENMP            "Enable OpenMP parallelization" ON)
+option(QUASAI_OPENBLAS          "Use OpenBLAS (fetch if not found)" ON)
+option(QUASAI_CUDA              "Enable CUDA support (experimental)" OFF)
+
+if(QUASAI_BUILD_SHARED)
+  set(BUILD_SHARED_LIBS ON)
+else()
+  set(BUILD_SHARED_LIBS OFF)
+endif()
+
+# Sanitizers
+if(ENABLE_SANITIZERS)
+  set(SANITIZE_FLAGS "-fsanitize=address,undefined -fno-omit-frame-pointer")
+  add_compile_options(${SANITIZE_FLAGS})
+  add_link_options(${SANITIZE_FLAGS})
+  message(STATUS "Sanitizers enabled")
+endif()
+
+# Debug logging
+if(QUASAI_DEBUG)
+  add_compile_definitions(QUASAI_DEBUG=1)
+  message(STATUS "Debug logging enabled")
+endif()
+
+# Source files (auto-discover)
+file(GLOB_RECURSE SRC_FILES
+  "src/quasai/*.cpp"
+  "src/quasai/**/*.cpp"
 )
 
 # Library
-add_library(quasai STATIC
-  ${SRC_FILES}
+add_library(quasai ${SRC_FILES})
+set_target_properties(quasai PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+  CXX_STANDARD 20
+  CXX_STANDARD_REQUIRED ON
 )
-set_target_properties(quasai PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
-target_compile_options(quasai PRIVATE -O3 -march=native -Wall -Wextra -Wpedantic)
 
 target_include_directories(quasai PUBLIC
-    ${CMAKE_SOURCE_DIR}/include
+  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
 )
 
-include(FetchContent)
-
-find_package(OpenMP QUIET)
-
-if(OpenMP_FOUND AND TARGET OpenMP::OpenMP_CXX)
+# OpenMP
+if(QUASAI_OPENMP)
+  find_package(OpenMP QUIET)
+  if(OpenMP_FOUND)
     target_link_libraries(quasai PUBLIC OpenMP::OpenMP_CXX)
-else()
-  message(STATUS "OpenMP not found - building without OpenMP support, Large operations may be slower")
+    add_compile_definitions(QUASAI_HAS_OPENMP=1)
+    message(STATUS "OpenMP enabled")
+  else()
+    message(WARNING "OpenMP requested but not found")
+  endif()
 endif()
 
-
-find_package(BLAS QUIET)
-
-if(BLAS_FOUND AND TARGET BLAS::BLAS)
+# BLAS / OpenBLAS
+if(QUASAI_OPENBLAS)
+  find_package(BLAS QUIET)
+  if(BLAS_FOUND AND TARGET BLAS::BLAS)
     target_link_libraries(quasai PUBLIC BLAS::BLAS)
-else()
+    message(STATUS "Using system BLAS")
+  else()
     message(STATUS "BLAS not found - fetching OpenBLAS")
-
+    include(FetchContent)
     FetchContent_Declare(
-        openblas
-        GIT_REPOSITORY https://github.com/OpenMathLib/OpenBLAS.git
-        GIT_TAG v0.3.28
+      openblas
+      GIT_REPOSITORY https://github.com/OpenMathLib/OpenBLAS.git
+      GIT_TAG v0.3.28
     )
-
     FetchContent_MakeAvailable(openblas)
-
-    # OpenBLAS target name depends on build, this is typical:
     target_link_libraries(quasai PUBLIC openblas)
+  endif()
 endif()
 
-# Benchmarks (optional)
-option(BUILD_BENCHMARKS "Build benchmarks" OFF)
+# CUDA (experimental)
+if(QUASAI_CUDA)
+  find_package(CUDA REQUIRED)
+  if(CUDA_FOUND)
+    target_link_libraries(quasai PUBLIC CUDA::cudart)
+    add_compile_definitions(QUASAI_CUDA=1)
+    message(STATUS "CUDA enabled")
+  endif()
+endif()
+
+# Install
+install(TARGETS quasai
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+install(DIRECTORY include/ DESTINATION include
+  FILES_MATCHING PATTERN "*.hpp"
+)
+
+# Subdirectories
 if(BUILD_BENCHMARKS)
   add_subdirectory(benchmarks)
 endif()
 
-# Debug logs
-option(QUASAI_DEBUG "DEBUG LOGS" OFF)
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
-# Examples
-add_subdirectory(examples)
+if(BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
 
-# Tests
-enable_testing()
-add_subdirectory(tests)
+# Packaging
+include(CPack)
+set(CPACK_PACKAGE_NAME "Quasai")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "C++ ML Framework")
+set(CPACK_GENERATOR "TGZ;ZIP")
