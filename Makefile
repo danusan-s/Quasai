@@ -23,6 +23,15 @@ build:
 		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 	@$(CMAKE) --build $(BUILD_DIR) -j
 
+# ===== Build (debug) =====
+.PHONY: debug
+debug:
+	@mkdir -p $(BUILD_DIR)
+	@cd $(BUILD_DIR) && $(CMAKE) .. \
+		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
+		-DQUASAI_DEBUG=ON
+	@$(CMAKE) --build $(BUILD_DIR) -j 
+
 # ===== Rebuild (clean + build) =====
 .PHONY: rebuild
 rebuild: clean build

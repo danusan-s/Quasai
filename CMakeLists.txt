@@ -37,6 +37,7 @@ set(SRC_FILES
     src/quasai/storage/buffer.cpp
     src/quasai/storage/allocator.cpp
     src/quasai/optim/sgd.cpp
+    src/quasai/optim/adam.cpp
 )
 
 # Library
@@ -86,6 +87,9 @@ option(BUILD_BENCHMARKS "Build benchmarks" OFF)
 if(BUILD_BENCHMARKS)
   add_subdirectory(benchmarks)
 endif()
+
+# Debug logs
+option(QUASAI_DEBUG "DEBUG LOGS" OFF)
 
 # Examples
 add_subdirectory(examples)

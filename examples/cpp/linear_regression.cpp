@@ -6,12 +6,13 @@
 #include "quasai/nn/modules/activations.hpp"
 #include "quasai/nn/modules/linear.hpp"
 #include "quasai/nn/sequential_builder.hpp"
+#include "quasai/optim/adam.hpp"
 #include "quasai/optim/sgd.hpp"
 #include "quasai/transform/standard_scaler.hpp"
 #include <iostream>
 #include <vector>
 
-int main() {
+int main(int argc, char **argv) {
   // - Prepare data
   // - Train model
   // - Evaluate performance
@@ -126,7 +127,12 @@ int main() {
   size_t batch_size = 32;
 
   model.set_loss(quasai::nn::Loss::MSE);
-  model.set_optimizer<quasai::optim::SGD>(0.01f, 0.3f);
+
+  if (argc > 1 && std::string(argv[1]) == "adam") {
+    model.set_optimizer<quasai::optim::Adam>(0.01f);
+  } else {
+    model.set_optimizer<quasai::optim::SGD>(0.01f, 0.9f);
+  }
 
   std::cout << "Starting training..." << std::endl;
 
