@@ -12,8 +12,9 @@ void Adam::compile(const std::vector<nn::Parameter> &parameters) {
   states_.resize(parameters.size());
   t_ = 1;
 
-  LOG_DEBUG("Adam optimizer compiled with " +
-            std::to_string(parameters.size()) + " parameters.");
+  LOG_DEBUG(("Adam optimizer compiled with " +
+             std::to_string(parameters.size()) + " parameters.")
+                .c_str());
 }
 
 void Adam::step() {
@@ -22,10 +23,11 @@ void Adam::step() {
         "Adam optimizer not compiled with parameters. Call compile() first.");
   }
 
-  LOG_DEBUG("Performing Adam optimization step with learning rate " +
-            std::to_string(learning_rate_) + ", beta1 " +
-            std::to_string(beta1_) + ", beta2 " + std::to_string(beta2_) +
-            ", epsilon " + std::to_string(epsilon_));
+  LOG_DEBUG(("Performing Adam optimization step with learning rate " +
+             std::to_string(learning_rate_) + ", beta1 " +
+             std::to_string(beta1_) + ", beta2 " + std::to_string(beta2_) +
+             ", epsilon " + std::to_string(epsilon_))
+                .c_str());
 
   for (size_t i = 0; i < parameters_.size(); ++i) {
     nn::Parameter &param = parameters_[i];

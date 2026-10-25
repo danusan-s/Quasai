@@ -51,7 +51,7 @@ all: examples tests
 
 configure:
 	@mkdir -p $(BUILD_DIR)
-	@cd $(BUILD_DIR) && $(CMAKE) .. -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
+	@cd $(BUILD_DIR) && $(CMAKE) .. -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) $(CMAKE_EXTRA_ARGS)
 
 lib: configure
 	@$(CMAKE) --build $(BUILD_DIR) --target quasai -j $(JOBS)
@@ -74,18 +74,19 @@ benchmarks: configure
 	@cd $(BUILD_DIR) && $(CMAKE) .. -DBUILD_BENCHMARKS=ON -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 	@$(CMAKE) --build $(BUILD_DIR) --target quasai_benchmarks -j $(JOBS)
 
+debug: CMAKE_EXTRA_ARGS := -DQUASAI_DEBUG=ON
 debug: BUILD_TYPE := Debug
-debug: QUASAI_DEBUG := ON
 debug: configure
-	@cd $(BUILD_DIR) && $(CMAKE) .. -DQUASAI_DEBUG=ON -DCMAKE_BUILD_TYPE=Debug
 	@$(CMAKE) --build $(BUILD_DIR) -j $(JOBS)
 
+release: CMAKE_EXTRA_ARGS := -DQUASAI_DEBUG=OFF
 release: BUILD_TYPE := Release
-release: all
+release: configure
+	@$(CMAKE) --build $(BUILD_DIR) -j $(JOBS)
 
+sanitize: CMAKE_EXTRA_ARGS := -DENABLE_SANITIZERS=ON
 sanitize: BUILD_TYPE := Debug
 sanitize: configure
-	@cd $(BUILD_DIR) && $(CMAKE) .. -DENABLE_SANITIZERS=ON -DCMAKE_BUILD_TYPE=Debug
 	@$(CMAKE) --build $(BUILD_DIR) -j $(JOBS)
 
 rebuild: clean all

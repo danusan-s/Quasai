@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
   // - Train model
   // - Evaluate performance
 
-  auto data = quasai::data::parse_csv("../../examples/cpp/housing.csv");
+  auto data = quasai::data::parse_csv("examples/cpp/housing.csv");
 
   std::vector<std::string> columns_to_remove;
   for (auto &pair : data) {
@@ -128,11 +128,7 @@ int main(int argc, char **argv) {
 
   model.set_loss(quasai::nn::Loss::MSE);
 
-  if (argc > 1 && std::string(argv[1]) == "adam") {
-    model.set_optimizer<quasai::optim::Adam>(0.01f);
-  } else {
-    model.set_optimizer<quasai::optim::SGD>(0.01f, 0.9f);
-  }
+  model.set_optimizer<quasai::optim::Adam>(0.01f);
 
   std::cout << "Starting training..." << std::endl;
 
