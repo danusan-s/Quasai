@@ -4,7 +4,8 @@
 #include "quasai/autograd/metadata.hpp"
 #include "quasai/ops/tensor_ops.hpp"
 
-#include <unordered_set>
+#include <algorithm>
+#include <vector>
 
 namespace quasai::autograd {
 
@@ -22,9 +23,14 @@ struct VisitFrame {
 // subgraphs (e.g. residual connections) are emitted only once.
 std::vector<core::Tensor> build_postorder(const core::Tensor &root) {
   std::vector<core::Tensor> postorder;
-  std::unordered_set<AutoGradMeta *> visited;
+  std::vector<AutoGradMeta *> visited;
+  visited.reserve(32); // Typical graph size
+  postorder.reserve(32);
 
-  std::vector<VisitFrame> stack{{root, false}};
+  std::vector<VisitFrame> stack;
+  stack.reserve(32);
+  stack.push_back({root, false});
+
   while (!stack.empty()) {
     VisitFrame &frame = stack.back();
     std::shared_ptr<AutoGradMeta> meta = frame.tensor.autograd_meta();
@@ -41,11 +47,19 @@ std::vector<core::Tensor> build_postorder(const core::Tensor &root) {
       continue;
     }
 
-    if (visited.contains(id)) {
+    // Linear search for visited - faster than unordered_set for small graphs
+    bool found = false;
+    for (AutoGradMeta *v : visited) {
+      if (v == id) {
+        found = true;
+        break;
+      }
+    }
+    if (found) {
       stack.pop_back();
       continue;
     }
-    visited.insert(id);
+    visited.push_back(id);
 
     frame.expanded = true;
     if (meta->grad_fn_) {
@@ -98,7 +112,7 @@ void AutoGradEngine::backward(const core::Tensor &tensor) {
       if (input_meta->grad_.buffer()) {
         input_meta->grad_ = ops::add(input_meta->grad_, input_grad);
       } else {
-        input_meta->grad_ = input_grad;
+        input_meta->grad_ = std::move(input_grad);
       }
     }
   }

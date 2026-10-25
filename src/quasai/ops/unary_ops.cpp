@@ -143,13 +143,36 @@ core::Tensor tanh(const core::Tensor &a) {
 }
 
 core::Tensor gelu(const core::Tensor &a) {
+  core::Tensor result = core::Tensor::empty(a.shape(), a.dtype(), a.device());
+  add_unary_gradient(
+      a, result, []() { return std::make_unique<autograd::GeluFunction>(); });
 
-  core::Tensor u = ops::mul(std::sqrt(2.0 / core::PI),
-                            ops::add(a, ops::mul(0.044715, ops::pow(a, 3))));
-
-  core::Tensor result = ops::mul(0.5, ops::mul(a, ops::add(1.0, ops::tanh(u))));
-
-  assert(result.shape() == a.shape());
+  if (a.is_contiguous() && result.is_contiguous()) {
+    dispatch_by_dtype(a.dtype(), [&]<typename T>() {
+      if constexpr (std::is_floating_point_v<T>) {
+        do_gelu<T>(a, result);
+      } else {
+        // Fallback for non-floating types (shouldn't happen in practice)
+        do_unary_op<T>(a, result, [](auto x) {
+          using U = decltype(x);
+          constexpr U kAlpha = U(0.044715);
+          constexpr U kHalf = U(0.5);
+          constexpr U kOne = U(1.0);
+          // sqrt(2/pi) using float-precision PI for consistency
+          constexpr U kBeta = U(0.7978845834732055757);
+          U x3 = x * x * x;
+          U inner = x + kAlpha * x3;
+          U tanh_val = std::tanh(kBeta * inner);
+          return kHalf * x * (kOne + tanh_val);
+        });
+      }
+    });
+  } else {
+    // Fallback to decomposed implementation for non-contiguous tensors
+    core::Tensor u = ops::mul(std::sqrt(2.0 / core::PI),
+                              ops::add(a, ops::mul(0.044715, ops::pow(a, 3))));
+    result = ops::mul(0.5, ops::mul(a, ops::add(1.0, ops::tanh(u))));
+  }
 
   return result;
 }

@@ -2,6 +2,7 @@
 
 #include "quasai/core/tensor.hpp"
 #include "quasai/ops/core_ops.hpp"
+#include <cmath>
 
 #ifndef QUASAI_DISABLE_OPENBLAS
 extern "C" {
@@ -37,16 +38,17 @@ inline bool can_use_parallel_matmul(size_t M, size_t N, size_t BS) {
 /**
  * @brief Execute a binary operation with optional OpenMP parallelization.
  * @tparam T Data type of the tensors.
+ * @tparam Op Binary operation type (functor, lambda, function pointer).
  * @param a First input tensor.
  * @param b Second input tensor.
  * @param result Output tensor.
  * @param op Binary operation to apply.
  * @note Uses fast path for contiguous same-shape tensors, slow path with
- * broadcasting.
+ * broadcasting. Op is templated to allow inlining.
  */
-template <typename T>
+template <typename T, typename Op>
 void do_binary_op(const core::Tensor &a, const core::Tensor &b,
-                  core::Tensor &result, std::function<T(T, T)> op) {
+                  core::Tensor &result, Op op) {
   const core::Shape &out_shape = result.shape();
 
   bool a_is_scalar = (a.shape().dimensions() == 0);
@@ -116,13 +118,14 @@ void do_binary_op(const core::Tensor &a, const core::Tensor &b,
 /**
  * @brief Execute a unary operation with optional OpenMP parallelization.
  * @tparam T Data type of the tensor.
+ * @tparam Op Unary operation type (functor, lambda, function pointer).
  * @param a Input tensor.
  * @param result Output tensor.
  * @param op Unary operation to apply.
+ * @note Op is templated to allow inlining.
  */
-template <typename T>
-void do_unary_op(const core::Tensor &a, core::Tensor &result,
-                 std::function<T(T)> op) {
+template <typename T, typename Op>
+void do_unary_op(const core::Tensor &a, core::Tensor &result, Op op) {
   const core::Shape out_shape = result.shape();
 
   const size_t num_elements = total_size(out_shape);
@@ -393,6 +396,45 @@ void do_contiguous_copy(const core::Tensor &a, core::Tensor &result) {
     data_result[i] = data_a[ravel_index(idx_a, a_strides)];
   }
   return;
+}
+
+/**
+ * @brief Fused GELU activation (tanh approximation) for contiguous tensors.
+ * @tparam T Data type (float or double).
+ * @param a Input tensor.
+ * @param result Output tensor.
+ * @note Computes: 0.5 * x * (1 + tanh(sqrt(2/pi) * (x + 0.044715 * x^3)))
+ *       in a single pass without intermediate tensors.
+ *       Matches the reference computation order exactly for numerical
+ * consistency.
+ */
+template <typename T>
+void do_gelu(const core::Tensor &a, core::Tensor &result) {
+  static_assert(std::is_floating_point_v<T>,
+                "GELU requires floating point type");
+
+  const size_t num_elements = total_size(a.shape());
+  const T *data_a = a.data<T>();
+  T *data_result = result.data<T>();
+
+  // Compute kBeta at runtime to match reference: sqrt(2.0 / PI) where PI is
+  // the float-precision quasai::core::PI (3.14159265358979323846f)
+  const T kAlpha = T(0.044715);
+  const T kHalf = T(0.5);
+  const T kOne = T(1.0);
+  // Use the exact float PI value as double for consistency with tests
+  const T kPi = T(3.1415927410125732421875); // Exact float PI as double
+  const T kBeta = std::sqrt(T(2.0) / kPi);
+
+#pragma omp parallel for simd schedule(                                        \
+        static) if (can_use_parallel(num_elements))
+  for (size_t i = 0; i < num_elements; ++i) {
+    T x = data_a[i];
+    T x3 = std::pow(x, 3); // Match reference: std::pow(x, 3)
+    T inner = x + kAlpha * x3;
+    T tanh_val = std::tanh(kBeta * inner);
+    data_result[i] = kHalf * x * (kOne + tanh_val);
+  }
 }
 
 } // namespace quasai::ops

@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <initializer_list>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace quasai::core {
@@ -239,7 +240,71 @@ inline Shape broadcast_shape(const Shape &a, const Shape &b) {
   return Shape(result_dims, max_dims);
 }
 
-using Index = std::vector<std::size_t>;
+/**
+ * @brief Fixed-size multi-dimensional index (max 8 dimensions).
+ * @note Avoids heap allocation by using stack storage.
+ */
+class Index {
+public:
+  /// @brief Default constructor (0 dimensions).
+  Index() : dimensions_(0) {
+    for (std::size_t i = 0; i < MAX_DIMENSIONS; ++i) {
+      indices_[i] = 0;
+    }
+  }
+
+  /// @brief Construct an index with the given number of dimensions.
+  explicit Index(std::size_t n_dims) : dimensions_(n_dims) {
+    for (std::size_t i = 0; i < n_dims; ++i) {
+      indices_[i] = 0;
+    }
+    for (std::size_t i = n_dims; i < MAX_DIMENSIONS; ++i) {
+      indices_[i] = 0;
+    }
+  }
+
+  /// @brief Construct an index from an initializer list.
+  Index(std::initializer_list<std::size_t> dims) : dimensions_(dims.size()) {
+    std::size_t i = 0;
+    for (std::size_t dim : dims) {
+      if (i < MAX_DIMENSIONS) {
+        indices_[i++] = dim;
+      }
+    }
+    for (; i < MAX_DIMENSIONS; ++i) {
+      indices_[i] = 0;
+    }
+  }
+
+  /// @brief Get the number of dimensions.
+  std::size_t size() const {
+    return dimensions_;
+  }
+
+  /// @brief Get dimension index (const version).
+  std::size_t operator[](std::size_t index) const {
+    return indices_[index];
+  }
+
+  /// @brief Get dimension index (mutable version).
+  std::size_t &operator[](std::size_t index) {
+    return indices_[index];
+  }
+
+  /// @brief Get iterator to beginning.
+  auto begin() const {
+    return indices_;
+  }
+
+  /// @brief Get iterator to end.
+  auto end() const {
+    return indices_ + dimensions_;
+  }
+
+private:
+  std::size_t dimensions_;
+  std::size_t indices_[MAX_DIMENSIONS];
+};
 
 /**
  * @brief Convert a multi-dimensional index to a flat index.

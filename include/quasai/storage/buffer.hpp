@@ -1,7 +1,6 @@
 #pragma once
 
 #include "quasai/storage/allocator.hpp"
-#include <functional>
 #include <memory>
 
 namespace quasai::storage {
@@ -12,6 +11,14 @@ namespace quasai::storage {
  */
 class Buffer {
 public:
+  struct Deleter {
+    void operator()(void *ptr) const noexcept {
+      if (ptr) {
+        CpuAllocator::instance().deallocate(ptr);
+      }
+    }
+  };
+
   /**
    * @brief Construct a Buffer with the given allocator and size.
    * @param allocator Allocator to use (default: CpuAllocator).
@@ -19,7 +26,7 @@ public:
    */
   Buffer(Allocator *allocator = &CpuAllocator::instance(),
          std::size_t size = 0);
-  ~Buffer() = default; // RAII: unique_ptr handles cleanup automatically
+  ~Buffer() = default;
 
   Buffer(const Buffer &) = delete;
   Buffer &operator=(const Buffer &) = delete;
@@ -37,15 +44,6 @@ public:
   }
 
 private:
-  struct Deleter {
-    std::function<void(void *)> deallocate;
-
-    void operator()(void *ptr) const {
-      if (ptr && deallocate)
-        deallocate(ptr);
-    }
-  };
-
   std::unique_ptr<void, Deleter> data_;
   std::size_t size_;
 };
