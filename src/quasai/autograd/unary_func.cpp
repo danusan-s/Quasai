@@ -188,7 +188,7 @@ GeluFunction::backward(const core::Tensor &grad_output) {
     // where k = sqrt(2/pi), a = 0.044715
     // dGELU/dx = 0.5 * (1 + tanh(u)) + 0.5 * x * (1 - tanh^2(u)) * k * (1 +
     // 3*a*x^2) where u = k * (x + a * x^3)
-    constexpr float k = std::sqrt(2.0f / M_PI);
+    const float k = std::sqrt(2.0f / M_PI);
     constexpr float a = 0.044715f;
     constexpr float three_a = 3.0f * a;
     constexpr float half = 0.5f;
